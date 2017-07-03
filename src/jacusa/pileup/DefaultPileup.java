@@ -20,11 +20,19 @@ public class DefaultPileup implements Pileup {
 
 	private Counts counts;
 
+	private int readStartCount;
+	private int readInnerCount;
+	private int readEndCount;
+
 	public DefaultPileup(final int baseLength) {
 		contig 		= new String();
 		position	= -1;
 		strand		= STRAND.UNKNOWN;
 		refBase		= 'N';
+
+		readStartCount = 0;
+		readInnerCount = 0;
+		readEndCount = 0;
 
 		counts 		= new Counts(baseLength);
 	}
@@ -42,6 +50,10 @@ public class DefaultPileup implements Pileup {
 		strand		= pileup.getStrand();
 		refBase 	= pileup.getRefBase();
 
+		readStartCount = pileup.getReadStartCount();
+		readInnerCount = pileup.getReadInnerCount();
+		readEndCount = pileup.getReadEndCount();
+		
 		counts		= (Counts)pileup.getCounts().clone();
 	}
 
@@ -207,6 +219,36 @@ public class DefaultPileup implements Pileup {
 				return STRAND.UNKNOWN;
 			}
 		}
+	}
+
+	@Override
+	public int getReadStartCount() {
+		return readStartCount;
+	}
+
+	@Override
+	public int getReadInnerCount() {
+		return readInnerCount;
+	}
+
+	@Override
+	public int getReadEndCount() {
+		return readEndCount;
+	}
+
+	@Override
+	public void setReadStartCount(int readStartCount) {
+		this.readStartCount = readStartCount;		
+	}
+
+	@Override
+	public void setReadInnerCount(int readInnerCount) {
+		this.readInnerCount = readInnerCount;
+	}
+
+	@Override
+	public void setReadEndCount(int readEndCount) {
+		this.readEndCount = readEndCount;
 	}
 
 }

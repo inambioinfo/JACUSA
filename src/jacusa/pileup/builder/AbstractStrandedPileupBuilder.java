@@ -53,6 +53,8 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 
 	@Override
 	public void clearCache() {
+		super.clearCache();
+
 		for (WindowCache windowCache : windowCaches) {
 			windowCache.clear();
 		}
@@ -87,6 +89,11 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 
 		// copy base and qual info from cache
 		pileup.setCounts(windowCache.getCounts(windowPosition));
+		
+		// TODO read coverage
+		pileup.setReadStartCount(readStartCount[windowPosition]);
+		pileup.setReadInnerCount(readInnerCount[windowPosition]);
+		pileup.setReadEndCount(readEndCount[windowPosition]);
 
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {

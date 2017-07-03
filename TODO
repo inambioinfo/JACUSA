@@ -1,0 +1,18 @@
+TODO
+====
+
+# JACUSA variant calling
+* update manual
+  * test-statistic
+  * JacusaHelper tutorials
+
+# JACUSA rcoverage / read arrest
+* name for jacusa method: "rcoverage" or "arrest"? - currently rcoverage
+* implement rcoverage
+* Dirichlet-Multinomial -> Beta-Multinomial
+* what filter?
+* what file format?
+* junit test(s)
+
+DONE
+====

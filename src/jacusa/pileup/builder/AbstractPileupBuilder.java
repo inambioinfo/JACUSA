@@ -46,6 +46,10 @@ public abstract class AbstractPileupBuilder {
 
 	protected int distance;
 	
+	protected int[] readStartCount;
+	protected int[] readInnerCount;
+	protected int[] readEndCount;
+	
 	public AbstractPileupBuilder (
 			final Coordinate coordinate,
 			final STRAND strand, 
@@ -66,6 +70,10 @@ public abstract class AbstractPileupBuilder {
 				parameters.getWindowSize(), 
 				coordinate.getEnd());
 
+		readStartCount			= new int[windowCoordinates.getWindowSize()];
+		readInnerCount			= new int[windowCoordinates.getWindowSize()];
+		readEndCount			= new int[windowCoordinates.getWindowSize()];
+		
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
 
@@ -238,7 +246,12 @@ public abstract class AbstractPileupBuilder {
 	// abstract methods
 
 	// Reset all caches in windows
-	public abstract void clearCache();
+	public void clearCache() {
+		Arrays.fill(readStartCount, 0);
+		Arrays.fill(readInnerCount, 0);
+		Arrays.fill(readEndCount, 0);
+	}
+	
 	protected abstract void addHighQualityBaseCall(int windowPosition, int base, int qual, STRAND strand);
 	protected abstract void addLowQualityBaseCall(int windowPosition, int base, int qual, STRAND strand);
 
@@ -248,9 +261,18 @@ public abstract class AbstractPileupBuilder {
 	public abstract Pileup getPileup(int windowPosition, STRAND strand);
 	public abstract WindowCache getWindowCache(STRAND strand);
 
+	public int getReadStartCount(int windowPosition) {
+		return readStartCount[windowPosition];
+	}
+	public int getReadInnerCount(int windowPosition) {
+		return readInnerCount[windowPosition];
+	}
+	public int getReadEndCount(int windowPosition) {
+		return readEndCount[windowPosition];
+	}
+
 	public abstract FilterContainer getFilterContainer(int windowPosition, STRAND strand);
-	
-	
+
 	/*
 	 * process CIGAR string methods
 	 */
@@ -355,6 +377,15 @@ public abstract class AbstractPileupBuilder {
 		int windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
 		int alignmentBlockI = 0;
 
+		// TODO read coverage / use strand
+		if (windowPosition >= 0) {
+			readStartCount[windowPosition] += 1;
+		}
+		int windowPositionReadEnd = windowCoordinates.convert2WindowPosition(record.getAlignmentEnd());
+		if (windowPositionReadEnd >= 0) {
+			readEndCount[windowPositionReadEnd] += 1;
+		}
+
 		int MDPosition = 0;
 		byte[] referenceBases = null;
 
@@ -371,7 +402,7 @@ public abstract class AbstractPileupBuilder {
 		for (AbstractFilterStorage<?> filter : filterContainer.getPR()) {
 			filter.processRecord(windowCoordinates.getGenomicWindowStart(), record);
 		}
-
+		
 		// process CIGAR -> SNP, INDELs
 		for (final CigarElement cigarElement : record.getCigar().getCigarElements()) {
 			
@@ -481,6 +512,13 @@ public abstract class AbstractPileupBuilder {
 		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
 			filter.processAlignmentBlock(windowPosition, readPosition, genomicPosition, cigarElement, record);
 		}
+		
+		// TODO TEST ME
+		if (readPosition > 0) {
+			if (readPosition != record.getReadLength()) {
+				readInnerCount[windowPosition] += 1;
+			}
+		} 
 		
 		for (int offset = 0; offset < cigarElement.getLength(); ++offset) {
 			final int baseI = byte2int[record.getReadBases()[readPosition + offset]];

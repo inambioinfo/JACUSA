@@ -13,6 +13,14 @@ public interface Pileup {
 	 char getRefBase();
 	 int getCoverage();
 
+	 // TODO
+	 int getReadStartCount();
+	 int getReadInnerCount();
+	 int getReadEndCount();
+	 void setReadStartCount(int readStartCount);
+	 void setReadInnerCount(int readInnerCount);
+	 void setReadEndCount(int readEndCount);
+
 	 int[] getAlleles();
 
 	 void setContig(String contig);
