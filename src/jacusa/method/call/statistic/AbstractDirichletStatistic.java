@@ -58,7 +58,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 	
 	protected AbstractAlphaInit fallbackAlphaInit;
 	
-	private DecimalFormat decimalFormat;
+	protected DecimalFormat decimalFormat;
 	
 	public AbstractDirichletStatistic(final MinkaEstimateParameters estimateAlpha, final BaseConfig baseConfig, final StatisticParameters parameters) {
 		this.parameters 	= parameters;
@@ -89,12 +89,10 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 			final Pileup[] pileups, 
 			final int[] baseIs, 
 			double[][] pileupMatrix) {
-		double[] pileupErrorVector = new double[BaseConfig.VALID.length];
-		
 		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
 			Pileup pileup = pileups[pileupI];
 	
-			populate(pileup, baseIs, pileupErrorVector, pileupMatrix[pileupI]);
+			populate(pileup, baseIs, pileupMatrix[pileupI]);
 		}
 	}
 
@@ -107,8 +105,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 	 */
 	protected abstract void populate(
 			final Pileup pileup, 
-			final int[] baseIs, 
-			double[] pileupErrorVector,
+			final int[] baseIs,
 			double[] pileupVector);
 
 	@Override
@@ -169,28 +166,12 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 			final boolean backtrack ) {
 		// populate pileupMatrix with values to be modeled
 		final double[][] matrix  = new double[pileups.length][alpha.length];
-		// container for pseudocounts
-		final double[] vector = new double[alpha.length];
-		
-		/* distinguish parameters estimation between 
-		 * - no replicates (pileup.length == 1),
-		 * - and replicates > 1 (pileup.length > 1)
-		 */
-		if (pileups.length == 1) {
-			// populate pileupMatrix with values to be modeled
-			populate(pileups[0], baseIs, vector, matrix[0]);
-			// perform an initial guess of alpha
-			initAlphaValues = alphaInit.init(
-					baseIs, 
-					pileups[0], 
-					matrix[0], 
-					vector);
-		} else {
-			// populate pileupMatrix with values to be modeled
-			populate(pileups, baseIs, matrix);
-			// perform an initial guess of alpha
-			System.arraycopy(alphaInit.init(baseIs, pileups, matrix), 0, initAlphaValues, 0, alpha.length);
-		}
+
+		// populate pileupMatrix with values to be modeled
+		populate(pileups, baseIs, matrix);
+		// perform an initial guess of alpha
+		System.arraycopy(alphaInit.init(baseIs, pileups, matrix), 0, initAlphaValues, 0, alpha.length);
+
 		// store initial alpha guess
 		System.arraycopy(initAlphaValues, 0, alpha, 0, alpha.length);
 

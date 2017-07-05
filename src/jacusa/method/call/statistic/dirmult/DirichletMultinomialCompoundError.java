@@ -28,7 +28,7 @@ public class DirichletMultinomialCompoundError extends AbstractDirichletStatisti
 	}
 
 	@Override
-	protected void populate(final Pileup pileup, final int[] baseIs, double[] pileupErrorVector, double[] pileupMatrix) {
+	protected void populate(final Pileup pileup, final int[] baseIs, double[] pileupMatrix) {
 		double[] pileupCount = phred2Prob.colSumCount(baseIs, pileup);
 		double[] pileupError = phred2Prob.colMeanErrorProb(baseIs, pileup);
 
@@ -41,7 +41,6 @@ public class DirichletMultinomialCompoundError extends AbstractDirichletStatisti
 					if (baseI != baseI2) {
 						double combinedError = (pileupError[baseI2] + estimatedError) * (double)pileupCount[baseI] / (double)(baseIs.length - 1);
 						pileupMatrix[baseI2] += combinedError;
-						pileupErrorVector[baseI2] = combinedError;
 					} else {
 						// pileupMatrix[pileupI][baseI2] -= (estimatedError) * (double)pileupCount[baseI];
 					}

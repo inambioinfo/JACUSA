@@ -36,13 +36,4 @@ public class BayesAlphaInit extends AbstractAlphaInit {
 		return alpha;
 	}
 
-	@Override
-	public double[] init(
-			final int[] baseIs,
-			final Pileup pileup, 
-			final double[] pileupVector,
-			final double[] pileupErrorVector) {
-		return init(baseIs, new Pileup[]{pileup}, new double[][]{pileupVector});
-	}
-
 }

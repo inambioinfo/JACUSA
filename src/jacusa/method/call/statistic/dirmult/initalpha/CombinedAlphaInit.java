@@ -27,17 +27,10 @@ public class CombinedAlphaInit extends AbstractAlphaInit {
 			final Pileup[] pileups,
 			final double[][] pileupMatrix) {
 
+		if (pileups.length == 1) {
+			return B.init(baseIs, pileups, pileupMatrix);
+		}
 		return A.init(baseIs, pileups, pileupMatrix);
-	}
-
-	@Override
-	public double[] init(
-			final int[] baseIs, 
-			final Pileup pileup, 
-			final double[] pileupVector,
-			final double[] pileupErrorVector) {
-
-		return B.init(baseIs, pileup, pileupVector, pileupErrorVector);
 	}
 		
 }

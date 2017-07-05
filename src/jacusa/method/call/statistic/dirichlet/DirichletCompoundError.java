@@ -39,7 +39,7 @@ public class DirichletCompoundError extends AbstractDirichletStatistic {
 	}
 
 	@Override
-	protected void populate(final Pileup pileup, final int[] baseIs, double[] pileupErrorVector, double[] pileupMatrix) {
+	protected void populate(final Pileup pileup, final int[] baseIs, double[] pileupMatrix) {
 		// init pileup Matrix
 		Arrays.fill(pileupMatrix, 0.0);
 
@@ -64,7 +64,7 @@ public class DirichletCompoundError extends AbstractDirichletStatistic {
 								(double)pileupCount[baseI] / (double)(baseIs.length - 1);
 						pileupMatrix[baseI2] += combinedError;
 						// keep track of total pseudocount per base
-						pileupErrorVector[baseI2] = combinedError;
+						// pileupErrorVector[baseI2] = combinedError;
 					} else {
 						// "correct" base call
 						// nothing to be done, yet

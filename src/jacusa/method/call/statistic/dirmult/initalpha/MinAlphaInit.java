@@ -15,7 +15,7 @@ public class MinAlphaInit extends AbstractAlphaInit {
 	public AbstractAlphaInit newInstance(String line) {
 		return new MinAlphaInit();
 	}
-	
+
 	@Override
 	public double[] init(
 			final int[] baseIs,
@@ -23,9 +23,9 @@ public class MinAlphaInit extends AbstractAlphaInit {
 			final double[][] pileupMatrix) {
 		final double[] alpha = new double[BaseConfig.VALID.length];
 		Arrays.fill(alpha, Double.MAX_VALUE);
-		
+
 		double[] pileupCoverages = getCoverages(baseIs, pileupMatrix);
-		
+
 		double[][] pileupProportionMatrix = new double[pileups.length][baseIs.length];
 		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
 			for (int baseI : baseIs) {
@@ -35,15 +35,6 @@ public class MinAlphaInit extends AbstractAlphaInit {
 		}
 
 		return alpha;
-	}
-
-	@Override
-	public double[] init(
-			final int[] baseIs,
-			final Pileup pileup, 
-			final double[] pileupVector,
-			final double[] pileupErrorVector) {
-		return init(baseIs, new Pileup[]{pileup}, new double[][]{pileupVector});
 	}
 	
 }

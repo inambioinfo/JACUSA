@@ -2,7 +2,6 @@ package jacusa.method.call.statistic.dirmult.initalpha;
 
 import java.util.Arrays;
 
-import jacusa.pileup.BaseConfig;
 import jacusa.pileup.Pileup;
 
 public class ConstantAlphaInit extends AbstractAlphaInit {
@@ -40,17 +39,6 @@ public class ConstantAlphaInit extends AbstractAlphaInit {
 			final Pileup[] pileups,
 			final double[][] pileupMatrix) {
 		final double[] alpha = new double[baseIs.length];
-		Arrays.fill(alpha, constant);
-		return alpha;
-	}
-
-	@Override
-	public double[] init(
-			final int[] baseIs,
-			final Pileup pileup, 
-			final double[] pileupVector,
-			final double[] pileupErrorVector) {
-		final double[] alpha = new double[BaseConfig.VALID.length];
 		Arrays.fill(alpha, constant);
 		return alpha;
 	}

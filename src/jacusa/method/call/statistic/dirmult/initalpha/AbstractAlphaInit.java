@@ -55,12 +55,13 @@ public abstract class AbstractAlphaInit {
 	 * @param pileupVector
 	 * @param pileupErrorVector
 	 * @return
-	 */
+	@Deprecated
 	public abstract double[] init(
 			final int[] baseIs, 
 			final Pileup pileup,
 			final double[] pileupVector,
 			final double[] pileupErrorVector);
+	 */
 
 	/**
 	 * Create a new instance.
