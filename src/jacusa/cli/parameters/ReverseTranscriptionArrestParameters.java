@@ -3,12 +3,12 @@ package jacusa.cli.parameters;
 import jacusa.io.format.AbstractOutputFormat;
 
 // TODO change name
-public class ReadCoverageParameters extends AbstractParameters implements hasSample2, hasStatisticCalculator {
+public class ReverseTranscriptionArrestParameters extends AbstractParameters implements hasSample2, hasStatisticCalculator {
 
 	private SampleParameters sample2;
 	private StatisticParameters statisticParameters;
 
-	public ReadCoverageParameters() {
+	public ReverseTranscriptionArrestParameters() {
 		super();
 
 		sample2				= new SampleParameters();

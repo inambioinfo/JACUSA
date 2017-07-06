@@ -1,4 +1,4 @@
-package jacusa.pileup.dispatcher.rcoverage;
+package jacusa.pileup.dispatcher.rtarrest;
 
 import jacusa.io.Output;
 import jacusa.io.format.AbstractOutputFormat;
@@ -8,10 +8,9 @@ import jacusa.util.coordinateprovider.CoordinateProvider;
 
 import java.io.IOException;
 
-// TODO change name
-public abstract class AbstractReadCoverageWorkerDispatcher<T extends AbstractReadCoverageWorker> extends AbstractWorkerDispatcher<T> {
+public abstract class AbstractReverseTranscriptionArrestWorkerDispatcher<T extends AbstractReadCoverageWorker> extends AbstractWorkerDispatcher<T> {
 	
-	public AbstractReadCoverageWorkerDispatcher(
+	public AbstractReverseTranscriptionArrestWorkerDispatcher(
 			final String[] pathnames1,
 			final String[] pathnames2,
 			final CoordinateProvider coordinateProvider, 

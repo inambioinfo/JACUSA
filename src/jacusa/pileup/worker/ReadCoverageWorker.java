@@ -1,9 +1,9 @@
 package jacusa.pileup.worker;
 
-import jacusa.cli.parameters.ReadCoverageParameters;
+import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
 
 import jacusa.cli.parameters.SampleParameters;
-import jacusa.pileup.dispatcher.rcoverage.ReadCoverageWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.ReverseTranscriptionArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
 import jacusa.pileup.iterator.ReadCoverageSampleIterator;
 import jacusa.pileup.iterator.variant.ReadCoverageVariantParallelPileup;
@@ -16,14 +16,14 @@ public class ReadCoverageWorker extends AbstractReadCoverageWorker {
 
 	private SAMFileReader[] readers1;
 	private SAMFileReader[] readers2;
-	private ReadCoverageParameters parameters;
+	private ReverseTranscriptionArrestParameters parameters;
 	
 	private final Variant variant;
 	
 	public ReadCoverageWorker(
-			final ReadCoverageWorkerDispatcher threadDispatcher,
+			final ReverseTranscriptionArrestWorkerDispatcher threadDispatcher,
 			final int threadId,
-			final ReadCoverageParameters parameters) {
+			final ReverseTranscriptionArrestParameters parameters) {
 		super(
 				threadDispatcher, 
 				threadId,

@@ -1,4 +1,4 @@
-package jacusa.method.rcoverage;
+package jacusa.method.rtarrest;
 
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
@@ -24,7 +24,7 @@ import jacusa.cli.options.sample.filter.FilterFlagOption;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.ReadCoverageParameters;
+import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
 import jacusa.cli.parameters.SampleParameters;
 
 import jacusa.filter.factory.AbstractFilterFactory;
@@ -35,10 +35,10 @@ import jacusa.io.format.ReadCoverageResultFormat;
 
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
-import jacusa.method.rcoverage.statistic.BetaMultinomial;
+import jacusa.method.rtarrest.statistic.BetaMultinomial;
 
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.dispatcher.rcoverage.ReadCoverageWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.ReverseTranscriptionArrestWorkerDispatcher;
 
 import jacusa.pileup.worker.AbstractWorker;
 
@@ -58,16 +58,16 @@ import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class ReadCoverageFactory extends AbstractMethodFactory {
+public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 
-	private ReadCoverageParameters parameters;
+	private ReverseTranscriptionArrestParameters parameters;
 
-	private static ReadCoverageWorkerDispatcher instance;
+	private static ReverseTranscriptionArrestWorkerDispatcher instance;
 
-	public ReadCoverageFactory() {
-		super("rcoverage-2", "Read arrest - two samples");
+	public ReverseTranscriptionArrestFactory() {
+		super("RT-arrest", "Reverse Transcription Arrest - two samples");
 		
-		parameters = new ReadCoverageParameters();
+		parameters = new ReverseTranscriptionArrestParameters();
 	}
 	
 	public void initACOptions() {
@@ -212,7 +212,7 @@ public class ReadCoverageFactory extends AbstractMethodFactory {
 			String[] pathnames1, String[] pathnames2,
 			CoordinateProvider coordinateProvider) throws IOException {
 		if(instance == null) {
-			instance = new ReadCoverageWorkerDispatcher(pathnames1, pathnames2, coordinateProvider, parameters);
+			instance = new ReverseTranscriptionArrestWorkerDispatcher(pathnames1, pathnames2, coordinateProvider, parameters);
 		}
 		return instance;
 	}

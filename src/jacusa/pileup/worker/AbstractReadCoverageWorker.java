@@ -8,7 +8,7 @@ import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Result;
-import jacusa.pileup.dispatcher.rcoverage.AbstractReadCoverageWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.AbstractReverseTranscriptionArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
 import jacusa.util.Location;
 
@@ -19,7 +19,7 @@ public abstract class AbstractReadCoverageWorker extends AbstractWorker {
 	private final FilterConfig filterConfig;
 	
 	public AbstractReadCoverageWorker(
-			final AbstractReadCoverageWorkerDispatcher<? extends AbstractReadCoverageWorker> workerDispatcher,
+			final AbstractReverseTranscriptionArrestWorkerDispatcher<? extends AbstractReadCoverageWorker> workerDispatcher,
 			final int threadId,
 			final StatisticParameters statisticParameters, 
 			final AbstractParameters parameters) {

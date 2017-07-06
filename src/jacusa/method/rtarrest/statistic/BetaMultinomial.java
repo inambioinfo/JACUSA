@@ -1,4 +1,4 @@
-package jacusa.method.rcoverage.statistic;
+package jacusa.method.rtarrest.statistic;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;

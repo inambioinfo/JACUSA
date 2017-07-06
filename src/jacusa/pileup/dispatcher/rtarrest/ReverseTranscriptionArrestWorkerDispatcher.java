@@ -1,21 +1,21 @@
-package jacusa.pileup.dispatcher.rcoverage;
+package jacusa.pileup.dispatcher.rtarrest;
 
-import jacusa.cli.parameters.ReadCoverageParameters;
+import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
 import jacusa.pileup.worker.ReadCoverageWorker;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
 import java.io.IOException;
 
 // TODO change name
-public class ReadCoverageWorkerDispatcher extends AbstractReadCoverageWorkerDispatcher<ReadCoverageWorker> {
+public class ReverseTranscriptionArrestWorkerDispatcher extends AbstractReverseTranscriptionArrestWorkerDispatcher<ReadCoverageWorker> {
 
-	private ReadCoverageParameters parameters;
+	private ReverseTranscriptionArrestParameters parameters;
 	
-	public ReadCoverageWorkerDispatcher(
+	public ReverseTranscriptionArrestWorkerDispatcher(
 			String[] pathnames1, 
 			String[] pathnames2,
 			final CoordinateProvider coordinateProvider,
-			final ReadCoverageParameters parameters) throws IOException {
+			final ReverseTranscriptionArrestParameters parameters) throws IOException {
 		super(
 				pathnames1,
 				pathnames2,

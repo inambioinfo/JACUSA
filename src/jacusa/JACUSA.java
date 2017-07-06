@@ -29,7 +29,7 @@ import jacusa.method.call.OneSampleCallFactory;
 import jacusa.method.call.TwoSampleCallFactory;
 //import jacusa.method.call.TwoSampleDebugCallFactory;
 import jacusa.method.pileup.TwoSamplePileupFactory;
-import jacusa.method.rcoverage.ReadCoverageFactory;
+import jacusa.method.rtarrest.ReverseTranscriptionArrestFactory;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.Coordinate;
@@ -82,7 +82,7 @@ public class JACUSA {
 			// RC new TwoSampleWindowCallFactory(),
 
 			// new TwoSampleDebugCallFactory()
-			new ReadCoverageFactory()
+			new ReverseTranscriptionArrestFactory()
 		};
 		for (AbstractMethodFactory factory : factories) {
 			methodFactories.put(factory.getName(), factory);
