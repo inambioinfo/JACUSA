@@ -122,9 +122,9 @@ public class CLI {
 		StringBuilder sb = new StringBuilder();
 		
 		for (AbstractMethodFactory methodFactory : methodFactories.values()) {
-			sb.append('\t');
+			sb.append("  ");
 			sb.append(methodFactory.getName());
-			sb.append('\t');
+			sb.append("\t\t");
 			sb.append(methodFactory.getDescription());
 			sb.append('\n');
 		}

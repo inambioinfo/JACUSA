@@ -226,8 +226,8 @@ public class OneSampleCallFactory extends AbstractMethodFactory {
 		for (AbstractACOption acoption : acOptions) {
 			options.addOption(acoption.getOption());
 		}
-		
-		formatter.printHelp(JACUSA.JAR + " [OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...]", options);
+
+		formatter.printHelp(JACUSA.JAR + " " + getName() + " [OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...]", options);
 	}
 	
 }

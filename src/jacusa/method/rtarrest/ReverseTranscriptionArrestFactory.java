@@ -1,7 +1,5 @@
 package jacusa.method.rtarrest;
 
-import jacusa.JACUSA;
-import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BedCoordinatesOption;
 import jacusa.cli.options.FilterConfigOption;
 import jacusa.cli.options.FilterModusOption;
@@ -48,14 +46,11 @@ import jacusa.util.coordinateprovider.SAMCoordinateProvider;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
 
 import net.sf.samtools.SAMSequenceRecord;
 
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
@@ -65,7 +60,7 @@ public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 	private static ReverseTranscriptionArrestWorkerDispatcher instance;
 
 	public ReverseTranscriptionArrestFactory() {
-		super("RT-arrest", "Reverse Transcription Arrest - two samples");
+		super("rt-arrest", "Reverse Transcription Arrest - two samples");
 		
 		parameters = new ReverseTranscriptionArrestParameters();
 	}
@@ -185,26 +180,6 @@ public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 		pa.processArg(args[1]);
 
 		return true;
-	}
-
-	@Override
-	public void printUsage() {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.setWidth(160);
-
-		Set<AbstractACOption> acOptions = getACOptions();
-		Options options = new Options();
-		for (AbstractACOption acoption : acOptions) {
-			options.addOption(acoption.getOption());
-		}
-		
-		// TODO 
-		formatter.printHelp(
-				JACUSA.JAR + 
-				" " + 
-				getName() + 
-				"[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]", 
-				options);
 	}
 
 	@Override

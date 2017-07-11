@@ -12,14 +12,13 @@ import jacusa.pileup.dispatcher.rtarrest.AbstractReverseTranscriptionArrestWorke
 import jacusa.pileup.iterator.AbstractWindowIterator;
 import jacusa.util.Location;
 
-// TODO
-public abstract class AbstractReadCoverageWorker extends AbstractWorker {
+public abstract class AbstractReverseTranscriptionArrestWorker extends AbstractWorker {
 
 	private final StatisticCalculator statisticCalculator;
 	private final FilterConfig filterConfig;
 	
-	public AbstractReadCoverageWorker(
-			final AbstractReverseTranscriptionArrestWorkerDispatcher<? extends AbstractReadCoverageWorker> workerDispatcher,
+	public AbstractReverseTranscriptionArrestWorker(
+			final AbstractReverseTranscriptionArrestWorkerDispatcher<? extends AbstractReverseTranscriptionArrestWorker> workerDispatcher,
 			final int threadId,
 			final StatisticParameters statisticParameters, 
 			final AbstractParameters parameters) {

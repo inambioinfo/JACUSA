@@ -11,15 +11,13 @@ import jacusa.util.Coordinate;
 import jacusa.util.Location;
 import net.sf.samtools.SAMFileReader;
 
-public class ReadCoverageSampleIterator extends AbstractTwoSampleIterator {
+public class ReverseTranscriptionArrestSampleIterator extends AbstractTwoSampleIterator {
 
-	public ReadCoverageSampleIterator(
+	public ReverseTranscriptionArrestSampleIterator(
 			final Coordinate annotatedCoordinate,
 			final Variant filter,
-			final SAMFileReader[] readers1,
-			final SAMFileReader[] readers2,
-			final SampleParameters sample1,
-			final SampleParameters sample2,
+			final SAMFileReader[] readers1,	final SAMFileReader[] readers2,
+			final SampleParameters sample1,	final SampleParameters sample2,
 			AbstractParameters parameters) {
 		super(annotatedCoordinate, filter, readers1, readers2, sample1, sample2, parameters);
 	}

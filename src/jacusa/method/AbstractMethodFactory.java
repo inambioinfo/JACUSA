@@ -23,6 +23,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMSequenceRecord;
 
@@ -104,8 +107,24 @@ public abstract class AbstractMethodFactory {
 	 * 
 	 * @param options
 	 */
-	public abstract void printUsage();
+	public void printUsage() {
+		HelpFormatter formatter = new HelpFormatter();
+		formatter.setWidth(160);
 
+		Set<AbstractACOption> acOptions = getACOptions();
+		Options options = new Options();
+		for (AbstractACOption acoption : acOptions) {
+			options.addOption(acoption.getOption());
+		}
+		
+		formatter.printHelp(
+				JACUSA.JAR + 
+				" " + 
+				getName() + 
+				"[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]", 
+				options);
+	}
+	
 	/**
 	 * 
 	 * @throws Exception

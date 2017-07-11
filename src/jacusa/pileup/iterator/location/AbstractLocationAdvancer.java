@@ -71,6 +71,7 @@ public abstract class AbstractLocationAdvancer {
 
 	public abstract Location getLocation();
 
+	// TODO ???
 	public boolean isValidStrand() {
 		return true;
 	}

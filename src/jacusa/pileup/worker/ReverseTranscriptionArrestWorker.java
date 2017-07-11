@@ -5,14 +5,13 @@ import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.pileup.dispatcher.rtarrest.ReverseTranscriptionArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
-import jacusa.pileup.iterator.ReadCoverageSampleIterator;
-import jacusa.pileup.iterator.variant.ReadCoverageVariantParallelPileup;
+import jacusa.pileup.iterator.ReverseTranscriptionArrestSampleIterator;
+import jacusa.pileup.iterator.variant.ReverseTranscriptionArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import net.sf.samtools.SAMFileReader;
 
-// TODO change name
-public class ReadCoverageWorker extends AbstractReadCoverageWorker {
+public class ReverseTranscriptionArrestWorker extends AbstractReverseTranscriptionArrestWorker {
 
 	private SAMFileReader[] readers1;
 	private SAMFileReader[] readers2;
@@ -20,7 +19,7 @@ public class ReadCoverageWorker extends AbstractReadCoverageWorker {
 	
 	private final Variant variant;
 	
-	public ReadCoverageWorker(
+	public ReverseTranscriptionArrestWorker(
 			final ReverseTranscriptionArrestWorkerDispatcher threadDispatcher,
 			final int threadId,
 			final ReverseTranscriptionArrestParameters parameters) {
@@ -35,7 +34,7 @@ public class ReadCoverageWorker extends AbstractReadCoverageWorker {
 		readers1 = initReaders(parameters.getSample1().getPathnames());
 		readers2 = initReaders(parameters.getSample2().getPathnames());
 
-		variant = new ReadCoverageVariantParallelPileup();
+		variant = new ReverseTranscriptionArrestVariantParallelPileup();
 	}
 
 	@Override
@@ -43,7 +42,7 @@ public class ReadCoverageWorker extends AbstractReadCoverageWorker {
 		SampleParameters sample1 = parameters.getSample1();
 		SampleParameters sample2 = parameters.getSample2();
 		
-		return new ReadCoverageSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
+		return new ReverseTranscriptionArrestSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
 	}
 
 	@Override

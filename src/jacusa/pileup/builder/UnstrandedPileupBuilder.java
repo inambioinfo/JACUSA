@@ -40,6 +40,11 @@ public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 		// set base and qual info from cache
 		pileup.setCounts(windowCache.getCounts(windowPosition));
 
+		// TODO
+		pileup.setReadStartCount(readStartCount[windowPosition]);
+		pileup.setReadInnerCount(readInnerCount[windowPosition]);
+		pileup.setReadEndCount(readEndCount[windowPosition]);
+		
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {
 			pileup.setRefBase((char)refBaseByte);
@@ -56,7 +61,6 @@ public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 	@Override
 	public void clearCache() {
 		windowCache.clear();
-
 		filterContainer.clear();
 	}
 

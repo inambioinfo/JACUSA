@@ -513,13 +513,6 @@ public abstract class AbstractPileupBuilder {
 			filter.processAlignmentBlock(windowPosition, readPosition, genomicPosition, cigarElement, record);
 		}
 		
-		// TODO TEST ME
-		if (readPosition > 0) {
-			if (readPosition != record.getReadLength()) {
-				readInnerCount[windowPosition] += 1;
-			}
-		} 
-		
 		for (int offset = 0; offset < cigarElement.getLength(); ++offset) {
 			final int baseI = byte2int[record.getReadBases()[readPosition + offset]];
 			int qualI = record.getBaseQualities()[readPosition + offset];
@@ -589,6 +582,11 @@ public abstract class AbstractPileupBuilder {
 						if (referenceBases.length > 0) {
 							windowCache.addReferenceBase(windowPosition, referenceBases[MDPosition + offset]);
 						}
+					}
+					
+					// TODO TEST ME
+					if (readPosition + offset > 0 && readPosition + offset + 1 != record.getReadLength()) {
+						readInnerCount[windowPosition] += 1;
 					}
 				}
 				break;

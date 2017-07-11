@@ -69,11 +69,19 @@ public class DefaultPileup implements Pileup {
 	@Override
 	public void addPileup(final Pileup pileup) {
 		counts.addCounts(pileup.getCounts());
+
+		this.readStartCount += pileup.getReadStartCount();
+		this.readInnerCount += pileup.getReadInnerCount();
+		this.readEndCount += pileup.getReadEndCount();
 	}
 
 	@Override
 	public void substractPileup(final Pileup pileup) {
 		counts.substract(pileup.getCounts());
+
+		this.readStartCount -= pileup.getReadStartCount();
+		this.readInnerCount -= pileup.getReadInnerCount();
+		this.readEndCount -= pileup.getReadEndCount();
 	}
 
 	@Override

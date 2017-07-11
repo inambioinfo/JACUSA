@@ -1,6 +1,5 @@
 package jacusa.method.call;
 
-
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;

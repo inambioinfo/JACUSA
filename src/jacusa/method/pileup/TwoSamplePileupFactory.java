@@ -1,10 +1,7 @@
 package jacusa.method.pileup;
 
-import jacusa.JACUSA;
-import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
-//import jacusa.cli.options.DebugOption;
 import jacusa.cli.options.FilterConfigOption;
 import jacusa.cli.options.FormatOption;
 import jacusa.cli.options.HelpOption;
@@ -56,10 +53,7 @@ import jacusa.util.coordinateprovider.SAMCoordinateProvider;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
 import net.sf.samtools.SAMSequenceRecord;
@@ -212,20 +206,6 @@ public class TwoSamplePileupFactory extends AbstractMethodFactory {
 		pa.processArg(args[1]);
 
 		return true;
-	}
-	
-	@Override
-	public void printUsage() {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.setWidth(160);
-
-		Set<AbstractACOption> acOptions = getACOptions();
-		Options options = new Options();
-		for (AbstractACOption acoption : acOptions) {
-			options.addOption(acoption.getOption());
-		}
-
-		formatter.printHelp(JACUSA.JAR + " [OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]", options);
 	}
 	
 }
