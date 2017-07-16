@@ -126,7 +126,7 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 				// FILTER
 				filterInfo,
 				// INFO
-				"*",
+				".",
 				// FORMAT
 				"DP" + getSEP3() + "BC",
 		};
