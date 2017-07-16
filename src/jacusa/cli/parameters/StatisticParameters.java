@@ -12,11 +12,6 @@ public class StatisticParameters {
 		threshold = Double.NaN;
 	}
 
-	public StatisticParameters(final StatisticCalculator statisticCalculator) {
-		this();
-		this.statisticCalculator = statisticCalculator;
-	}
-
 	/**
 	 * @return the maxStat
 	 */

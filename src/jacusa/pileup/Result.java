@@ -1,10 +1,6 @@
 package jacusa.pileup;
 
-
 import jacusa.util.Info;
-
-import java.util.HashMap;
-import java.util.Map;
 
 /**
  * 
@@ -14,14 +10,12 @@ public class Result {
 
 	private ParallelPileup parallelPileup;
 	private double statistic;
-	private Map<String, Object> data;
 	private Info filterInfo;
 	private Info resultInfo;
 	
 	public Result() {
 		parallelPileup = null;
 		statistic = Double.NaN;
-		data = new HashMap<String, Object>(10);
 		filterInfo = new Info();
 		resultInfo = new Info();
 	}
@@ -56,28 +50,6 @@ public class Result {
 	 */
 	public double getStatistic() {
 		return statistic;
-	}
-
-	/**
-	 * 
-	 * @param name
-	 * @param object
-	 */
-	public void setObject(String name, Object object) {
-		data.put(name, object);
-	}
-
-	/**
-	 * 
-	 * @param name
-	 * @return
-	 */
-	public Object getObject(String name) {
-		if (! data.containsKey(name)) {
-			return null;
-		}
-
-		return data.get(name);
 	}
 
 	/**

@@ -2,7 +2,6 @@ package jacusa.pileup.iterator;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
-import jacusa.filter.FilterConfig;
 import jacusa.filter.FilterContainer;
 import jacusa.pileup.DefaultParallelPileup;
 import jacusa.pileup.DefaultPileup;
@@ -26,7 +25,6 @@ import net.sf.samtools.SAMRecord;
 public abstract class AbstractWindowIterator implements Iterator<Location> {
 
 	protected final Coordinate coordinate;
-	protected FilterConfig filterconfig;
 	protected Variant filter;
 	
 	protected ParallelPileup parallelPileup;
@@ -37,7 +35,6 @@ public abstract class AbstractWindowIterator implements Iterator<Location> {
 		this.coordinate = coordinate;
 
 		this.filter		= filter;
-		filterconfig 	= parameters.getFilterConfig();
 		parallelPileup  = new DefaultParallelPileup();
 	}
 

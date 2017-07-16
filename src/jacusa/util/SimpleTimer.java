@@ -22,10 +22,6 @@ public class SimpleTimer {
 		totalTime = System.currentTimeMillis();
 	}
 	
-	public void resetTimer(){
-		this.startTimer();
-	}
-	
 	public synchronized long getTime(){
 		long currentTime = (System.currentTimeMillis() - time);
 		time = System.currentTimeMillis();

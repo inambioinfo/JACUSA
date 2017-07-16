@@ -1,5 +1,6 @@
 package jacusa.method.call;
 
+
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;
@@ -29,50 +30,19 @@ import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.cli.parameters.TwoSampleCallParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
-//import jacusa.filter.factory.AssumeAlleleCountFilterFactors;
-//import jacusa.filter.factory.BASQBiasFilterFactory;
 import jacusa.filter.factory.DistanceFilterFactory;
-//import jacusa.filter.factory.FDRFilterFactory;
 import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.HomozygousFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
 import jacusa.filter.factory.MaxAlleleCountFilterFactors;
-import jacusa.filter.factory.MinDifferenceFilterFactory;
-//import jacusa.filter.factory.OutlierFilterFactory;
-//import jacusa.filter.factory.OutlierFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
-//import jacusa.filter.factory.ZeroCountFilterFactory;
-//import jacusa.filter.factory.MAPQBiasFilterFactory;
-//import jacusa.filter.factory.ReadPositionalBiasFilterFactory;
-import jacusa.filter.factory.RareEventFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6ResultFormat;
-// import jacusa.io.format.DebugResultFormat;
-//import jacusa.io.format.DebugResultFormat;
-//import jacusa.io.format.DefaultOutputFormat;
-//import jacusa.io.format.PileupResultFormat;
 import jacusa.io.format.VCF_ResultFormat;
-//import jacusa.io.format.result.DebugResultFormat;
-//import jacusa.io.format.result.VCF_ResultFormat;
 import jacusa.method.AbstractMethodFactory;
-//import jacusa.method.call.statistic.ACCUSA2Statistic;
-// import jacusa.method.call.statistic.ACCUSA2Statistic;
-// import jacusa.method.call.statistic.ACCUSA2Statistic;
-//import jacusa.method.call.statistic.ACCUSA2Statistic;
-//import jacusa.method.call.statistic.DirichletBayesStatistic;
-//import jacusa.method.call.statistic.DirichletStatistic;
-//import jacusa.method.call.statistic.DirichletMOMsStatistic;
 import jacusa.method.call.statistic.StatisticCalculator;
-//import jacusa.method.call.statistic.dirmult.DirichletMultinomial;
-//import jacusa.method.call.statistic.dirmult.DirichletMultinomialPooledError;
-//import jacusa.method.call.statistic.dirmult.DirichletMultinomialCompoundError;
-//import jacusa.method.call.statistic.dirmult.DirichletMultinomialEstimatedError;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
-//import jacusa.method.call.statistic.lr.LR_SENS_Statistic;
-//import jacusa.method.call.statistic.lr.LR_SPEC_Statistic;
-//import jacusa.method.call.statistic.lr.LR_SENS_Statistic;
-//import jacusa.method.call.statistic.lr.LR_SPEC_Statistic;
 import jacusa.pileup.dispatcher.call.TwoSampleCallWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 import jacusa.util.coordinateprovider.SAMCoordinateProvider;
@@ -219,23 +189,13 @@ public class TwoSampleCallFactory extends AbstractMethodFactory {
 		Map<Character, AbstractFilterFactory<?>> abstractPileupFilters = new HashMap<Character, AbstractFilterFactory<?>>();
 
 		AbstractFilterFactory<?>[] filterFactories = new AbstractFilterFactory[] {
-//				new ReadPositionalBiasFilterFactory(parameters),
-//				new BASQBiasFilterFactory(parameters),
-//				new MAPQBiasFilterFactory(parameters),
-//				new OutlierFilterFactory(parameters.getStatisticParameters()),
-//				new ZeroCountFilterFactory(parameters.getStatisticParameters()),
 				new DistanceFilterFactory(parameters),
 				new INDEL_DistanceFilterFactory(parameters),
 				new ReadPositionDistanceFilterFactory(parameters),
 				new SpliceSiteDistanceFilterFactory(parameters),
 				new HomozygousFilterFactory(parameters),
 				new MaxAlleleCountFilterFactors(parameters),
-				// RC new AssumeAlleleCountFilterFactors(),
 				new HomopolymerFilterFactory(parameters),
-				new RareEventFilterFactory(parameters),
-				new MinDifferenceFilterFactory(parameters),
-				// RC new OutlierFilterFactory(parameters.getStatisticParameters()),
-				// RC new FDRFilterFactory(parameters.getStatisticParameters()),
 		};
 		for (AbstractFilterFactory<?> filterFactory : filterFactories) {
 			abstractPileupFilters.put(filterFactory.getC(), filterFactory);

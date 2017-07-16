@@ -25,15 +25,6 @@ public class Info {
 		sb = map.get(key);
 		sb.append(value);
 	}
-
-	public void set(final String key, final String value) {
-		if (map.containsKey(key)) {
-			map.remove(key);
-		}
-		StringBuilder sb = new StringBuilder();
-		sb.append(value);
-		map.put(key, sb);
-	}
 	
 	public String combine() {
 		if (isEmpty()) {
@@ -58,10 +49,6 @@ public class Info {
 
 	public void addAll(Info info) {
 		map.putAll(info.map);
-	}
-
-	public void clear() {
-		map.clear();
 	}
 
 	public boolean isEmpty() {

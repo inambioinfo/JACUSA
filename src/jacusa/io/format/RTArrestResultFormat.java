@@ -1,7 +1,6 @@
 package jacusa.io.format;
 
 import jacusa.filter.FilterConfig;
-import jacusa.phred2prob.Phred2Prob;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
@@ -21,7 +20,6 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 	
 	protected FilterConfig filterConfig;
 	protected BaseConfig baseConfig;
-	public Phred2Prob phred2Prob;
 	private boolean showReferenceBase;
 
 	public RTArrestResultFormat(
@@ -35,7 +33,6 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 		this.baseConfig = baseConfig;
 		this.filterConfig = filterConfig;
 
-		phred2Prob = Phred2Prob.getInstance(baseConfig.getBaseLength());
 		this.showReferenceBase = showReferenceBase;
 	}
 

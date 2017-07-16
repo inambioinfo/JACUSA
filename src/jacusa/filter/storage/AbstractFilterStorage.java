@@ -66,6 +66,7 @@ public abstract class AbstractFilterStorage<T> {
 		// override if needed
 	}
 
+	/*
 	public void processHardClipping(
 			int windowPosition, 
 			int readPosition, 
@@ -74,6 +75,7 @@ public abstract class AbstractFilterStorage<T> {
 			final SAMRecord record) {
 		System.err.println("Hard Clipping not handled yet!");
 	}
+	*/
 
 	public void processDeletion(
 			int windowPosition, 
@@ -97,6 +99,7 @@ public abstract class AbstractFilterStorage<T> {
 		// override if needed
 	}
 	
+	/*
 	public void processSoftClipping(
 			int windowPosition, 
 			int readPosition, 
@@ -105,7 +108,9 @@ public abstract class AbstractFilterStorage<T> {
 			final SAMRecord record) {
 		// override if needed
 	}
+	*/
 
+	/*
 	public void processPadding(
 			int windowPosition, 
 			int readPosition, 
@@ -116,6 +121,7 @@ public abstract class AbstractFilterStorage<T> {
 			final SAMRecord record) {
 		System.err.println("Padding not handled yet!");
 	}
+	*/
 
 	public void clearContainer() {
 		// override if needed

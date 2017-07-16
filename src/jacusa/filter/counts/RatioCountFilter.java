@@ -1,6 +1,5 @@
 package jacusa.filter.counts;
 
-import jacusa.filter.FilterConfig;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.Counts;
 import jacusa.pileup.ParallelPileup;
@@ -9,8 +8,8 @@ public class RatioCountFilter extends AbstractCountFilter {
 
 	private double minRatio;
 
-	public RatioCountFilter(final double minRatio, final BaseConfig baseConfig, final FilterConfig filterConfig) {
-		super(baseConfig, filterConfig);
+	public RatioCountFilter(final double minRatio, final BaseConfig baseConfig) {
+		super(baseConfig);
 		this.minRatio = minRatio;
 	}
 

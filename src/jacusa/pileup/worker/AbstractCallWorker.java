@@ -29,10 +29,6 @@ public abstract class AbstractCallWorker extends AbstractWorker {
 		this.filterConfig = parameters.getFilterConfig();
 	}
 
-	protected StatisticCalculator getStatisticCalculator() {
-		return statisticCalculator;
-	}
-
 	@Override
 	protected Result processParallelPileup(final ParallelPileup parallelPileup, final Location location, final AbstractWindowIterator parallelPileupIterator) {
 		// result object

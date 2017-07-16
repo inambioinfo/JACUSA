@@ -13,10 +13,10 @@ public class HomopolymerStorageFilter extends AbstractWindowStorageFilter {
 
 	private AbstractCountFilter countFilter;
 	
-	public HomopolymerStorageFilter(final char c, BaseConfig baseConfig, FilterConfig filterConfig) {
+	public HomopolymerStorageFilter(final char c, BaseConfig baseConfig) {
 		super(c);
 
-		countFilter = new MinCountFilter(c, 1, baseConfig, filterConfig);
+		countFilter = new MinCountFilter(c, 1, baseConfig);
 	}
 
 	@Override

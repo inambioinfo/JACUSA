@@ -213,20 +213,7 @@ public class DefaultPileup implements Pileup {
 		public final int integer() {
 			return i;
 		}
-		
-		public static STRAND getEnum(String s) {
-			switch(s.charAt(0)) {
 
-			case BaseConfig.STRAND_FORWARD_CHAR:
-				return STRAND.FORWARD;
-
-			case BaseConfig.STRAND_REVERSE_CHAR:
-				return STRAND.REVERSE;				
-
-			default:
-				return STRAND.UNKNOWN;
-			}
-		}
 	}
 
 	@Override

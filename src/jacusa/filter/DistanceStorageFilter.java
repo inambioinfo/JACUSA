@@ -13,10 +13,10 @@ public class DistanceStorageFilter extends AbstractWindowStorageFilter {
 
 	private AbstractCountFilter countFilter;
 	
-	public DistanceStorageFilter(final char c, final double minRatio, final int minCount, final BaseConfig baseConfig, final FilterConfig filterConfig) {
+	public DistanceStorageFilter(final char c, final double minRatio, final int minCount, final BaseConfig baseConfig) {
 		super(c);
 
-		countFilter = new RatioCountFilter(minRatio, baseConfig, filterConfig);
+		countFilter = new RatioCountFilter(minRatio, baseConfig);
 	}
 
 	@Override

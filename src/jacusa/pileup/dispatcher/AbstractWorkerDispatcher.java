@@ -133,10 +133,6 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 		return workerContainer;
 	}
 
-	public void addComparisons(int comparisons) {
-		this.comparisons += comparisons;
-	}
-
 	public AbstractOutputFormat getFormat() {
 		return format;
 	}

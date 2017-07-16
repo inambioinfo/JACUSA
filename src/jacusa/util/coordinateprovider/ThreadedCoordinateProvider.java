@@ -28,10 +28,6 @@ public class ThreadedCoordinateProvider implements CoordinateProvider {
 		System.arraycopy(initReaders(pathnames2), 0, readers, pathnames1.length, pathnames2.length);
 	}
 
-	public ThreadedCoordinateProvider(final CoordinateProvider cp, String[] pathnames1, String[] pathnames2) {
-		this(cp, pathnames1, pathnames2, 100000);
-	}
-
 	@Override
 	public boolean hasNext() {
 		if (current != null) {
@@ -133,14 +129,6 @@ public class ThreadedCoordinateProvider implements CoordinateProvider {
 		reader.enableIndexCaching(true);
 		reader.enableIndexMemoryMapping(false);
 		return reader;
-	}
-
-	protected void close(SAMFileReader[] readers) {
-		for (SAMFileReader reader : readers) {
-			if (reader != null) {
-				reader.close();
-			}
-		}
 	}
 
 }

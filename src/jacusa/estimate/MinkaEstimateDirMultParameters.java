@@ -2,8 +2,6 @@ package jacusa.estimate;
 
 import java.util.Arrays;
 
-import jacusa.method.call.statistic.dirmult.initalpha.AbstractAlphaInit;
-
 import jacusa.util.Info;
 import jacusa.util.MathUtil;
 
@@ -12,29 +10,11 @@ import org.apache.commons.math3.special.Gamma;
 public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
 
 	private final static double EPSILON = 0.001;
-	private final static int MAX_ITERATIONS = 100;
 	
 	private double[] tmpCoverages;
 	
 	public MinkaEstimateDirMultParameters() {
 		super();
-	}
-
-	public MinkaEstimateDirMultParameters(final AbstractAlphaInit initialAlpha) {
-		this(initialAlpha, MAX_ITERATIONS, EPSILON);
-	}
-
-	public MinkaEstimateDirMultParameters(
-			final int maxIterations, 
-			final double epsilon) {
-		super(maxIterations, epsilon);
-	}
-	
-	public MinkaEstimateDirMultParameters(
-			final AbstractAlphaInit initialAlpha, 
-			final int maxIterations, 
-			final double epsilon) {
-		super(initialAlpha, maxIterations, epsilon);
 	}
 	
 	// estimate alpha and returns loglik

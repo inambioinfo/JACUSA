@@ -35,15 +35,12 @@ import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.HomozygousFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
 import jacusa.filter.factory.MaxAlleleCountFilterFactors;
-import jacusa.filter.factory.MinDifferenceFilterFactory;
-import jacusa.filter.factory.RareEventFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.ReadPositionalBiasFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6ResultFormat;
 import jacusa.io.format.DebugResultFormat;
-// import jacusa.io.format.ConsensusOutputFormat;
 import jacusa.io.format.PileupFormat;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
@@ -148,20 +145,13 @@ public class TwoSamplePileupFactory extends AbstractMethodFactory {
 
 		AbstractFilterFactory<?>[] filterFactories = new AbstractFilterFactory[] {
 				new ReadPositionalBiasFilterFactory(parameters),
-//				new BASQBiasFilterFactory(parameters),
-//				new MAPQBiasFilterFactory(parameters),
-//				new OutlierFilterFactory(parameters.getStatisticParameters()),
-//				new ZeroCountFilterFactory(parameters.getStatisticParameters()),
 				new DistanceFilterFactory(parameters),
 				new INDEL_DistanceFilterFactory(parameters),
 				new ReadPositionDistanceFilterFactory(parameters),
 				new SpliceSiteDistanceFilterFactory(parameters),
 				new HomozygousFilterFactory(parameters),
 				new MaxAlleleCountFilterFactors(parameters),
-				new HomopolymerFilterFactory(parameters),
-				new RareEventFilterFactory(parameters),
-				new MinDifferenceFilterFactory(parameters)
-//				new FDRFilterFactory(parameters.getStatisticParameters()),
+				new HomopolymerFilterFactory(parameters)
 		};
 		for (AbstractFilterFactory<?> filterFactory : filterFactories) {
 			abstractPileupFilters.put(filterFactory.getC(), filterFactory);

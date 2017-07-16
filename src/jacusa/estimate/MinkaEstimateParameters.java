@@ -2,7 +2,6 @@ package jacusa.estimate;
 
 import jacusa.method.call.statistic.dirmult.initalpha.AbstractAlphaInit;
 import jacusa.method.call.statistic.dirmult.initalpha.MeanAlphaInit;
-import jacusa.method.call.statistic.dirmult.initalpha.RonningBayesAlphaInit;
 import jacusa.util.Info;
 
 import org.apache.commons.math3.special.Gamma;
@@ -10,7 +9,6 @@ import org.apache.commons.math3.special.Gamma;
 public abstract class MinkaEstimateParameters {
 
 	protected AbstractAlphaInit alphaInit;
-	protected AbstractAlphaInit fallBackAlphaInit;
 	
 	// options for paremeters estimation
 	protected int maxIterations;
@@ -27,23 +25,6 @@ public abstract class MinkaEstimateParameters {
 
 	public boolean isReset() {
 		return reset;
-	}
-	
-	public MinkaEstimateParameters(
-			final int maxIterations, 
-			final double epsilon) {
-		this.alphaInit = new RonningBayesAlphaInit();
-		this.maxIterations = maxIterations;
-		this.epsilon = epsilon;
-	}
-	
-	public MinkaEstimateParameters(
-			final AbstractAlphaInit initialAlpha, 
-			final int maxIterations, 
-			final double epsilon) {
-		this.alphaInit = initialAlpha;
-		this.maxIterations = maxIterations;
-		this.epsilon = epsilon;
 	}
 
 	public int getIterations() {

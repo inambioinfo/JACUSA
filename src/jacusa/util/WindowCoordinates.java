@@ -60,15 +60,6 @@ public class WindowCoordinates {
 	 * @param genomicPosition
 	 * @return
 	 */
-	public boolean isContainedInGenome(int genomicPosition) {
-		return genomicPosition <= maxGenomicPosition && genomicPosition > 0;
-	}
-
-	/**
-	 * 
-	 * @param genomicPosition
-	 * @return
-	 */
 	public boolean isContainedInWindow(int genomicPosition) {
 		return genomicPosition >= genomicWindowStart && genomicPosition <= getGenomicWindowEnd();
 	}
@@ -106,14 +97,6 @@ public class WindowCoordinates {
 		}
 		
 		return 0;
-	}
-	
-	public boolean isUpstream(final int genomicPosition) {
-		return genomicPosition < genomicWindowStart;
-	}
-	
-	public boolean isDownstream(final int genomicPosition) {
-		return genomicPosition > getGenomicWindowEnd();
 	}
 
 	/**

@@ -39,16 +39,6 @@ public final class Phred2Prob {
 		qual =  qual > MAX_Q ? MAX_Q : qual;
 		return phred2baseP[qual];
 	}
-	
-	public double convert2perEntityP(byte qual) {
-		qual =  qual > MAX_Q ? MAX_Q : qual;
-		return phred2baseErrorP[qual];
-	}
-	
-	public double getErrorP(byte qual) {
-		qual =  qual > MAX_Q ? MAX_Q : qual;
-		return phred2errerP[qual];
-	}
 
 	public double[] colSumCount(final int[] baseIs, final Pileup pileup) {
 		// container for accumulated probabilities 
@@ -138,42 +128,6 @@ public final class Phred2Prob {
 		
 		return p;
 	}
-	
-	public double[] getPileupsMeanProb(int[] baseIs, Pileup[] pileups) {
-		double[] totalMean = new double[BaseConfig.VALID.length];
-		Arrays.fill(totalMean, 0.0);
-
-		for (Pileup pileup : pileups) {
-			double[] pileupMean = colMeanProb(baseIs, pileup);
-			for (int baseI : baseIs) {
-				totalMean[baseI] += pileupMean[baseI];
-			}
-		}
-		double n = pileups.length;
-		for (int baseI : baseIs) {
-			totalMean[baseI] /= (double)n;
-		}
-	
-		return totalMean;
-	}
-	
-	public double[] getPileupsVarianceProb(int[] baseIs, double[] totalMean, Pileup[] pileups) {
-		double[] totalVariance = new double[BaseConfig.VALID.length];
-		Arrays.fill(totalVariance, 0.0);
-
-		for (Pileup pileup : pileups) {
-			double[] pileupMean = colMeanProb(baseIs, pileup);
-			for (int baseI : baseIs) {
-				totalVariance[baseI] +=  Math.pow(totalMean[baseI] - pileupMean[baseI], 2.0); 
-			}
-		}
-		double n = pileups.length;
-		for (int baseI : baseIs) {
-			totalMean[baseI] /= (double)(n - 1);
-		}
-	
-		return totalVariance;
-	}
 
 	public static Phred2Prob getInstance(int baseCount) {
 		if (singles[baseCount] == null) {
@@ -182,34 +136,5 @@ public final class Phred2Prob {
 
 		return singles[baseCount];
 	}
-
-	public double[] meanPileupError(final int[] baseIs, final Pileup[] pileups) {
-		double[] totalError = new double[BaseConfig.VALID.length];
-		Arrays.fill(totalError, 0.0);
-
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			Pileup pileup = pileups[pileupI];
-			double[] pileupError = colSumErrorProb(baseIs, pileup);
-
-			for (int baseI : baseIs) {
-				totalError[baseI] += pileupError[baseI] / (double)pileup.getCoverage();
-			}
-		}
-		return totalError;
-	}
 	
-	public double[] pooledPileupErrorProb(final int[] baseIs, final Pileup[] pileups) {
-		double[] totalError = new double[BaseConfig.VALID.length];
-		Arrays.fill(totalError, 0.0);
-
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			double[] pileupError = colSumErrorProb(baseIs, pileups[pileupI]);
-
-			for (int baseI : baseIs) {
-				totalError[baseI] += pileupError[baseI];
-			}
-		}
-		return totalError;
-	}
-
 }

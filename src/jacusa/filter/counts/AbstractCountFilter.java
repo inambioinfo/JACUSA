@@ -1,6 +1,5 @@
 package jacusa.filter.counts;
 
-import jacusa.filter.FilterConfig;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.Counts;
 import jacusa.pileup.DefaultParallelPileup;
@@ -11,11 +10,9 @@ import jacusa.pileup.Pileup;
 public abstract class AbstractCountFilter {
 
 	protected final BaseConfig baseConfig;
-	protected final FilterConfig filterConfig;
 
-	public AbstractCountFilter(final BaseConfig baseConfig, final FilterConfig filterConfig) {
+	public AbstractCountFilter(final BaseConfig baseConfig) {
 		this.baseConfig 	= baseConfig;
-		this.filterConfig 	= filterConfig;
 	}
 
 	// ORDER RESULTS [0] SHOULD BE THE VARIANTs TO TEST

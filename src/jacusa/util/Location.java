@@ -18,12 +18,6 @@ public class Location {
 		this(location.contig, location.genomicPosition, location.strand);
 	}
 
-	public void set(Location location) {
-		contig = location.contig;
-		genomicPosition = location.genomicPosition;
-		strand = location.strand;
-	}
-
 	public String toString() {
 		return contig + "_" + genomicPosition + "-" + (genomicPosition + 1);
 	}

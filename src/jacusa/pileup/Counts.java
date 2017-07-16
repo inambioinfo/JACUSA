@@ -42,28 +42,6 @@ public class Counts implements Cloneable {
 		System.arraycopy(counts.minQual,0, minQual, 0, counts.minQual.length);
 	}
 
-	/*
-	public void reset() {
-		int baseLength = baseCount != null && baseCount.length > 0 ? baseCount.length : 0;
-		Arrays.fill(baseCount, 0);
-		for (int baseI = 0; baseI < baseLength; ++baseI) {
-			Arrays.fill(base2qual[baseI], 0);
-		}
-		Arrays.fill(minQual, Phred2Prob.MAX_Q);
-	}
-	*/
-
-	public void addBase(final int baseI, final int qualI) {
-		++baseCount[baseI];
-		++base2qual[baseI][qualI];
-		minQual[baseI] = Math.min(qualI, minQual[baseI]);
-	}
-
-	public void removeBase(final int base, final int qualI) {
-		--baseCount[base];
-		--base2qual[base][qualI];
-	}
-
 	public int getCoverage() {
 		int coverage = 0;
 		
@@ -78,16 +56,8 @@ public class Counts implements Cloneable {
 		return base2qual[base][qualI];
 	}
 	
-	public int[] getQualCount(final int base) {
-		return base2qual[base];
-	}
-	
 	public int getBaseCount(final int base) {
 		return baseCount[base];
-	}
-
-	public int setBaseCount(final int base, final int count) {
-		return baseCount[base] = count;
 	}
 	
 	public void addCounts(final Counts counts) {

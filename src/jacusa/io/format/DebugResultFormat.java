@@ -1,6 +1,5 @@
 package jacusa.io.format;
 
-import jacusa.phred2prob.Phred2Prob;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
@@ -15,14 +14,8 @@ public class DebugResultFormat extends AbstractOutputFormat {
 	public static final char SEP 	= '\t';
 	public static final char SEP2 	= ',';
 
-	private BaseConfig baseConfig;
-	public Phred2Prob phred2Prob;
-
 	public DebugResultFormat(final BaseConfig baseConfig) {
 		super(CHAR, "Debug BED like output");
-		this.baseConfig = baseConfig;
-
-		phred2Prob = Phred2Prob.getInstance(this.baseConfig.getBases().length);
 	}
 
 	@Override

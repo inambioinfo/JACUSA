@@ -84,7 +84,7 @@ public class ReadPositionDistanceFilterFactory extends AbstractFilterFactory<Win
 	}
 
 	public DistanceStorageFilter createStorageFilter() {
-		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig(), parameters.getFilterConfig());
+		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig());
 	}
 
 	@Override

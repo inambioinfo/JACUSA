@@ -12,8 +12,6 @@ import net.sf.samtools.SAMFileReader;
 
 public abstract class AbstractOneSampleIterator extends AbstractWindowIterator {
 
-	protected SampleParameters sample;
-
 	protected final AbstractPileupBuilder[] pileupBuilders;	
 
 	public AbstractOneSampleIterator(
@@ -24,7 +22,6 @@ public abstract class AbstractOneSampleIterator extends AbstractWindowIterator {
 			AbstractParameters parameters) {
 		super(annotatedCoordinate, filter, parameters);
 
-		this.sample = sample;
 		pileupBuilders = createPileupBuilders(
 				sample.getPileupBuilderFactory(), 
 				annotatedCoordinate, 

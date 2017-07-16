@@ -65,16 +65,4 @@ public class UnstrandedRTArrestPileupBuilder extends UnstrandedPileupBuilder {
 		Arrays.fill(readEndCount, 0);		
 	}
 
-	public int getReadStartCount(int windowPosition) {
-		return readStartCount[windowPosition];
-	}
-	
-	public int getReadThroughCount(int windowPosition) {
-		return getCoverage(windowPosition, strand) - getReadStartCount(windowPosition) - getReadEndCount(windowPosition);
-	}
-	
-	public int getReadEndCount(int windowPosition) {
-		return readEndCount[windowPosition];
-	}
-
 }

@@ -12,7 +12,7 @@ import jacusa.pileup.builder.UnstrandedRTArrestPileupBuilderFactory;
 public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 	
 	protected static final char SEP = ',';
-	protected final AbstractParameters parameters;
+	private final AbstractParameters parameters;
 	
 	public AbstractPileupBuilderOption(final AbstractParameters parameters) {
 		opt = "P";
@@ -104,7 +104,7 @@ public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 		return sb.toString();
 	}
 
-	public enum LibraryType {
+	protected enum LibraryType {
 		FR_FIRSTSTRAND, 
 		FR_SECONDSTRAND,
 		UNSTRANDED

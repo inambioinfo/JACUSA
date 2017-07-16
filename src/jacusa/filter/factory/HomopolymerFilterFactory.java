@@ -58,7 +58,7 @@ public class HomopolymerFilterFactory extends AbstractFilterFactory<WindowCache>
 
 	@Override
 	public AbstractStorageFilter<WindowCache> createStorageFilter() {
-		return new HomopolymerStorageFilter(getC(), parameters.getBaseConfig(), parameters.getFilterConfig());
+		return new HomopolymerStorageFilter(getC(), parameters.getBaseConfig());
 	}
 
 	public final void setLength(int length) {

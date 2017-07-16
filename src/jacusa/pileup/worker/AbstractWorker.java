@@ -17,7 +17,7 @@ import net.sf.samtools.SAMFileReader;
 
 public abstract class AbstractWorker extends Thread {
 
-	public static enum STATUS {INIT, READY, FINISHED, BUSY, DONE};
+	public static enum STATUS {INIT, READY, FINISHED, BUSY};
 
 	private Coordinate coordinate;
 	protected AbstractWindowIterator parallelPileupIterator;
@@ -119,14 +119,6 @@ public abstract class AbstractWorker extends Thread {
 
 	public int getThreadId() {
 		return threadId;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	protected SAMFileReader[] createBAMFileReaders(String[] pathnames) {
-		return initReaders(pathnames);
 	}
 
 	/**

@@ -14,11 +14,9 @@ import net.sf.samtools.SAMFileReader;
 public abstract class AbstractTwoSampleIterator extends AbstractWindowIterator {
 
 	// sample 1
-	protected SampleParameters sample1;
 	protected final AbstractPileupBuilder[] pileupBuilders1;	
 
 	// sample 2
-	protected SampleParameters sample2;
 	protected final AbstractPileupBuilder[] pileupBuilders2;
 
 	public AbstractTwoSampleIterator(
@@ -29,11 +27,9 @@ public abstract class AbstractTwoSampleIterator extends AbstractWindowIterator {
 			AbstractParameters parameters) {
 		super(coordinate, filter, parameters);
 
-		this.sample1 = sample1;
 		pileupBuilders1 = createPileupBuilders(sample1.getPileupBuilderFactory(), coordinate, readers1, sample1, parameters);
 		final Location loc1 = initLocation(coordinate, sample1.getPileupBuilderFactory().isStranded(), pileupBuilders1);
 
-		this.sample2 = sample2;
 		pileupBuilders2 = createPileupBuilders(sample2.getPileupBuilderFactory(), coordinate, readers2, sample2, parameters);
 		final Location loc2 = initLocation(coordinate, sample2.getPileupBuilderFactory().isStranded(), pileupBuilders2);
 		

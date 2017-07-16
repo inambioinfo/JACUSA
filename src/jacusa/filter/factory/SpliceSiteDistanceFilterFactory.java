@@ -79,7 +79,7 @@ public class SpliceSiteDistanceFilterFactory extends AbstractFilterFactory<Windo
 	}
 
 	public DistanceStorageFilter createStorageFilter() {
-		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig(), parameters.getFilterConfig());
+		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig());
 	}
 
 	@Override

@@ -1,6 +1,5 @@
 package jacusa.filter.counts;
 
-import jacusa.filter.FilterConfig;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.Counts;
 import jacusa.pileup.ParallelPileup;
@@ -11,9 +10,8 @@ public class MinCountFilter extends AbstractCountFilter {
 	
 	public MinCountFilter(final char c, 
 			final double minCount, 
-			final BaseConfig baseConfig, 
-			final FilterConfig filterConfig) {
-		super(baseConfig, filterConfig);
+			final BaseConfig baseConfig) {
+		super(baseConfig);
 		this.minCount = minCount;
 	}
 

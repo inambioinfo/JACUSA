@@ -291,6 +291,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 	 * 
 	 * @param alphas
 	 */
+	/*
 	protected void printAlpha(double[] alphas) {
 		StringBuilder sb = new StringBuilder();
 		for (double alpha : alphas) {
@@ -299,6 +300,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 		}
 		System.out.println(sb.toString());
 	}
+	*/
 
 	@Override
 	public boolean filter(double value) {
@@ -378,44 +380,6 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 	
 	public MinkaEstimateParameters getEstimateAlpha() {
 		return  estimateAlpha;
-	}
-
-	/**
-	 * Pretty prints pileups.
-	 * Debug function.
-	 * 
-	 * @param pileups
-	 * @return
-	 */
-	public String printPileups(Pileup[] pileups) {
-		StringBuilder sb = new StringBuilder();
-		
-		// output sample: Ax,Cx,Gx,Tx
-		for (Pileup pileup : pileups) {
-			sb.append("\t");
-
-			int i = 0;
-			char b = BaseConfig.VALID[i];
-			int baseI = baseConfig.getBaseI((byte)b);
-			int count = 0;
-			if (baseI >= 0) {
-				count = pileup.getCounts().getBaseCount(baseI);
-			}
-			sb.append(count);
-			++i;
-			for (; i < BaseConfig.VALID.length; ++i) {
-				b = BaseConfig.VALID[i];
-				baseI = baseConfig.getBaseI((byte)b);
-				count = 0;
-				if (baseI >= 0) {
-					count = pileup.getCounts().getBaseCount(baseI);
-				}
-				sb.append(",");
-				sb.append(count);
-			}
-		}
-
-		return sb.toString();
 	}
 
 	public void setShowAlpha(boolean showAlpha) {

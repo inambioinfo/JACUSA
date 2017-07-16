@@ -21,8 +21,6 @@ public class BaseConfig {
 	public static final char STRAND_REVERSE_CHAR = '-';
 	public static final char STRAND_UNKNOWN_CHAR = '.';
 
-	public static final char[] ALL = { 'A', 'C', 'G', 'T', 'N' };
-
 	// this bases are the one that are used for computation
 	public static final char[] VALID = { 'A', 'C', 'G', 'T' };
 	public static final char[] VALID_COMPLEMENTED = { 'T', 'G', 'C', 'A' };

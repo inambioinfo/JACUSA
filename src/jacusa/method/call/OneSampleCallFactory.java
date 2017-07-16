@@ -35,13 +35,10 @@ import jacusa.filter.factory.DistanceFilterFactory;
 import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
 import jacusa.filter.factory.MaxAlleleCountFilterFactors;
-import jacusa.filter.factory.MinDifferenceFilterFactory;
-import jacusa.filter.factory.RareEventFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6OneSampleResultFormat;
-//import jacusa.io.format.BED6ResultFormat;
 import jacusa.io.format.VCF_ResultFormat;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.ACCUSA2Statistic;
@@ -161,9 +158,7 @@ public class OneSampleCallFactory extends AbstractMethodFactory {
 				new ReadPositionDistanceFilterFactory(parameters),
 				new SpliceSiteDistanceFilterFactory(parameters),
 				new MaxAlleleCountFilterFactors(parameters),
-				new HomopolymerFilterFactory(parameters),
-				new RareEventFilterFactory(parameters),
-				new MinDifferenceFilterFactory(parameters),
+				new HomopolymerFilterFactory(parameters)
 		};
 		for (AbstractFilterFactory<?> filter : filters) {
 			abstractPileupFilters.put(filter.getC(), filter);

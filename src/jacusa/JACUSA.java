@@ -27,27 +27,17 @@ import jacusa.cli.parameters.hasSample2;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.OneSampleCallFactory;
 import jacusa.method.call.TwoSampleCallFactory;
-//import jacusa.method.call.TwoSampleDebugCallFactory;
 import jacusa.method.pileup.TwoSamplePileupFactory;
 import jacusa.method.rtarrest.RTArrestFactory;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.AbstractWorker;
-import jacusa.util.Coordinate;
 import jacusa.util.SimpleTimer;
 import jacusa.util.coordinateprovider.BedCoordinateProvider;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 import jacusa.util.coordinateprovider.ThreadedCoordinateProvider;
 
-import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.TreeMap;
-
-import net.sf.samtools.SAMFileReader;
-import net.sf.samtools.SAMSequenceRecord;
 
 /**
  * @author Michael Piechotta
@@ -77,11 +67,7 @@ public class JACUSA {
 			new TwoSampleCallFactory(),
 			
 			new TwoSamplePileupFactory(),
-			
-			// TODO
-			// RC new TwoSampleWindowCallFactory(),
 
-			// new TwoSampleDebugCallFactory()
 			new RTArrestFactory()
 		};
 		for (AbstractMethodFactory factory : factories) {
@@ -110,60 +96,6 @@ public class JACUSA {
 	 */
 	public CLI getCLI() {
 		return cli;
-	}
-
-	/**
-	 * 
-	 * @param pathnames1
-	 * @param pathnames2
-	 * @return
-	 * @throws Exception
-	 */
-	public List<SAMSequenceRecord> getSAMSequenceRecords(String[] pathnames1, String[] pathnames2) throws Exception {
-		printLog("Computing overlap between sequence records.");
-		String error = "Sequence Dictionary of BAM files do not match";
-
-		SAMFileReader reader 				= new SAMFileReader(new File(pathnames1[0]));
-		List<SAMSequenceRecord> records 	= reader.getFileHeader().getSequenceDictionary().getSequences();
-		// close readers
-		reader.close();
-
-		List<Coordinate> coordinates = new ArrayList<Coordinate>();
-		Set<String> targetSequenceNames = new HashSet<String>();
-		for (SAMSequenceRecord record : records) {
-			coordinates.add(new Coordinate(record.getSequenceName(), 1, record.getSequenceLength()));
-			targetSequenceNames.add(record.getSequenceName());
-		}
-
-		if (! isValid(targetSequenceNames, pathnames1) || !isValid(targetSequenceNames, pathnames2)) {
-			throw new Exception(error);
-		}
-
-		return records;
-	}
-
-	/**
-	 * 
-	 * @param targetSequenceNames
-	 * @param pathnames
-	 * @return
-	 */
-	private boolean isValid(Set<String> targetSequenceNames, String[] pathnames) {
-		Set<String> sequenceNames = new HashSet<String>();
-		for (String pathname : pathnames) {
-			SAMFileReader reader = new SAMFileReader(new File(pathname));
-			List<SAMSequenceRecord> records	= reader.getFileHeader().getSequenceDictionary().getSequences();
-			for (SAMSequenceRecord record : records) {
-				sequenceNames.add(record.getSequenceName());
-			}	
-			reader.close();
-		}
-		
-		if (! sequenceNames.containsAll(targetSequenceNames) || !targetSequenceNames.containsAll(sequenceNames)) {
-			return false;
-		}
-
-		return true;
 	}
 
 	/**

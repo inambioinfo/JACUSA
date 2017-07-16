@@ -272,17 +272,6 @@ public final class DefaultParallelPileup implements ParallelPileup {
 				parallelPileup.getPooledPileup1().getAlleles().length == 1 && parallelPileup.getPooledPileup2().getAlleles().length == 1;		
 	}
 	
-	public static boolean isHeHe(ParallelPileup parallelPileup) {
-		return parallelPileup.getPooledPileup().getAlleles().length == 2 && 
-				parallelPileup.getPooledPileup1().getAlleles().length == 2 && parallelPileup.getPooledPileup2().getAlleles().length == 2;
-	}
-
-	public static boolean isHoHe(ParallelPileup parallelPileup) {
-		return parallelPileup.getPooledPileup().getAlleles().length == 2 && 
-				(parallelPileup.getPooledPileup1().getAlleles().length == 1 && parallelPileup.getPooledPileup2().getAlleles().length == 2 ||
-						parallelPileup.getPooledPileup1().getAlleles().length == 2 && parallelPileup.getPooledPileup2().getAlleles().length == 1 );
-	}
-	
 	public String prettyPrint() {
 		StringBuilder sb = new StringBuilder();
 
@@ -327,16 +316,6 @@ public final class DefaultParallelPileup implements ParallelPileup {
 			sb.append(d / 100d);
 		}
 		sb.append('\n');
-	}
-
-	public static ParallelPileup Pool(ParallelPileup pp){
-		ParallelPileup ret = new DefaultParallelPileup(1, 1);
-		Pileup[] pileup1 = {pp.getPooledPileup1()};
-		ret.setPileups1(pileup1);
-		Pileup[] pileup2 = {pp.getPooledPileup2()};
-		ret.setPileups2(pileup2);
-		
-		return ret;
 	}
 	
 }
