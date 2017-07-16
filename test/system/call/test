@@ -1,0 +1,95 @@
+BAMS := bams/
+BEDS := bed/
+
+BAM1 := $(BAMS)mutated.bam
+BAM2 := $(BAMS)unmutated.bam
+SEARCH_BED := $(BEDS)search.bed
+THREADS := 4
+
+.SECONDARY :
+
+# test data
+TEST_BAM2 := $(BAMS)unmutated_IV_3461987-3463029.bam
+
+# JACUSA
+JACUSA_BIN := $(HOME)/bin/JACUSA_v1.2.0.jar
+#JACUSA_BIN := /software/ACCUSA/devel/JACUSA_TESTING.jar
+#JACUSA_BIN := /home/michael/bin/JACUSA_BETA.jar
+JACUSA_INPUT = $(word 1,$^) $(word 2,$^)
+JACUSA_OUTPUT = $@
+JACUSA_OPT := -q 0 -m 0 -c 1 -d 4000 -w 10000
+JACUSA_THREADED := -p $(THREADS) 
+
+#-b $(SEARCH_BED)
+
+# methods
+# call 
+JACUSA_CALL_OPT = -T 0.3 -s
+JACUSA_CALL = $(JACUSA_BIN) call-2 -r $(JACUSA_OUTPUT) $(JACUSA_CALL_OPT) $(JACUSA_OPT) $(JACUSA_INPUT)
+JACUSA_PILEUP_OPT =
+JACUSA_PILEUP = $(JACUSA_BIN) pileup -r $(JACUSA_OUTPUT) $(JACUSA_PILEUP_OPT) $(JACUSA_OPT) $(JACUSA_INPUT)
+
+# print infos
+PRINT_MESSAGE = @echo "$(1)"
+PRINT_RESULT = @./print_message.sh "$(1)" $(2)
+
+MESSAGE =
+
+.PHONY : all PILEUP PILEUP_SINGLE PILEUP_THREADED TEST clean
+
+all : PILEUP TEST
+
+PILEUP : PILEUP_SINGLE PILEUP_THREADED
+PILEUP_SINGLE : PILEUP_stranded PILEUP_stranded_AG PILEUP_unstranded 
+PILEUP_THREADED : PILEUP_stranded_threaded PILEUP_stranded_AG_threaded PILEUP_unstranded_threaded
+
+# Pileup Benchmark rules
+PILEUP% : MESSAGE := PILEUP:
+PILEUP_strande% : JACUSA_PILEUP_OPT += -P FR-FIRSTSTRAND,FR-FIRSTSTRAND
+PILEUP_strande% : MESSAGE += stranded
+PILEUP_unstrande% : MESSAGE += unstranded bases(all)
+PILEUP_stranded_A% : JACUSA_PILEUP_OPT += -C AG
+PILEUP_stranded_A% : MESSAGE += bases(AG)
+PILEUP_%threaded : JACUSA_PILEUP_OPT += $(JACUSA_THREADED)
+PILEUP_%threaded : MESSAGE += multithreaded
+
+PILEUP_% : JACUSA/JACUSA_%.apileup
+	$(call PRINT_MESSAGE,$(MESSAGE))
+	$(call PRINT_RESULT,$(MESSAGE), $$(diff $< samtools/samtools_${*:%_threaded=%}.apileup | wc -l | cut -f1))
+
+TEST : TEST_indel TEST_intron TEST_read_start TEST_read_end TEST_homopolymer TEST_rare_reads  TEST_multiple_alleles
+# TEST_rare_level TEST_basq TEST_mapq TEST_homozygous TEST_homozygous_strict
+
+TEST_% : JACUSA/JACUSA_TEST_%.call JACUSA/JACUSA_TEST_FP_%.call
+	$(call PRINT_MESSAGE,TESTING $*)
+	$(call PRINT_RESULT,TESTING $*, $$(test "$$(wc -l $(word 1, $^) | cut -d" " -f1)" -eq 1 -a "$$(wc -l $(word 2, $^) | cut -d" " -f1)" -gt 1 ; echo $$?))
+JACUSA/JACUSA_TEST_%.call : JACUSA_OPT := $(subst -c 1,-c 4,$(JACUSA_OPT))
+JACUSA/JACUSA_TEST_indel.call JACUSA/JACUSA_TEST_intron.call : JACUSA_OPT += -a D 
+JACUSA/JACUSA_TEST_read_start.call JACUSA/JACUSA_TEST_read_end.call : JACUSA_OPT += -a D
+JACUSA/JACUSA_TEST_homopolymer.call : JACUSA_OPT += -a Y:6
+JACUSA/JACUSA_TEST_rare_reads.call : JACUSA_OPT += -a R:1:4:0.5
+JACUSA/JACUSA_TEST_rare_level.call : JACUSA_OPT += -a R:1:10:0.1
+JACUSA/JACUSA_TEST_basq.call : JACUSA_OPT += -a Q
+JACUSA/JACUSA_TEST_mapq.call : JACUSA_OPT += -a M
+JACUSA/JACUSA_TEST_homozygous.call : JACUSA_OPT += -a H:1
+JACUSA/JACUSA_TEST_homozygous_strict.call : JACUSA_OPT += -a H:1:strict
+JACUSA/JACUSA_TEST_homozygous.call : JACUSA_OPT += -a H:1
+JACUSA/JACUSA_TEST_multiple_alleles.call : JACUSA_OPT += -a M:2
+
+# JACUSA
+JACUSA/JACUSA_%.apileup : $(BAM1) $(BAM2)
+	@echo "Running $(JACUSA_PILEUP)"
+	java -jar $(JACUSA_PILEUP)
+JACUSA/JACUSA_TEST_%.call : $(BAMS)mutated_%.bam $(TEST_BAM2)
+	@echo "Running $(JACUSA_CALL)"
+	java -jar $(JACUSA_CALL)
+JACUSA/JACUSA_TEST_FP_%.call : $(BAMS)mutated_%.bam $(TEST_BAM2)
+	@echo "Running $(JACUSA_CALL)"
+	java -jar $(JACUSA_CALL)
+JACUSA/JACUSA_%.call  : $(BAM1) $(BAM2)
+	@echo "Running $(JACUSA_CALL)"
+	java -jar $(JACUSA_CALL)
+
+# clean up
+clean :
+	@rm -f JACUSA/*

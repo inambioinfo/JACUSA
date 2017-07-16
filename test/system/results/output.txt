@@ -1,0 +1,4 @@
+Running:	../../build/JACUSA_v2.x.jar with 4 max threads
+Testing:	rt-arrest
+Date:		So 16. Jul 23:57:07 CEST 2017
+================================================================================
