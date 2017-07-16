@@ -2,7 +2,7 @@ package jacusa.pileup.iterator.variant;
 
 import jacusa.pileup.ParallelPileup;
 
-public class ReverseTranscriptionArrestVariantParallelPileup implements Variant {
+public class RTArrestVariantParallelPileup implements Variant {
 	
 	@Override
 	public boolean isValid(ParallelPileup parallelPileup) {

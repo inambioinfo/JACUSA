@@ -1,5 +1,6 @@
 package jacusa.cli.options.pileupbuilder;
 
+import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 
 import org.apache.commons.cli.CommandLine;
@@ -8,12 +9,12 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class OneSamplePileupBuilderOption extends AbstractPileupBuilderOption {
 
-	private SampleParameters parameters;
+	private SampleParameters sample;
 	
-	public OneSamplePileupBuilderOption(SampleParameters parameters) {
-		super();
+	public OneSamplePileupBuilderOption(AbstractParameters parameters, SampleParameters sample) {
+		super(parameters);
 		
-		this.parameters = parameters;
+		this.sample = sample;
 	}
 	
 	@SuppressWarnings("static-access")
@@ -34,7 +35,7 @@ public class OneSamplePileupBuilderOption extends AbstractPileupBuilderOption {
 	    	if (l == null) {
 	    		throw new IllegalArgumentException("Possible values for " + longOpt.toUpperCase() + ":\n" + getPossibleValues());
 	    	}
-	    	parameters.setPileupBuilderFactory(buildPileupBuilderFactory(l));
+	    	sample.setPileupBuilderFactory(buildPileupBuilderFactory(l));
 	    }
 	}
 

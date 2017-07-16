@@ -7,6 +7,7 @@ import jacusa.cli.options.FormatOption;
 import jacusa.cli.options.HelpOption;
 import jacusa.cli.options.MaxDepthOption;
 import jacusa.cli.options.MaxThreadOption;
+import jacusa.cli.options.MinBASQOption;
 import jacusa.cli.options.MinCoverageOption;
 import jacusa.cli.options.MinMAPQOption;
 import jacusa.cli.options.ResultFileOption;
@@ -17,26 +18,26 @@ import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
 import jacusa.cli.options.VersionOption;
 import jacusa.cli.options.WindowSizeOption;
-import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
+// import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
 import jacusa.cli.options.sample.filter.FilterFlagOption;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
+import jacusa.cli.parameters.RTArrestParameters;
 import jacusa.cli.parameters.SampleParameters;
 
 import jacusa.filter.factory.AbstractFilterFactory;
 
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6ResultFormat;
-import jacusa.io.format.ReadCoverageResultFormat;
+import jacusa.io.format.RTArrestResultFormat;
 
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.method.rtarrest.statistic.BetaMultinomial;
 
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.dispatcher.rtarrest.ReverseTranscriptionArrestWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
 
 import jacusa.pileup.worker.AbstractWorker;
 
@@ -53,16 +54,17 @@ import net.sf.samtools.SAMSequenceRecord;
 
 import org.apache.commons.cli.ParseException;
 
-public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
+public class RTArrestFactory extends AbstractMethodFactory {
 
-	private ReverseTranscriptionArrestParameters parameters;
+	public final static String NAME = "rt-arrest";
+	private RTArrestParameters parameters;
 
-	private static ReverseTranscriptionArrestWorkerDispatcher instance;
+	private static RTArrestWorkerDispatcher instance;
 
-	public ReverseTranscriptionArrestFactory() {
-		super("rt-arrest", "Reverse Transcription Arrest - two samples");
+	public RTArrestFactory() {
+		super(NAME, "Reverse Transcription Arrest - two samples");
 		
-		parameters = new ReverseTranscriptionArrestParameters();
+		parameters = new RTArrestParameters();
 	}
 	
 	public void initACOptions() {
@@ -80,13 +82,14 @@ public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 		
 		// global settings
 		acOptions.add(new MinMAPQOption(samples));
-		// TODO do we need this?
-		// acOptions.add(new MinBASQOption(samples));
+
+		acOptions.add(new MinBASQOption(samples));
 		acOptions.add(new MinCoverageOption(samples));
 		acOptions.add(new MaxDepthOption(parameters));
 		acOptions.add(new FilterFlagOption(samples));
 		
-		acOptions.add(new TwoSamplePileupBuilderOption(sample1, sample2));
+		// TODO currently only unstranded supported
+		// acOptions.add(new TwoSamplePileupBuilderOption(sample1, sample2));
 
 		acOptions.add(new BedCoordinatesOption(parameters));
 		acOptions.add(new ResultFileOption(parameters));
@@ -149,7 +152,7 @@ public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 
 		AbstractOutputFormat resultFormat = null;
 
-		resultFormat = new ReadCoverageResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig(), parameters.showReferenceBase());
+		resultFormat = new RTArrestResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig(), parameters.showReferenceBase());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		return resultFormats;
@@ -187,7 +190,7 @@ public class ReverseTranscriptionArrestFactory extends AbstractMethodFactory {
 			String[] pathnames1, String[] pathnames2,
 			CoordinateProvider coordinateProvider) throws IOException {
 		if(instance == null) {
-			instance = new ReverseTranscriptionArrestWorkerDispatcher(pathnames1, pathnames2, coordinateProvider, parameters);
+			instance = new RTArrestWorkerDispatcher(pathnames1, pathnames2, coordinateProvider, parameters);
 		}
 		return instance;
 	}

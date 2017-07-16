@@ -7,7 +7,7 @@ import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.Result;
 
-public class ReadCoverageResultFormat extends AbstractOutputFormat {
+public class RTArrestResultFormat extends AbstractOutputFormat {
 
 	public static final char CHAR = 'B';
 	
@@ -16,12 +16,15 @@ public class ReadCoverageResultFormat extends AbstractOutputFormat {
 	public static final char SEP 	= '\t';
 	public static final char SEP2 	= ',';
 	
+	// read start trough end	
+	private static final String RTinfo = "read_s_t_e";
+	
 	protected FilterConfig filterConfig;
 	protected BaseConfig baseConfig;
 	public Phred2Prob phred2Prob;
 	private boolean showReferenceBase;
 
-	public ReadCoverageResultFormat(
+	public RTArrestResultFormat(
 			final char c,
 			final String desc,
 			final BaseConfig baseConfig, 
@@ -36,7 +39,7 @@ public class ReadCoverageResultFormat extends AbstractOutputFormat {
 		this.showReferenceBase = showReferenceBase;
 	}
 
-	public ReadCoverageResultFormat(
+	public RTArrestResultFormat(
 			final BaseConfig baseConfig, 
 			final FilterConfig filterConfig,
 			final boolean showReferenceBase) {
@@ -70,13 +73,13 @@ public class ReadCoverageResultFormat extends AbstractOutputFormat {
 		// (1) first sample  infos
 		addSampleHeaderBases(sb, '1', pathnames1.length);
 		sb.append(getSEP());
-		addSampleHeaderReadCoverage(sb, '1', pathnames1.length);
+		addSampleHeaderRTArrest(sb, '1', pathnames1.length);
 		sb.append(getSEP());
 		
 		// (2) second sample  infos
 		addSampleHeaderBases(sb, '2', pathnames2.length);
 		sb.append(getSEP());
-		addSampleHeaderReadCoverage(sb, '2', pathnames2.length);
+		addSampleHeaderRTArrest(sb, '2', pathnames2.length);
 		sb.append(getSEP());
 
 		sb.append(getSEP());
@@ -112,8 +115,8 @@ public class ReadCoverageResultFormat extends AbstractOutputFormat {
 		}
 	}
 
-	protected void addSampleHeaderReadCoverage(StringBuilder sb, char sample, int replicates) {
-		sb.append("read_coverage");
+	protected void addSampleHeaderRTArrest(StringBuilder sb, char sample, int replicates) {
+		sb.append(RTinfo);
 		sb.append(sample);
 		sb.append(1);
 		if (replicates == 1) {
@@ -122,7 +125,7 @@ public class ReadCoverageResultFormat extends AbstractOutputFormat {
 		
 		for (int i = 2; i <= replicates; ++i) {
 			sb.append(SEP);
-			sb.append("read_coverage");
+			sb.append(RTinfo);
 			sb.append(sample);
 			sb.append(i);
 		}

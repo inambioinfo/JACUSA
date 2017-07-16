@@ -29,7 +29,7 @@ public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 	public FilterContainer getFilterContainer(int windowPosition, STRAND strand) {
 		return filterContainer;
 	}
-
+	
 	@Override
 	public Pileup getPileup(int windowPosition, STRAND strand) {
 		Pileup pileup = new DefaultPileup(
@@ -40,11 +40,6 @@ public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 		// set base and qual info from cache
 		pileup.setCounts(windowCache.getCounts(windowPosition));
 
-		// TODO
-		pileup.setReadStartCount(readStartCount[windowPosition]);
-		pileup.setReadInnerCount(readInnerCount[windowPosition]);
-		pileup.setReadEndCount(readEndCount[windowPosition]);
-		
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {
 			pileup.setRefBase((char)refBaseByte);
@@ -56,12 +51,6 @@ public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 		}
 
 		return pileup;
-	}
-
-	@Override
-	public void clearCache() {
-		windowCache.clear();
-		filterContainer.clear();
 	}
 
 	@Override

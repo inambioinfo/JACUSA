@@ -92,7 +92,7 @@ public class OneSampleCallFactory extends AbstractMethodFactory {
 		acOptions.add(new InvertStrandOption(sampleI, sample1));
 		
 		
-		acOptions.add(new OneSamplePileupBuilderOption(sample1));
+		acOptions.add(new OneSamplePileupBuilderOption(parameters, sample1));
 		
 		acOptions.add(new BedCoordinatesOption(parameters));
 		acOptions.add(new ResultFileOption(parameters));

@@ -11,9 +11,9 @@ import jacusa.util.Coordinate;
 import jacusa.util.Location;
 import net.sf.samtools.SAMFileReader;
 
-public class ReverseTranscriptionArrestSampleIterator extends AbstractTwoSampleIterator {
+public class RTArrestSampleIterator extends AbstractTwoSampleIterator {
 
-	public ReverseTranscriptionArrestSampleIterator(
+	public RTArrestSampleIterator(
 			final Coordinate annotatedCoordinate,
 			final Variant filter,
 			final SAMFileReader[] readers1,	final SAMFileReader[] readers2,
@@ -53,7 +53,6 @@ public class ReverseTranscriptionArrestSampleIterator extends AbstractTwoSampleI
 				}
 				final Location location = locationAdvancer.getLocation();
 				
-				// TODO
 				parallelPileup.setContig(coordinate.getSequenceName());
 				parallelPileup.setStart(location.genomicPosition);
 				parallelPileup.setEnd(parallelPileup.getStart());

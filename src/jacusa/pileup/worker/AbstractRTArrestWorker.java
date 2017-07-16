@@ -8,17 +8,17 @@ import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Result;
-import jacusa.pileup.dispatcher.rtarrest.AbstractReverseTranscriptionArrestWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.AbstractRTArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
 import jacusa.util.Location;
 
-public abstract class AbstractReverseTranscriptionArrestWorker extends AbstractWorker {
+public abstract class AbstractRTArrestWorker extends AbstractWorker {
 
 	private final StatisticCalculator statisticCalculator;
 	private final FilterConfig filterConfig;
 	
-	public AbstractReverseTranscriptionArrestWorker(
-			final AbstractReverseTranscriptionArrestWorkerDispatcher<? extends AbstractReverseTranscriptionArrestWorker> workerDispatcher,
+	public AbstractRTArrestWorker(
+			final AbstractRTArrestWorkerDispatcher<? extends AbstractRTArrestWorker> workerDispatcher,
 			final int threadId,
 			final StatisticParameters statisticParameters, 
 			final AbstractParameters parameters) {

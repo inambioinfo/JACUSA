@@ -46,9 +46,8 @@ public abstract class AbstractPileupBuilder {
 
 	protected int distance;
 	
-	protected int[] readStartCount;
-	protected int[] readInnerCount;
-	protected int[] readEndCount;
+	// set in processRecord
+	protected int windowPosition;
 	
 	public AbstractPileupBuilder (
 			final Coordinate coordinate,
@@ -69,10 +68,6 @@ public abstract class AbstractPileupBuilder {
 				coordinate.getStart(), 
 				parameters.getWindowSize(), 
 				coordinate.getEnd());
-
-		readStartCount			= new int[windowCoordinates.getWindowSize()];
-		readInnerCount			= new int[windowCoordinates.getWindowSize()];
-		readEndCount			= new int[windowCoordinates.getWindowSize()];
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
@@ -247,9 +242,8 @@ public abstract class AbstractPileupBuilder {
 
 	// Reset all caches in windows
 	public void clearCache() {
-		Arrays.fill(readStartCount, 0);
-		Arrays.fill(readInnerCount, 0);
-		Arrays.fill(readEndCount, 0);
+		windowCache.clear();
+		filterContainer.clear();
 	}
 	
 	protected abstract void addHighQualityBaseCall(int windowPosition, int base, int qual, STRAND strand);
@@ -260,16 +254,6 @@ public abstract class AbstractPileupBuilder {
 	public abstract int getCoverage(int windowPosition, STRAND strand);
 	public abstract Pileup getPileup(int windowPosition, STRAND strand);
 	public abstract WindowCache getWindowCache(STRAND strand);
-
-	public int getReadStartCount(int windowPosition) {
-		return readStartCount[windowPosition];
-	}
-	public int getReadInnerCount(int windowPosition) {
-		return readInnerCount[windowPosition];
-	}
-	public int getReadEndCount(int windowPosition) {
-		return readEndCount[windowPosition];
-	}
 
 	public abstract FilterContainer getFilterContainer(int windowPosition, STRAND strand);
 
@@ -374,17 +358,8 @@ public abstract class AbstractPileupBuilder {
 		// init	
 		int readPosition 	= 0;
 		int genomicPosition = record.getAlignmentStart();
-		int windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
+		windowPosition  	= windowCoordinates.convert2WindowPosition(genomicPosition);
 		int alignmentBlockI = 0;
-
-		// TODO read coverage / use strand
-		if (windowPosition >= 0) {
-			readStartCount[windowPosition] += 1;
-		}
-		int windowPositionReadEnd = windowCoordinates.convert2WindowPosition(record.getAlignmentEnd());
-		if (windowPositionReadEnd >= 0) {
-			readEndCount[windowPositionReadEnd] += 1;
-		}
 
 		int MDPosition = 0;
 		byte[] referenceBases = null;
@@ -582,11 +557,6 @@ public abstract class AbstractPileupBuilder {
 						if (referenceBases.length > 0) {
 							windowCache.addReferenceBase(windowPosition, referenceBases[MDPosition + offset]);
 						}
-					}
-					
-					// TODO TEST ME
-					if (readPosition + offset > 0 && readPosition + offset + 1 != record.getReadLength()) {
-						readInnerCount[windowPosition] += 1;
 					}
 				}
 				break;

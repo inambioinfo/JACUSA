@@ -1,5 +1,6 @@
 package jacusa.cli.options.pileupbuilder;
 
+import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 
 import org.apache.commons.cli.CommandLine;
@@ -11,7 +12,8 @@ public class TwoSamplePileupBuilderOption extends AbstractPileupBuilderOption {
 	private SampleParameters parameters1;
 	private SampleParameters parameters2;
 	
-	public TwoSamplePileupBuilderOption(SampleParameters parametersA, SampleParameters parametersB) {
+	public TwoSamplePileupBuilderOption(AbstractParameters parameters, SampleParameters parametersA, SampleParameters parametersB) {
+		super(parameters);
 		this.parameters1 = parametersA;
 		this.parameters2 = parametersB;
 	}

@@ -49,6 +49,9 @@ public class BetaMultinomial implements StatisticCalculator {
 	protected DecimalFormat decimalFormat;
 	
 	public BetaMultinomial(final StatisticParameters parameters) {
+		showAlpha			= false;
+		calcPValue			= true;
+		
 		this.estimateAlpha	= new MinkaEstimateDirMultParameters();
 		fallbackAlphaInit	= new MinAlphaInit();
 		this.parameters 	= parameters;

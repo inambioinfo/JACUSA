@@ -91,9 +91,8 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 		pileup.setCounts(windowCache.getCounts(windowPosition));
 		
 		// TODO read coverage
-		pileup.setReadStartCount(readStartCount[windowPosition]);
-		pileup.setReadInnerCount(readInnerCount[windowPosition]);
-		pileup.setReadEndCount(readEndCount[windowPosition]);
+		// pileup.setReadStartCount(readStartCount[windowPosition]);
+		// pileup.setReadEndCount(readEndCount[windowPosition]);
 
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {

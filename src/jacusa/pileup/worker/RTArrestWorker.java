@@ -1,28 +1,28 @@
 package jacusa.pileup.worker;
 
-import jacusa.cli.parameters.ReverseTranscriptionArrestParameters;
+import jacusa.cli.parameters.RTArrestParameters;
 
 import jacusa.cli.parameters.SampleParameters;
-import jacusa.pileup.dispatcher.rtarrest.ReverseTranscriptionArrestWorkerDispatcher;
+import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
-import jacusa.pileup.iterator.ReverseTranscriptionArrestSampleIterator;
-import jacusa.pileup.iterator.variant.ReverseTranscriptionArrestVariantParallelPileup;
+import jacusa.pileup.iterator.RTArrestSampleIterator;
+import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import net.sf.samtools.SAMFileReader;
 
-public class ReverseTranscriptionArrestWorker extends AbstractReverseTranscriptionArrestWorker {
+public class RTArrestWorker extends AbstractRTArrestWorker {
 
 	private SAMFileReader[] readers1;
 	private SAMFileReader[] readers2;
-	private ReverseTranscriptionArrestParameters parameters;
+	private RTArrestParameters parameters;
 	
 	private final Variant variant;
 	
-	public ReverseTranscriptionArrestWorker(
-			final ReverseTranscriptionArrestWorkerDispatcher threadDispatcher,
+	public RTArrestWorker(
+			final RTArrestWorkerDispatcher threadDispatcher,
 			final int threadId,
-			final ReverseTranscriptionArrestParameters parameters) {
+			final RTArrestParameters parameters) {
 		super(
 				threadDispatcher, 
 				threadId,
@@ -34,7 +34,7 @@ public class ReverseTranscriptionArrestWorker extends AbstractReverseTranscripti
 		readers1 = initReaders(parameters.getSample1().getPathnames());
 		readers2 = initReaders(parameters.getSample2().getPathnames());
 
-		variant = new ReverseTranscriptionArrestVariantParallelPileup();
+		variant = new RTArrestVariantParallelPileup();
 	}
 
 	@Override
@@ -42,7 +42,7 @@ public class ReverseTranscriptionArrestWorker extends AbstractReverseTranscripti
 		SampleParameters sample1 = parameters.getSample1();
 		SampleParameters sample2 = parameters.getSample2();
 		
-		return new ReverseTranscriptionArrestSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
+		return new RTArrestSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
 	}
 
 	@Override

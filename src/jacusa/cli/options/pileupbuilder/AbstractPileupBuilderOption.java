@@ -1,23 +1,31 @@
 package jacusa.cli.options.pileupbuilder;
 
 import jacusa.cli.options.AbstractACOption;
+import jacusa.cli.parameters.AbstractParameters;
+import jacusa.method.rtarrest.RTArrestFactory;
 import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
 import jacusa.pileup.builder.PileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
+import jacusa.pileup.builder.UnstrandedRTArrestPileupBuilderFactory;
 
 public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 	
 	protected static final char SEP = ',';
-
-	public AbstractPileupBuilderOption() {
+	protected final AbstractParameters parameters;
+	
+	public AbstractPileupBuilderOption(final AbstractParameters parameters) {
 		opt = "P";
 		longOpt = "build-pileup";
+		this.parameters = parameters;
 	}
 
 	protected PileupBuilderFactory buildPileupBuilderFactory(LibraryType libraryType) {
 		switch(libraryType) {
 		case UNSTRANDED:
+			if (parameters.getMethodFactory().getName().equals(RTArrestFactory.NAME)) {
+				return new UnstrandedRTArrestPileupBuilderFactory();				
+			}
 			return new UnstrandedPileupBuilderFactory();
 		
 		case FR_FIRSTSTRAND:
