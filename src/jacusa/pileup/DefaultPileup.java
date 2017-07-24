@@ -21,7 +21,6 @@ public class DefaultPileup implements Pileup {
 	private Counts counts;
 
 	private int readStartCount;
-	private int readInnerCount;
 	private int readEndCount;
 
 	public DefaultPileup(final int baseLength) {
@@ -31,7 +30,6 @@ public class DefaultPileup implements Pileup {
 		refBase		= 'N';
 
 		readStartCount = 0;
-		readInnerCount = 0;
 		readEndCount = 0;
 
 		counts 		= new Counts(baseLength);
@@ -51,7 +49,6 @@ public class DefaultPileup implements Pileup {
 		refBase 	= pileup.getRefBase();
 
 		readStartCount = pileup.getReadStartCount();
-		readInnerCount = pileup.getReadInnerCount();
 		readEndCount = pileup.getReadEndCount();
 		
 		counts		= (Counts)pileup.getCounts().clone();
@@ -71,7 +68,6 @@ public class DefaultPileup implements Pileup {
 		counts.addCounts(pileup.getCounts());
 
 		this.readStartCount += pileup.getReadStartCount();
-		this.readInnerCount += pileup.getReadInnerCount();
 		this.readEndCount += pileup.getReadEndCount();
 	}
 
@@ -80,7 +76,6 @@ public class DefaultPileup implements Pileup {
 		counts.substract(pileup.getCounts());
 
 		this.readStartCount -= pileup.getReadStartCount();
-		this.readInnerCount -= pileup.getReadInnerCount();
 		this.readEndCount -= pileup.getReadEndCount();
 	}
 
@@ -223,7 +218,7 @@ public class DefaultPileup implements Pileup {
 
 	@Override
 	public int getReadInnerCount() {
-		return readInnerCount;
+		return getCoverage() - getReadEndCount() - getReadStartCount();
 	}
 
 	@Override
@@ -234,11 +229,6 @@ public class DefaultPileup implements Pileup {
 	@Override
 	public void setReadStartCount(int readStartCount) {
 		this.readStartCount = readStartCount;		
-	}
-
-	@Override
-	public void setReadInnerCount(int readInnerCount) {
-		this.readInnerCount = readInnerCount;
 	}
 
 	@Override

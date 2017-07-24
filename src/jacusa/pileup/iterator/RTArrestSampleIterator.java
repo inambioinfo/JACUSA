@@ -40,16 +40,11 @@ public class RTArrestSampleIterator extends AbstractTwoSampleIterator {
 				break;
 
 			case 0:
-				if (! locationAdvancer.isValidStrand()) {
-					// TODO take care of strand information
-					// location1.strand = STRAND.REVERSE;
-					// location2.strand = STRAND.REVERSE;
-					if (! isCovered(location1, pileupBuilders1) || ! isCovered(location2, pileupBuilders2)) {
-						// TODO try to merge with TwoSampleIterator
-						// move by one position
-						locationAdvancer.advanceLocation();
-						break;
-					}
+				if (! isCovered(location1, pileupBuilders1) || ! isCovered(location2, pileupBuilders2)) {
+					// TODO try to merge with TwoSampleIterator
+					// move by one position
+					locationAdvancer.advanceLocation();
+					break;
 				}
 				final Location location = locationAdvancer.getLocation();
 				

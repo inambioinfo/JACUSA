@@ -122,7 +122,7 @@ public class RTArrestFactory extends AbstractMethodFactory {
 		// TODO do we need this?  
 		acOptions.add(new ShowReferenceOption(parameters));
 		acOptions.add(new HelpOption(CLI.getSingleton()));
-		acOptions.add(new VersionOption(CLI.getSingleton()));
+		acOptions.add(new VersionOption());
 	}
 
 	public Map<String, StatisticCalculator> getStatistics() {

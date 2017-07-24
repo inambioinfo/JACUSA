@@ -44,7 +44,7 @@ public class TwoSampleIterator extends AbstractTwoSampleIterator {
 				break;
 
 			case 0:
-				if (! locationAdvancer.isValidStrand()) {
+				if (! locationAdvancer.checkStrand()) {
 					location1.strand = STRAND.REVERSE;
 					location2.strand = STRAND.REVERSE;
 					if (! isCovered(location1, pileupBuilders1) || ! isCovered(location2, pileupBuilders2)) {

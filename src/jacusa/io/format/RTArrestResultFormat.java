@@ -15,8 +15,8 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 	public static final char SEP 	= '\t';
 	public static final char SEP2 	= ',';
 	
-	// read start trough end	
-	private static final String RTinfo = "read_s_t_e";
+	// read start, trough, and end	
+	private static final String RTinfo = "reads";
 	
 	protected FilterConfig filterConfig;
 	protected BaseConfig baseConfig;
@@ -61,22 +61,18 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 		sb.append(getSEP());
 
 		// stat	
-		sb.append("stat");
+		sb.append("pvalue");
 		sb.append(getSEP());
 		
 		sb.append("strand");
 		sb.append(getSEP());
 		
 		// (1) first sample  infos
-		addSampleHeaderBases(sb, '1', pathnames1.length);
-		sb.append(getSEP());
-		addSampleHeaderRTArrest(sb, '1', pathnames1.length);
+		addSampleHeader(sb, '1', pathnames1.length);
 		sb.append(getSEP());
 		
 		// (2) second sample  infos
-		addSampleHeaderBases(sb, '2', pathnames2.length);
-		sb.append(getSEP());
-		addSampleHeaderRTArrest(sb, '2', pathnames2.length);
+		addSampleHeader(sb, '2', pathnames2.length);
 		sb.append(getSEP());
 
 		sb.append(getSEP());
@@ -96,23 +92,13 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 		return sb.toString();
 	}
 	
-	protected void addSampleHeaderBases(StringBuilder sb, char sample, int replicates) {
+	protected void addSampleHeader(StringBuilder sb, char sample, int replicates) {
 		sb.append("bases");
 		sb.append(sample);
 		sb.append(1);
-		if (replicates == 1) {
-			return;
-		}
 		
-		for (int i = 2; i <= replicates; ++i) {
-			sb.append(SEP);
-			sb.append("bases");
-			sb.append(sample);
-			sb.append(i);
-		}
-	}
-
-	protected void addSampleHeaderRTArrest(StringBuilder sb, char sample, int replicates) {
+		sb.append(SEP);
+		
 		sb.append(RTinfo);
 		sb.append(sample);
 		sb.append(1);
@@ -122,6 +108,13 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 		
 		for (int i = 2; i <= replicates; ++i) {
 			sb.append(SEP);
+			
+			sb.append("bases");
+			sb.append(sample);
+			sb.append(i);
+			
+			sb.append(SEP);
+			
 			sb.append(RTinfo);
 			sb.append(sample);
 			sb.append(i);
@@ -203,8 +196,6 @@ public class RTArrestResultFormat extends AbstractOutputFormat {
 				sb.append(SEP2);
 				sb.append(count);
 			}
-		}
-		for (Pileup pileup : pileups) {
 			sb.append(SEP);
 			sb.append(pileup.getReadStartCount());
 			sb.append(SEP2);

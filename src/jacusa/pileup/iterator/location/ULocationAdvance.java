@@ -8,6 +8,10 @@ public class ULocationAdvance extends AbstractLocationAdvancer {
 		super(loc, null);
 	}
 
+	public boolean checkStrand() {
+		return true;
+	}
+	
 	@Override
 	public void advance() {
 		++loc1.genomicPosition;

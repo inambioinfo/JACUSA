@@ -9,6 +9,10 @@ public class USLocationAdvance extends AbstractLocationAdvancer {
 		super(loc1, loc2);
 	}
 
+	public boolean checkStrand() {
+		return true;
+	}
+	
 	@Override
 	public void advance() {
 		if (loc2.strand == STRAND.FORWARD) {

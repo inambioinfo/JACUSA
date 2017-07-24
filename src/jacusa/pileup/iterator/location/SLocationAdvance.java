@@ -21,7 +21,7 @@ public class SLocationAdvance extends AbstractLocationAdvancer {
 		}
 	}
 
-	public boolean isValidStrand() {
+	public boolean checkStrand() {
 		return true;
 	}
 	

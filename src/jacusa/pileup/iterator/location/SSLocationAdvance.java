@@ -24,7 +24,7 @@ public class SSLocationAdvance extends AbstractLocationAdvancer {
 		}
 	}
 
-	public boolean isValidStrand() {
+	public boolean checkStrand() {
 		return loc1.strand == loc2.strand;
 	}
 	

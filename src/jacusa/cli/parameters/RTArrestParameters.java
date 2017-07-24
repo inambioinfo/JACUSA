@@ -1,6 +1,7 @@
 package jacusa.cli.parameters;
 
 import jacusa.io.format.AbstractOutputFormat;
+import jacusa.pileup.builder.UnstrandedRTArrestPileupBuilderFactory;
 
 public class RTArrestParameters extends AbstractParameters implements hasSample2, hasStatisticCalculator {
 
@@ -10,7 +11,9 @@ public class RTArrestParameters extends AbstractParameters implements hasSample2
 	public RTArrestParameters() {
 		super();
 
+		getSample1().setPileupBuilderFactory(new UnstrandedRTArrestPileupBuilderFactory());
 		sample2				= new SampleParameters();
+		sample2.setPileupBuilderFactory(new UnstrandedRTArrestPileupBuilderFactory());
 		statisticParameters = new StatisticParameters();
 	}
 

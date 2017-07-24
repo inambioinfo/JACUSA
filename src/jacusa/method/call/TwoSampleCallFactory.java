@@ -124,7 +124,7 @@ public class TwoSampleCallFactory extends AbstractMethodFactory {
 		// acOptions.add(new DebugOption(parameters));
 		acOptions.add(new ShowReferenceOption(parameters));
 		acOptions.add(new HelpOption(CLI.getSingleton()));
-		acOptions.add(new VersionOption(CLI.getSingleton()));
+		acOptions.add(new VersionOption());
 	}
 
 	@Override

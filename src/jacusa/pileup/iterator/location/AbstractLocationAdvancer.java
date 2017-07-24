@@ -71,10 +71,7 @@ public abstract class AbstractLocationAdvancer {
 
 	public abstract Location getLocation();
 
-	// TODO ???
-	public boolean isValidStrand() {
-		return true;
-	}
+	public abstract boolean checkStrand();
 	
 	protected void strandedAdvanceLocation(Location location) {
 		switch (location.strand) {

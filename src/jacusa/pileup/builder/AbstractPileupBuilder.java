@@ -46,9 +46,6 @@ public abstract class AbstractPileupBuilder {
 
 	protected int distance;
 	
-	// set in processRecord
-	protected int windowPosition;
-	
 	public AbstractPileupBuilder (
 			final Coordinate coordinate,
 			final STRAND strand, 
@@ -358,7 +355,7 @@ public abstract class AbstractPileupBuilder {
 		// init	
 		int readPosition 	= 0;
 		int genomicPosition = record.getAlignmentStart();
-		windowPosition  	= windowCoordinates.convert2WindowPosition(genomicPosition);
+		int windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
 		int alignmentBlockI = 0;
 
 		int MDPosition = 0;

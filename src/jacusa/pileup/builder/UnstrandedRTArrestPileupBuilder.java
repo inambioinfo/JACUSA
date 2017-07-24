@@ -46,6 +46,9 @@ public class UnstrandedRTArrestPileupBuilder extends UnstrandedPileupBuilder {
 	protected void processRecord(SAMRecord record) {
 		super.processRecord(record);
 		
+		int genomicPosition = record.getAlignmentStart();
+		int windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
+		
 		// TODO read coverage / use strand
 		// windowPosition set in super.procesRecord
 		if (windowPosition >= 0) {

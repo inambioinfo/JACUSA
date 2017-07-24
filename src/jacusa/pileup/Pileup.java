@@ -18,7 +18,6 @@ public interface Pileup {
 	 int getReadInnerCount();
 	 int getReadEndCount();
 	 void setReadStartCount(int readStartCount);
-	 void setReadInnerCount(int readInnerCount);
 	 void setReadEndCount(int readEndCount);
 
 	 int[] getAlleles();
