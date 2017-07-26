@@ -36,7 +36,7 @@ public abstract class MinkaEstimateParameters {
 			final int[] baseIs, 
 			final double[] alphaOld, 
 			final double[][] matrix,
-			final String sample,
+			final String condition,
 			final Info resultInfo,
 			final boolean backtrack);
 

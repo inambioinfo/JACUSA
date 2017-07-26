@@ -22,7 +22,7 @@ public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
 			final int[] baseIs, 
 			final double[] alphaOld, 
 			final double[][] pileupMatrix,
-			final String sample,
+			final String condition,
 			final Info estimateInfo,
 			final boolean backtrack) {
 		iterations = 0;
@@ -112,7 +112,7 @@ public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
 			// check if alpha negative
 			if (! admissible) {
 				if (backtrack) {
-					estimateInfo.add("backtrack" + sample, Integer.toString(iterations));
+					estimateInfo.add("backtrack" + condition, Integer.toString(iterations));
 					alphaNew = backtracking(alphaOld, baseIs, gradient, b_DenominatorSum, Q);
 					if (alphaNew == null) {
 						reset = true;
@@ -120,7 +120,7 @@ public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
 						return Double.NaN;
 					}
 				} else {
-					estimateInfo.add("reset" + sample, Integer.toString(iterations));
+					estimateInfo.add("reset" + condition, Integer.toString(iterations));
 					reset = true;
 					this.tmpCoverages = null;
 					return Double.NaN;

@@ -64,11 +64,11 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		sb.append("strand");
 		sb.append(getSEP());
 		
-		// (1) first sample  infos
-		addSampleHeader(sb, '1', pathnames1.length);
+		// (1) first condition  infos
+		addConditionHeader(sb, '1', pathnames1.length);
 		sb.append(getSEP());
-		// (2) second sample  infos
-		addSampleHeader(sb, '2', pathnames2.length);
+		// (2) second condition  infos
+		addConditionHeader(sb, '2', pathnames2.length);
 
 		sb.append(getSEP());
 		sb.append("info");
@@ -87,9 +87,9 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		return sb.toString();
 	}
 	
-	protected void addSampleHeader(StringBuilder sb, char sample, int replicates) {
+	protected void addConditionHeader(StringBuilder sb, char condition, int replicates) {
 		sb.append("bases");
-		sb.append(sample);
+		sb.append(condition);
 		sb.append(1);
 		if (replicates == 1) {
 			return;
@@ -98,7 +98,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		for (int i = 2; i <= replicates; ++i) {
 			sb.append(SEP);
 			sb.append("bases");
-			sb.append(sample);
+			sb.append(condition);
 			sb.append(i);
 		}
 	}
@@ -155,7 +155,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 	 * Helper function
 	 */
 	protected void addPileups(StringBuilder sb, Pileup[] pileups) {
-		// output sample: Ax,Cx,Gx,Tx
+		// output condition: Ax,Cx,Gx,Tx
 		for (Pileup pileup : pileups) {
 			sb.append(SEP);
 

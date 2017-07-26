@@ -2,15 +2,15 @@ package jacusa.method;
 
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
-import jacusa.cli.options.sample.InvertStrandOption;
-import jacusa.cli.options.sample.MaxDepthSampleOption;
-import jacusa.cli.options.sample.MinBASQSampleOption;
-import jacusa.cli.options.sample.MinCoverageSampleOption;
-import jacusa.cli.options.sample.MinMAPQSampleOption;
-import jacusa.cli.options.sample.filter.FilterNHsamTagOption;
-import jacusa.cli.options.sample.filter.FilterNMsamTagOption;
+import jacusa.cli.options.condition.InvertStrandOption;
+import jacusa.cli.options.condition.MaxDepthConditionOption;
+import jacusa.cli.options.condition.MinBASQConditionOption;
+import jacusa.cli.options.condition.MinCoverageConditionOption;
+import jacusa.cli.options.condition.MinMAPQConditionOption;
+import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
+import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.Coordinate;
@@ -56,14 +56,14 @@ public abstract class AbstractMethodFactory {
 	 */
 	public abstract void initACOptions();
 
-	protected void initSampleACOptions(int sample, SampleParameters sampleParameters) {
-		acOptions.add(new MinMAPQSampleOption(sample, sampleParameters));
-		acOptions.add(new MinBASQSampleOption(sample, sampleParameters));
-		acOptions.add(new MinCoverageSampleOption(sample, sampleParameters));
-		acOptions.add(new MaxDepthSampleOption(sample, sampleParameters, parameters));
-		acOptions.add(new FilterNHsamTagOption(sample, sampleParameters));
-		acOptions.add(new FilterNMsamTagOption(sample, sampleParameters));
-		acOptions.add(new InvertStrandOption(sample, sampleParameters));
+	protected void initConditionACOptions(int conditionIndex, ConditionParameters condition) {
+		acOptions.add(new MinMAPQConditionOption(conditionIndex, condition));
+		acOptions.add(new MinBASQConditionOption(conditionIndex, condition));
+		acOptions.add(new MinCoverageConditionOption(conditionIndex, condition));
+		acOptions.add(new MaxDepthConditionOption(conditionIndex, condition, parameters));
+		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition));
+		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition));
+		acOptions.add(new InvertStrandOption(conditionIndex, condition));
 	}
 
 	/**

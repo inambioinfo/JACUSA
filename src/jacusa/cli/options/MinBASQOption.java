@@ -1,6 +1,6 @@
 package jacusa.cli.options;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -8,10 +8,10 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class MinBASQOption extends AbstractACOption {
 
-	private SampleParameters[] samples;
+	private ConditionParameters[] conditions;
 	
-	public MinBASQOption(SampleParameters[] samples) {
-		this.samples = samples;
+	public MinBASQOption(ConditionParameters[] conditions) {
+		this.conditions = conditions;
 
 		opt = "q";
 		longOpt = "min-basq";
@@ -23,7 +23,7 @@ public class MinBASQOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 			.withArgName(longOpt.toUpperCase())
 			.hasArg(true)
-	        .withDescription("filter positions with base quality < " + longOpt.toUpperCase() + " \n default: " + samples[0].getMinBASQ())
+	        .withDescription("filter positions with base quality < " + longOpt.toUpperCase() + " \n default: " + conditions[0].getMinBASQ())
 	        .create(opt);
 	}
 
@@ -35,8 +35,8 @@ public class MinBASQOption extends AbstractACOption {
 	    	if(minBASQ < 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minBASQ + " not valid.");
 	    	}
-	    	for (SampleParameters sample : samples) {
-	    		sample.setMinBASQ(minBASQ);
+	    	for (ConditionParameters condition : conditions) {
+	    		condition.setMinBASQ(minBASQ);
 	    	}
 	    }
 	}

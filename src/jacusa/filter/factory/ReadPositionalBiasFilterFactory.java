@@ -6,7 +6,7 @@ import java.util.Set;
 import net.sf.samtools.CigarOperator;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.BiasBaseCountFilter;
 import jacusa.filter.storage.bias.BaseCount;
 import jacusa.filter.storage.bias.ReadPositionBiasFilterStorage;
@@ -44,7 +44,7 @@ public class ReadPositionalBiasFilterFactory extends AbstractFilterFactory<BaseC
 	}
 
 	@Override
-	public ReadPositionBiasFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final SampleParameters sampleParameters) {
+	public ReadPositionBiasFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
 		return new ReadPositionBiasFilterStorage(getC(), targetReadLength, windowCoordinates, parameters);
 	}
 

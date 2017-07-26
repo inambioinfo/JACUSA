@@ -6,7 +6,7 @@ import java.util.Set;
 
 import net.sf.samtools.CigarOperator;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.util.WindowCoordinates;
@@ -37,7 +37,7 @@ public abstract class AbstractFilterFactory<T> {
 		this(c, desc, false, new HashSet<CigarOperator>());
 	}
 
-	public abstract AbstractFilterStorage<T> createFilterStorage(final WindowCoordinates windowCoordinates, final SampleParameters sampleParameters);
+	public abstract AbstractFilterStorage<T> createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition);
 	public abstract AbstractStorageFilter<T> createStorageFilter();
 
 	public char getC() {

@@ -48,7 +48,7 @@ public abstract class AbstractCountFilter {
 			return variantBasesIs;
 		}
 
-		// sample1: AG | AG AND sample2: AGC |AGC
+		// condition1: AG | AG AND condition2: AGC |AGC
 		// return allelesIs;
 		return new int[0];
 	}

@@ -23,11 +23,11 @@ package jacusa;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.hasSample2;
+import jacusa.cli.parameters.hasCondition2;
 import jacusa.method.AbstractMethodFactory;
-import jacusa.method.call.OneSampleCallFactory;
-import jacusa.method.call.TwoSampleCallFactory;
-import jacusa.method.pileup.TwoSamplePileupFactory;
+import jacusa.method.call.OneConditionCallFactory;
+import jacusa.method.call.TwoConditionCallFactory;
+import jacusa.method.pileup.TwoConditionPileupFactory;
 import jacusa.method.rtarrest.RTArrestFactory;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.AbstractWorker;
@@ -63,10 +63,10 @@ public class JACUSA {
 		Map<String, AbstractMethodFactory> methodFactories = new TreeMap<String, AbstractMethodFactory>();
 
 		AbstractMethodFactory[] factories = new AbstractMethodFactory[] {
-			new OneSampleCallFactory(), 
-			new TwoSampleCallFactory(),
+			new OneConditionCallFactory(), 
+			new TwoConditionCallFactory(),
 			
-			new TwoSamplePileupFactory(),
+			new TwoConditionPileupFactory(),
 
 			new RTArrestFactory()
 		};
@@ -180,10 +180,10 @@ public class JACUSA {
 
 		// prolog
 		jacusa.printProlog(args);
-		String[] pathnames1 = parameters.getSample1().getPathnames();
+		String[] pathnames1 = parameters.getCondition1().getPathnames();
 		String[] pathnames2 = new String[0];
-		if (parameters instanceof hasSample2) {
-			pathnames2 = ((hasSample2)parameters).getSample2().getPathnames();
+		if (parameters instanceof hasCondition2) {
+			pathnames2 = ((hasCondition2)parameters).getCondition2().getPathnames();
 		}
 
 		// wrap chosen coordinate provider 

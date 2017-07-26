@@ -5,7 +5,7 @@ package jacusa.filter.storage;
 import java.util.List;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.AlignmentBlock;
@@ -24,9 +24,9 @@ public class DistanceFilterStorage extends AbstractWindowFilterStorage {
 	public DistanceFilterStorage(final char c, 
 			final int distance,
 			final WindowCoordinates windowCoordinates,
-			final SampleParameters sampleParameters,
+			final ConditionParameters condition,
 			final AbstractParameters parameters) {
-		super(c, windowCoordinates, sampleParameters, parameters);
+		super(c, windowCoordinates, condition, parameters);
 		this.distance = distance;
 	}
 

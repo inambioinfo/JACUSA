@@ -1,6 +1,6 @@
 package jacusa.pileup.dispatcher.pileup;
 
-import jacusa.cli.parameters.TwoSamplePileupParameters;
+import jacusa.cli.parameters.TwoConditionPileupParameters;
 
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.MpileupWorker;
@@ -8,13 +8,13 @@ import jacusa.util.coordinateprovider.CoordinateProvider;
 
 public class MpileupWorkerDispatcher extends AbstractWorkerDispatcher<MpileupWorker> {
 
-	private final TwoSamplePileupParameters parameters;
+	private final TwoConditionPileupParameters parameters;
 	
 	public MpileupWorkerDispatcher(
 			String[] pathnames1, 
 			String[] pathnames2,
 			final CoordinateProvider coordinateProvider, 
-			final TwoSamplePileupParameters parameters) {
+			final TwoConditionPileupParameters parameters) {
 		super(
 				pathnames1,
 				pathnames2,

@@ -4,23 +4,23 @@ import jacusa.io.format.AbstractOutputFormat;
 import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 
-public class RTArrestParameters extends AbstractParameters implements hasSample2, hasStatisticCalculator {
+public class RTArrestParameters extends AbstractParameters implements hasCondition2, hasStatisticCalculator {
 
-	private SampleParameters sample2;
+	private ConditionParameters condition2;
 	private StatisticParameters statisticParameters;
 
 	public RTArrestParameters() {
 		super();
 
-		getSample1().setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
-		sample2				= new SampleParameters();
-		sample2.setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
+		getCondition1().setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
+		condition2				= new ConditionParameters();
+		condition2.setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
 		statisticParameters = new StatisticParameters();
 	}
 
 	@Override
-	public SampleParameters getSample2() {
-		return sample2;
+	public ConditionParameters getCondition2() {
+		return condition2;
 	}
 
 	@Override

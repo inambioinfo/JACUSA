@@ -1,6 +1,6 @@
 package jacusa.filter;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.Result;
@@ -9,30 +9,30 @@ import jacusa.util.Location;
 
 public class MaxDepthStorageFilter extends AbstractStorageFilter<Void> {
 
-	private SampleParameters sampleParameters1;
-	private SampleParameters sampleParameters2;
+	private ConditionParameters condition1;
+	private ConditionParameters condition2;
 	
 	public MaxDepthStorageFilter(
 			final char c, 
-			final SampleParameters sampleParameters1, 
-			final SampleParameters sampleParameters2) {
+			final ConditionParameters condition1, 
+			final ConditionParameters condition2) {
 		super(c);
-		this.sampleParameters1 = sampleParameters1;
-		this.sampleParameters2 = sampleParameters2;
+		this.condition1 = condition1;
+		this.condition2 = condition2;
 	}
 
 	@Override
 	public boolean filter(final Result result, final Location location,	final AbstractWindowIterator windowIterator) {
 		final ParallelPileup pp = result.getParellelPileup();
 		
-		if (sampleParameters1 != null) {
-			if (filter(sampleParameters1.getMaxDepth(), pp.getPileups1())) {
+		if (condition1 != null) {
+			if (filter(condition1.getMaxDepth(), pp.getPileups1())) {
 				return true;
 			}
 		}
 		
-		if (sampleParameters2 != null) {
-			if (filter(sampleParameters2.getMaxDepth(), pp.getPileups2())) {
+		if (condition2 != null) {
+			if (filter(condition2.getMaxDepth(), pp.getPileups2())) {
 				return true;
 			}
 		}

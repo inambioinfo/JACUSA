@@ -1,7 +1,7 @@
 package jacusa.filter.factory;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.DummyFilterFillCache;
 import jacusa.pileup.ParallelPileup;
@@ -29,7 +29,7 @@ public class MaxAlleleCountFilterFactors extends AbstractFilterFactory<Void> {
 	@Override
 	public DummyFilterFillCache createFilterStorage(
 			WindowCoordinates windowCoordinates,
-			SampleParameters sampleParameters) {
+			ConditionParameters condition) {
 		return new DummyFilterFillCache(getC());
 	}
 

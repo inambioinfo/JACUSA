@@ -49,13 +49,13 @@ public class ACCUSA2Statistic implements StatisticCalculator {
 		// use all bases for calculation
 		final int baseIs[] = baseConfig.getBasesI();
 
-		// first sample
-		// probability matrix for all pileups in sampleA (bases in column, pileups in rows)
+		// first condition
+		// probability matrix for all pileups in condition1 (bases in column, pileups in rows)
 		final double[][] probs1 = estimateParameters.probabilityMatrix(baseIs, parallelPileup.getPileups1());
 		final DirichletDist dirichlet1 = getDirichlet(baseIs, parallelPileup.getPileups1());
 		final double density11 = getDensity(baseIs, probs1, dirichlet1);
 
-		// second sample - see above
+		// second condition - see above
 		final double[][] probs2 = estimateParameters.probabilityMatrix(baseIs, parallelPileup.getPileups2());
 		final DirichletDist dirichlet2 = getDirichlet(baseIs, parallelPileup.getPileups2());
 		final double density22 = getDensity(baseIs, probs2, dirichlet2);

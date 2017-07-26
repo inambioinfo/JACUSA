@@ -1,8 +1,8 @@
 package jacusa.pileup.builder;
 
-import jacusa.cli.options.sample.filter.samtag.SamTagFilter;
+import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.FilterContainer;
 import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.pileup.BaseConfig;
@@ -31,7 +31,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 	protected int filteredSAMRecords;
 
 	protected BaseConfig baseConfig;
-	protected SampleParameters sampleParameters;
+	protected ConditionParameters condition;
 	protected AbstractParameters parameters;
 	
 	protected boolean isCached;
@@ -50,18 +50,10 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			final WindowCoordinates windowCoordinates,
 			final STRAND strand, 
 			final SAMFileReader SAMFileReader, 
-			final SampleParameters sampleParameters,
+			final ConditionParameters condition,
 			final AbstractParameters parameters,
 			final LibraryType libraryType) {
-
-		// check if coordinates are fine
-		/*
-		final int sequenceLength = SAMFileReader.getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
-		if (coordinate.getEnd() > sequenceLength) {
-			Coordinate samHeader = new Coordinate(coordinate.getSequenceName(), 1, sequenceLength);
-			JACUSA.printWarning("Coordinates in BED file (" +  coordinate.toString() + ") do not fit to SAM sequence header (" + samHeader.toString()+ ").");
-		}
-		*/
+		this.windowCoordinates		= windowCoordinates;
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
@@ -69,13 +61,13 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 		filteredSAMRecords		= 0;
 
 		baseConfig				= parameters.getBaseConfig();
-		this.sampleParameters	= sampleParameters;
+		this.condition	= condition;
 		this.parameters			= parameters;
 
 		isCached				= false;
 
 		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBaseLength());
-		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, sampleParameters);
+		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, condition);
 		byte2int 				= parameters.getBaseConfig().getByte2Int();
 		this.strand				= strand;
 
@@ -195,13 +187,13 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 
 		if (! samRecord.getReadUnmappedFlag()
 				&& ! samRecord.getNotPrimaryAlignmentFlag() // ignore non-primary alignments CHECK
-				&& (mapq < 0 || mapq >= sampleParameters.getMinMAPQ()) // filter by mapping quality
-				&& (sampleParameters.getFilterFlags() == 0 || (sampleParameters.getFilterFlags() > 0 && ((samRecord.getFlags() & sampleParameters.getFilterFlags()) == 0)))
-				&& (sampleParameters.getRetainFlags() == 0 || (sampleParameters.getRetainFlags() > 0 && ((samRecord.getFlags() & sampleParameters.getRetainFlags()) > 0)))
+				&& (mapq < 0 || mapq >= condition.getMinMAPQ()) // filter by mapping quality
+				&& (condition.getFilterFlags() == 0 || (condition.getFilterFlags() > 0 && ((samRecord.getFlags() & condition.getFilterFlags()) == 0)))
+				&& (condition.getRetainFlags() == 0 || (condition.getRetainFlags() > 0 && ((samRecord.getFlags() & condition.getRetainFlags()) > 0)))
 				&& errors == null // isValid is expensive
 				) { // only store valid records that contain mapped reads
 			// custom filter 
-			for (SamTagFilter samTagFilter : sampleParameters.getSamTagFilters()) {
+			for (SamTagFilter samTagFilter : condition.getSamTagFilters()) {
 				if (samTagFilter.filter(samRecord)) {
 					return false;
 				}
@@ -513,7 +505,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			switch (orientation) {
 			case 1:
 				if ((genomicPosition + offset) - windowCoordinates.getGenomicWindowEnd() <= distance) {
-					if (qualI >= sampleParameters.getMinBASQ()) {
+					if (qualI >= condition.getMinBASQ()) {
 						for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
 							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
 						}
@@ -526,7 +518,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 				if (windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) > distance) {
 					offset += windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) - distance - 1;
 				} else {
-					if (qualI >= sampleParameters.getMinBASQ()) {
+					if (qualI >= condition.getMinBASQ()) {
 						for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
 							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
 						}
@@ -535,7 +527,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 				break;
 			case 0:
 				if (windowPosition >= 0) {
-					if (qualI >= sampleParameters.getMinBASQ()) {
+					if (qualI >= condition.getMinBASQ()) {
 						addHighQualityBaseCall(windowPosition, baseI, qualI, strand);
 
 						// process any alignmentMatch specific filters

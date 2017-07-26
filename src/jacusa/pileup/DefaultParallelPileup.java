@@ -293,8 +293,8 @@ public final class DefaultParallelPileup implements ParallelPileup {
 		return sb.toString();
 	}
 	
-	protected void addPileup(StringBuilder sb, String sample, Pileup pileup) {
-		sb.append(sample);
+	protected void addPileup(StringBuilder sb, String condition, Pileup pileup) {
+		sb.append(condition);
 		sb.append('\t');
 		boolean flag = false;
 		for (int baseI = 0; baseI < pileup.getCounts().getBaseLength(); ++baseI) {

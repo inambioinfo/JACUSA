@@ -1,6 +1,6 @@
 package jacusa.cli.options;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -8,10 +8,10 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class MinMAPQOption extends AbstractACOption {
 
-	private SampleParameters[] samples;
+	private ConditionParameters[] conditions;
 	
-	public MinMAPQOption(final SampleParameters[] samples) {
-		this.samples = samples;
+	public MinMAPQOption(final ConditionParameters[] conditions) {
+		this.conditions = conditions;
 
 		opt = "m";
 		longOpt = "min-mapq";
@@ -24,7 +24,7 @@ public class MinMAPQOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 			.withArgName(longOpt.toUpperCase())
 			.hasArg(true)
-	        .withDescription("filter positions with MAPQ < " + longOpt.toUpperCase() + "\n default: " + samples[0].getMinMAPQ())
+	        .withDescription("filter positions with MAPQ < " + longOpt.toUpperCase() + "\n default: " + conditions[0].getMinMAPQ())
 	        .create(opt);
 	}
 
@@ -36,8 +36,8 @@ public class MinMAPQOption extends AbstractACOption {
 	    	if(minMapq < 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minMapq + " not valid.");
 	    	}
-	    	for (SampleParameters sample : samples) {
-		    	sample.setMinMAPQ(minMapq);
+	    	for (ConditionParameters condition : conditions) {
+		    	condition.setMinMAPQ(minMapq);
 	    	}
 	    }
 	}

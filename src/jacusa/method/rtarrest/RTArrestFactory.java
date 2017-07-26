@@ -18,14 +18,13 @@ import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
 import jacusa.cli.options.VersionOption;
 import jacusa.cli.options.WindowSizeOption;
-import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
-// import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
-import jacusa.cli.options.sample.filter.FilterFlagOption;
+import jacusa.cli.options.condition.filter.FilterFlagOption;
+import jacusa.cli.options.pileupbuilder.TwoConditionPileupBuilderOption;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.RTArrestParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import jacusa.filter.factory.AbstractFilterFactory;
 
@@ -58,38 +57,40 @@ import org.apache.commons.cli.ParseException;
 public class RTArrestFactory extends AbstractMethodFactory {
 
 	public final static String NAME = "rt-arrest";
+	private ConditionParameters condition1;
+	private ConditionParameters condition2;
 	private RTArrestParameters parameters;
 
 	private static RTArrestWorkerDispatcher instance;
 
 	public RTArrestFactory() {
-		super(NAME, "Reverse Transcription Arrest - two samples");
+		super(NAME, "Reverse Transcription Arrest - two conditions");
 		
 		parameters = new RTArrestParameters();
 	}
 	
 	public void initACOptions() {
-		// sample specific setting
-		SampleParameters sample1 = parameters.getSample1();
-		SampleParameters sample2 = parameters.getSample2();
+		// condition specific setting
+		condition1 = parameters.getCondition1();
+		condition2 = parameters.getCondition2();
 
-		for (int sampleI = 1; sampleI <= 2; ++sampleI) {
-			initSampleACOptions(sampleI, sample1);
-			initSampleACOptions(sampleI, sample2);
+		for (int i = 1; i <= 2; ++i) {
+			initConditionACOptions(i, condition1);
+			initConditionACOptions(i, condition2);
 		}
-		SampleParameters[] samples = new SampleParameters[] {
-			sample1, sample2
+		ConditionParameters[] conditions = new ConditionParameters[] {
+			condition1, condition2
 		};
 		
 		// global settings
-		acOptions.add(new MinMAPQOption(samples));
+		acOptions.add(new MinMAPQOption(conditions));
 
-		acOptions.add(new MinBASQOption(samples));
-		acOptions.add(new MinCoverageOption(samples));
+		acOptions.add(new MinBASQOption(conditions));
+		acOptions.add(new MinCoverageOption(conditions));
 		acOptions.add(new MaxDepthOption(parameters));
-		acOptions.add(new FilterFlagOption(samples));
+		acOptions.add(new FilterFlagOption(conditions));
 		
-		acOptions.add(new TwoSamplePileupBuilderOption(parameters, sample1, sample2));
+		acOptions.add(new TwoConditionPileupBuilderOption(parameters, condition1, condition2));
 
 		acOptions.add(new BedCoordinatesOption(parameters));
 		acOptions.add(new ResultFileOption(parameters));
@@ -129,7 +130,7 @@ public class RTArrestFactory extends AbstractMethodFactory {
 		Map<String, StatisticCalculator> statistics = new TreeMap<String, StatisticCalculator>();
 
 		StatisticCalculator statistic = null;
-		statistic = new BetaMultinomial(parameters.getStatisticParameters());
+		statistic = new BetaMultinomial(condition1, condition2, parameters.getStatisticParameters());
 		statistics.put(statistic.getName(), statistic);
 
 		return statistics;
@@ -160,8 +161,8 @@ public class RTArrestFactory extends AbstractMethodFactory {
 
 	@Override
 	public void initCoordinateProvider() throws Exception {
-		String[] pathnames1 = parameters.getSample1().getPathnames();
-		String[] pathnames2 = parameters.getSample2().getPathnames();
+		String[] pathnames1 = parameters.getCondition1().getPathnames();
+		String[] pathnames2 = parameters.getCondition2().getPathnames();
 		List<SAMSequenceRecord> records = getSAMSequenceRecords(pathnames1, pathnames2);
 		coordinateProvider = new SAMCoordinateProvider(records);
 	}
@@ -177,9 +178,9 @@ public class RTArrestFactory extends AbstractMethodFactory {
 			throw new ParseException("BAM File is not provided!");
 		}
 
-		SAMPathnameArg pa = new SAMPathnameArg(1, parameters.getSample1());
+		SAMPathnameArg pa = new SAMPathnameArg(1, parameters.getCondition1());
 		pa.processArg(args[0]);
-		pa = new SAMPathnameArg(2, parameters.getSample2());
+		pa = new SAMPathnameArg(2, parameters.getCondition2());
 		pa.processArg(args[1]);
 
 		return true;

@@ -1,6 +1,6 @@
 package jacusa.filter;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.pileup.DefaultPileup.STRAND;
@@ -48,10 +48,10 @@ public class FilterConfig implements Cloneable {
 	 * 
 	 * @return
 	 */
-	public FilterContainer createFilterContainer(final WindowCoordinates windowCoordinates, final STRAND strand, final SampleParameters sampleParameters) {
+	public FilterContainer createFilterContainer(final WindowCoordinates windowCoordinates, final STRAND strand, final ConditionParameters condition) {
 		AbstractFilterStorage<?>[] filters = new AbstractFilterStorage[i2Factory.size()];
 		for (int filterI = 0; filterI < i2Factory.size(); ++filterI) {
-			filters[filterI] = i2Factory.get(filterI).createFilterStorage(windowCoordinates, sampleParameters);
+			filters[filterI] = i2Factory.get(filterI).createFilterStorage(windowCoordinates, condition);
 			
 		}
 		FilterContainer filterContainer = new FilterContainer(this, filters, windowCoordinates, strand);

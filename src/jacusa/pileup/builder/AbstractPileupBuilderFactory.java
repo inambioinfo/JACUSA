@@ -1,7 +1,7 @@
 package jacusa.pileup.builder;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMFileReader;
 
@@ -16,7 +16,7 @@ public abstract class AbstractPileupBuilderFactory implements hasLibraryType {
 	public abstract AbstractPileupBuilder newInstance(
 			final WindowCoordinates windowCoordinates, 
 			final SAMFileReader reader, 
-			final SampleParameters sample,
+			final ConditionParameters condition,
 			final AbstractParameters parameters);
 
 	final public boolean isStranded() {

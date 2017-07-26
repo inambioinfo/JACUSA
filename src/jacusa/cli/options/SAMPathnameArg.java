@@ -1,6 +1,6 @@
 package jacusa.cli.options;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -11,12 +11,12 @@ public class SAMPathnameArg {
 
 	public static final char SEP = ',';
 
-	private int sampleI;
-	private SampleParameters parameters;
+	private int conditionIndex;
+	private ConditionParameters condition;
 	
-	public SAMPathnameArg(final int sampleI, SampleParameters paramteres) {
-		this.sampleI = sampleI;
-		this.parameters = paramteres;
+	public SAMPathnameArg(final int conditionIndex, ConditionParameters paramteres) {
+		this.conditionIndex = conditionIndex;
+		this.condition = paramteres;
 	}
 
 	public void processArg(String arg) throws Exception {
@@ -29,12 +29,12 @@ public class SAMPathnameArg {
 	    	SAMFileReader reader = new SAMFileReader(file);
 	    	if (! reader.hasIndex()) {
 	    		reader.close();
-	    		throw new FileNotFoundException("Index for BAM file" + sampleI + " is not accessible!");
+	    		throw new FileNotFoundException("Index for BAM file" + conditionIndex + " is not accessible!");
 	    	}
 	    	reader.close();
     	}
     	// beware of ugly code
-		parameters.setPathnames(pathnames);
+		condition.setPathnames(pathnames);
 	}
 
 }

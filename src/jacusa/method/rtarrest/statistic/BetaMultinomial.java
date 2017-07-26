@@ -2,8 +2,10 @@ package jacusa.method.rtarrest.statistic;
 
 import java.text.DecimalFormat;
 import java.text.DecimalFormatSymbols;
+import java.util.Arrays;
 
 import umontreal.iro.lecuyer.probdist.ChiSquareDist;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.cli.parameters.StatisticParameters;
 import jacusa.estimate.MinkaEstimateDirMultParameters;
 import jacusa.estimate.MinkaEstimateParameters;
@@ -15,11 +17,14 @@ import jacusa.method.call.statistic.dirmult.initalpha.MinAlphaInit;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.Result;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.Info;
 
 public class BetaMultinomial implements StatisticCalculator {
 
-	protected final StatisticParameters parameters;
+	final protected ConditionParameters condition1;
+	final protected ConditionParameters condition2;
+	final protected StatisticParameters parameters;
 	
 	protected boolean showAlpha;
 	protected boolean calcPValue;
@@ -47,13 +52,17 @@ public class BetaMultinomial implements StatisticCalculator {
 	protected AbstractAlphaInit fallbackAlphaInit;
 	
 	protected DecimalFormat decimalFormat;
-	
-	public BetaMultinomial(final StatisticParameters parameters) {
+
+	public BetaMultinomial(final ConditionParameters condition1, 
+			final ConditionParameters condition2, 
+			final StatisticParameters parameters) {
 		showAlpha			= true;
 		calcPValue			= true;
 		
 		this.estimateAlpha	= new MinkaEstimateDirMultParameters();
 		fallbackAlphaInit	= new MinAlphaInit();
+		this.condition1 	= condition1;
+		this.condition2 	= condition2;
 		this.parameters 	= parameters;
 		
 		DecimalFormatSymbols otherSymbols = new DecimalFormatSymbols();
@@ -64,7 +73,7 @@ public class BetaMultinomial implements StatisticCalculator {
 
 	@Override
 	public BetaMultinomial newInstance() {
-		return new BetaMultinomial(parameters);
+		return new BetaMultinomial(condition1, condition2, parameters);
 	}
 	
 	@Override
@@ -77,22 +86,38 @@ public class BetaMultinomial implements StatisticCalculator {
 		return "Beta-Multinomial";  
 	}
 
-	protected void populate(final Pileup pileup, double[] pileupMatrix) {
+	protected void populate(final LibraryType libraryType, final Pileup pileup, double[] pileupMatrix) {
 		// TODO move
 		final double priorError = 1d;
 		
 		for (int i = 0; i < pileupMatrix.length; ++i) {
 			pileupMatrix[i] += priorError;
 		}
-		pileupMatrix[0] += (double)pileup.getReadInnerCount();
-		pileupMatrix[1] += (double)pileup.getReadEndCount();
+		
+		switch (libraryType) {
+		case UNSTRANDED:
+			pileupMatrix[0] += (double)pileup.getReadInnerCount();
+			pileupMatrix[1] += (double)pileup.getReadEndCount() + (double)pileup.getReadStartCount();
+			break;
+			
+		case FR_FIRSTSTRAND:
+			pileupMatrix[0] += (double)pileup.getReadInnerCount();
+			pileupMatrix[1] += (double)pileup.getReadEndCount();
+			break;
+		
+		case FR_SECONDSTRAND:
+			pileupMatrix[0] += (double)pileup.getReadInnerCount();
+			pileupMatrix[1] += (double)pileup.getReadStartCount();
+			
+		}
+		
 	}
 	
-	protected void populate(final Pileup[] pileups, double[][] pileupMatrix) {
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			Pileup pileup = pileups[pileupI];
+	protected void populate(final LibraryType[] libraryType, final Pileup[] pileups, double[][] pileupMatrix) {
+		for (int i = 0; i < pileups.length; ++i) {
+			Pileup pileup = pileups[i];
 	
-			populate(pileup, pileupMatrix[pileupI]);
+			populate(libraryType[i], pileup, pileupMatrix[i]);
 		}
 	}
 	
@@ -140,18 +165,19 @@ public class BetaMultinomial implements StatisticCalculator {
 	}
 
 	public double estimate(
-			final String sample, 
+			final LibraryType[] libraryType,
+			final String condition, 
 			final int[] fakeBaseIs, 
 			double[] alpha, 
 			double[] initAlphaValues, 
-			final AbstractAlphaInit alphaInit, 
+			final AbstractAlphaInit alphaInit,
 			final Pileup[] pileups,
 			final boolean backtrack ) {
 		// populate pileupMatrix with values to be modeled
 		final double[][] matrix  = new double[pileups.length][alpha.length];
 		
 		// populate pileupMatrix with values to be modeled
-		populate(pileups, matrix);
+		populate(libraryType, pileups, matrix);
 		// perform an initial guess of alpha
 		System.arraycopy(alphaInit.init(fakeBaseIs, pileups, matrix), 0, initAlphaValues, 0, alpha.length);
 
@@ -159,7 +185,7 @@ public class BetaMultinomial implements StatisticCalculator {
 		System.arraycopy(initAlphaValues, 0, alpha, 0, alpha.length);
 
 		// estimate alpha(s), capture and info(s), and store log-likelihood
-		return estimateAlpha.maximizeLogLikelihood(fakeBaseIs, alpha, matrix, sample, estimateInfo, backtrack);
+		return estimateAlpha.maximizeLogLikelihood(fakeBaseIs, alpha, matrix, condition, estimateInfo, backtrack);
 	}
 
 	@Override
@@ -175,31 +201,41 @@ public class BetaMultinomial implements StatisticCalculator {
 		// parameters for distribution
 		alpha1 = new double[N];
 		initAlpha1 = new double[N];
-		// the same for sample 2
+		// the same for condition 2
 		alpha2 = new double[N];
 		initAlpha2 = new double[N];
-		// the same for pooled sample 1, 2
+		// the same for pooled condition 1, 2
 		alphaP = new double[N];
 		initAlphaP = new double[N];
 		
+		final LibraryType[] libraryType1 = new LibraryType[condition1.getReplicates()];
+		Arrays.fill(libraryType1, condition1.getLibraryType());
+
+		final LibraryType[] libraryType2 = new LibraryType[condition2.getReplicates()];
+		Arrays.fill(libraryType2, condition2.getLibraryType());
+		
+		final LibraryType[] libraryTypeP = new LibraryType[libraryType1.length + libraryType2.length]; 
+		System.arraycopy(libraryType1, 0, libraryTypeP, 0, libraryType1.length);
+		System.arraycopy(libraryType2, 0, libraryTypeP, libraryType1.length, libraryType2.length);
+		
 		// estimate alpha(s), capture and info(s), and store log-likelihood
 		boolean isReset = false;
-		logLikelihood1 = estimate("1", fakeBaseIs, alpha1, initAlpha1, estimateAlpha.getAlphaInit(), parallelPileup.getPileups1(), false);
+		logLikelihood1 = estimate(libraryType1, "1", fakeBaseIs, alpha1, initAlpha1, estimateAlpha.getAlphaInit(), parallelPileup.getPileups1(), false);
 		iterations1 = estimateAlpha.getIterations();
 		isReset |= estimateAlpha.isReset();
-		logLikelihood2 = estimate("2", fakeBaseIs, alpha2, initAlpha2, estimateAlpha.getAlphaInit(), parallelPileup.getPileups2(), false);
+		logLikelihood2 = estimate(libraryType2, "2", fakeBaseIs, alpha2, initAlpha2, estimateAlpha.getAlphaInit(), parallelPileup.getPileups2(), false);
 		iterations2 = estimateAlpha.getIterations();
 		isReset |= estimateAlpha.isReset();
-		logLikelihoodP = estimate("P", fakeBaseIs, alphaP, initAlphaP, estimateAlpha.getAlphaInit(), parallelPileup.getPileupsP(), false);
+		logLikelihoodP = estimate(libraryTypeP, "P", fakeBaseIs, alphaP, initAlphaP, estimateAlpha.getAlphaInit(), parallelPileup.getPileupsP(), false);
 		iterationsP = estimateAlpha.getIterations();
 		isReset |= estimateAlpha.isReset();
 		
 		if (isReset) {
-			logLikelihood1 = estimate("1", fakeBaseIs, alpha1, initAlpha1, fallbackAlphaInit, parallelPileup.getPileups1(), true);
+			logLikelihood1 = estimate(libraryType1, "1", fakeBaseIs, alpha1, initAlpha1, fallbackAlphaInit, parallelPileup.getPileups1(), true);
 			iterations1 = estimateAlpha.getIterations();
-			logLikelihood2 = estimate("2", fakeBaseIs, alpha2, initAlpha2, fallbackAlphaInit, parallelPileup.getPileups2(), true);
+			logLikelihood2 = estimate(libraryType2, "2", fakeBaseIs, alpha2, initAlpha2, fallbackAlphaInit, parallelPileup.getPileups2(), true);
 			iterations2 = estimateAlpha.getIterations();
-			logLikelihoodP = estimate("P", fakeBaseIs, alphaP, initAlphaP, fallbackAlphaInit, parallelPileup.getPileupsP(), true);
+			logLikelihoodP = estimate(libraryTypeP, "P", fakeBaseIs, alphaP, initAlphaP, fallbackAlphaInit, parallelPileup.getPileupsP(), true);
 			iterationsP = estimateAlpha.getIterations();
 		}
 		

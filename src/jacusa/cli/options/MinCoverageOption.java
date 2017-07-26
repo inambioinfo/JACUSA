@@ -1,6 +1,6 @@
 package jacusa.cli.options;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -8,10 +8,10 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class MinCoverageOption extends AbstractACOption {
 
-	private SampleParameters[] samples;
+	private ConditionParameters[] conditions;
 	
-	public MinCoverageOption(SampleParameters[] samples) {
-		this.samples = samples;
+	public MinCoverageOption(ConditionParameters[] conditions) {
+		this.conditions = conditions;
 
 		opt = "c";
 		longOpt = "min-coverage";
@@ -23,7 +23,7 @@ public class MinCoverageOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 					.withArgName(longOpt.toUpperCase())
 					.hasArg(true)
-			        .withDescription("filter positions with coverage < " + longOpt.toUpperCase() + " \n default: " + samples[0].getMinCoverage())
+			        .withDescription("filter positions with coverage < " + longOpt.toUpperCase() + " \n default: " + conditions[0].getMinCoverage())
 			        .create(opt);
 	}
 
@@ -35,8 +35,8 @@ public class MinCoverageOption extends AbstractACOption {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " must be > 0!");
 	    	}
 	    	
-	    	for (SampleParameters sample : samples) {
-	    		sample.setMinCoverage(minCoverage);
+	    	for (ConditionParameters condition : conditions) {
+	    		condition.setMinCoverage(minCoverage);
 	    	}
 	    }
 	}

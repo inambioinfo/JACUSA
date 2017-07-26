@@ -7,7 +7,7 @@ import jacusa.io.format.AbstractOutputFormat;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.BaseConfig;
 
-public abstract class AbstractParameters implements hasSample1 {
+public abstract class AbstractParameters implements hasCondition1 {
 	
 	// cache related
 	private int windowSize;
@@ -24,7 +24,7 @@ public abstract class AbstractParameters implements hasSample1 {
 	// chosen method
 	private AbstractMethodFactory methodFactory;
 
-	private SampleParameters sample1;
+	private ConditionParameters condition1;
 
 	private Output output;
 	private AbstractOutputFormat format;
@@ -46,7 +46,7 @@ public abstract class AbstractParameters implements hasSample1 {
 		maxThreads		= 1;
 		
 		bedPathname		= new String();
-		sample1			= new SampleParameters();
+		condition1			= new ConditionParameters();
 		
 		output			= new OutputPrinter();
 		filterConfig	= new FilterConfig();
@@ -87,10 +87,10 @@ public abstract class AbstractParameters implements hasSample1 {
 	}
 
 	/**
-	 * @return the sample1
+	 * @return the condition1
 	 */
-	public SampleParameters getSample1() {
-		return sample1;
+	public ConditionParameters getCondition1() {
+		return condition1;
 	}
 	
 	/**

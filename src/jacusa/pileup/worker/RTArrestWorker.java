@@ -2,10 +2,10 @@ package jacusa.pileup.worker;
 
 import jacusa.cli.parameters.RTArrestParameters;
 
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
 import jacusa.pileup.iterator.AbstractWindowIterator;
-import jacusa.pileup.iterator.TwoSampleIterator;
+import jacusa.pileup.iterator.TwoConditionIterator;
 import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -31,18 +31,18 @@ public class RTArrestWorker extends AbstractRTArrestWorker {
 		);
 
 		this.parameters = parameters;
-		readers1 = initReaders(parameters.getSample1().getPathnames());
-		readers2 = initReaders(parameters.getSample2().getPathnames());
+		readers1 = initReaders(parameters.getCondition1().getPathnames());
+		readers2 = initReaders(parameters.getCondition2().getPathnames());
 
 		variant = new RTArrestVariantParallelPileup();
 	}
 
 	@Override
 	protected AbstractWindowIterator buildIterator(final Coordinate coordinate) {
-		SampleParameters sample1 = parameters.getSample1();
-		SampleParameters sample2 = parameters.getSample2();
+		ConditionParameters condition1 = parameters.getCondition1();
+		ConditionParameters condition2 = parameters.getCondition2();
 		
-		return new TwoSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
+		return new TwoConditionIterator(coordinate, variant, readers1, readers2, condition1, condition2, parameters);
 	}
 
 	@Override

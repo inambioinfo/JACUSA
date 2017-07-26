@@ -37,7 +37,7 @@ public class BiasBaseCountFilter extends AbstractStorageFilter<BaseCount> {
 		int[][][] counts2 = getCounts(genomicPosition, replicateFilterContainer2);
 
 		// merged and sort data
-		SampleBaseComparator rc = new SampleBaseComparator(counts1, counts2);
+		ConditionBaseComparator rc = new ConditionBaseComparator(counts1, counts2);
 		// ordered index of data
 		Integer[] index = rc.createUnorderedIndex();
 		Arrays.sort(index, rc);
@@ -101,7 +101,7 @@ public class BiasBaseCountFilter extends AbstractStorageFilter<BaseCount> {
 	 * @author mpiechotta
 	 *
 	 */
-	private class SampleBaseComparator implements Comparator<Integer> {
+	private class ConditionBaseComparator implements Comparator<Integer> {
 
 		// histogram
 		private int[] histogram;
@@ -120,7 +120,7 @@ public class BiasBaseCountFilter extends AbstractStorageFilter<BaseCount> {
 		 * @param counts1
 		 * @param counts2
 		 */
-		public SampleBaseComparator(final int[][][] counts1, final int[][][] counts2) {
+		public ConditionBaseComparator(final int[][][] counts1, final int[][][] counts2) {
 			histogram = new int[dataSize];
 			groupI = -1;
 			
@@ -159,9 +159,9 @@ public class BiasBaseCountFilter extends AbstractStorageFilter<BaseCount> {
 		/**
 		 * 
 		 * @param counts
-		 * @param sampleI
+		 * @param conditionIndex
 		 */
-		private void process(final int[][][] counts, int sampleI) {
+		private void process(final int[][][] counts, int conditionIndex) {
 			for (int replicateI = 0; replicateI < counts.length; ++replicateI) {
 
 				int baseLength = counts[replicateI].length;

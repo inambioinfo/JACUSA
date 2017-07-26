@@ -1,7 +1,7 @@
 package jacusa.pileup.builder;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.FilterContainer;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.DefaultPileup;
@@ -25,10 +25,10 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 	public AbstractStrandedPileupBuilder(
 			final WindowCoordinates windowCoordinates,
 			final SAMFileReader reader, 
-			final SampleParameters sample,
+			final ConditionParameters condition2,
 			final AbstractParameters parameters,
 			final LibraryType libraryType) {
-		super(windowCoordinates, STRAND.FORWARD, reader, sample, parameters, libraryType);
+		super(windowCoordinates, STRAND.FORWARD, reader, condition2, parameters, libraryType);
 
 		/* Ar[0, 1]
 		 * 0 -> reversed
@@ -43,7 +43,7 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 		windowCaches[1] = windowCache;
 		
 		filterContainers = new FilterContainer[2];
-		filterContainers[0] = parameters.getFilterConfig().createFilterContainer(windowCoordinates, STRAND.REVERSE, sampleParameters);
+		filterContainers[0] = parameters.getFilterConfig().createFilterContainer(windowCoordinates, STRAND.REVERSE, condition);
 		filterContainers[1] = filterContainer;
 
 		final BaseConfig baseConfig = parameters.getBaseConfig();
@@ -108,7 +108,7 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 	
 	@Override
 	public boolean isCovered(int windowPosition, STRAND strand) {
-		return getCoverage(windowPosition, strand) >= sampleParameters.getMinCoverage();
+		return getCoverage(windowPosition, strand) >= condition.getMinCoverage();
 	}
 
 	@Override

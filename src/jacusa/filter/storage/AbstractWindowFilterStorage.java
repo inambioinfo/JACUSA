@@ -3,7 +3,7 @@ package jacusa.filter.storage;
 import java.util.Arrays;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.builder.WindowCache;
@@ -21,14 +21,14 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<
 	protected int windowSize;
 	protected WindowCache windowCache;
 
-	private SampleParameters sampleParameters;
+	private ConditionParameters condition;
 	
 	// container for current SAMrecord
 	protected SAMRecord record;
 
 	public AbstractWindowFilterStorage(final char c, 
 			final WindowCoordinates windowCoordinates, 
-			final SampleParameters sampleParameters, 
+			final ConditionParameters condition, 
 			final AbstractParameters parameters) {
 		super(c);
 
@@ -39,7 +39,7 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<
 		setContainer(new WindowCache(windowCoordinates, baseLength));
 		windowCache = getContainer();
 		
-		this.sampleParameters = sampleParameters;
+		this.condition = condition;
 		baseConfig = parameters.getBaseConfig();
 	}
 	
@@ -70,8 +70,8 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<
 		for (int i = 0; i < length && windowPosition + i < windowSize && readPosition + i < record.getReadLength(); ++i) {
 			if (! visited[windowPosition + i]) {
 				int baseI = -1;
-				// TODO
-				if (sampleParameters.getPileupBuilderFactory().isStranded() && record.getReadNegativeStrandFlag()) {
+				// TODO library type specific
+				if (condition.getPileupBuilderFactory().isStranded() && record.getReadNegativeStrandFlag()) {
 					baseI = baseConfig.getComplementBaseI(record.getReadBases()[readPosition + i]);
 				} else {
 					baseI = baseConfig.getBaseI(record.getReadBases()[readPosition + i]);
@@ -84,7 +84,7 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<
 
 				byte qual = record.getBaseQualities()[readPosition + i];
 				// int genomicPosition = windowCache.getWindowCoordinates().getGenomicPosition(windowPosition + i);
-				if (qual >= sampleParameters.getMinBASQ()) {
+				if (qual >= condition.getMinBASQ()) {
 					windowCache.addHighQualityBaseCall(windowPosition + i, baseI, qual);
 					visited[windowPosition + i] = true;
 				}

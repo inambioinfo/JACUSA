@@ -2,7 +2,7 @@ package jacusa.pileup.iterator;
 
 import jacusa.JACUSA;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.FilterContainer;
 import jacusa.pileup.DefaultParallelPileup;
 import jacusa.pileup.DefaultPileup;
@@ -88,7 +88,7 @@ public abstract class AbstractWindowIterator implements Iterator<Location> {
 			final AbstractPileupBuilderFactory pileupBuilderFactory, 
 			final Coordinate coordinate, 
 			final SAMFileReader[] readers, 
-			final SampleParameters sample,
+			final ConditionParameters condition,
 			final AbstractParameters parameters) {
 		AbstractPileupBuilder[] pileupBuilders = new AbstractPileupBuilder[readers.length];
 
@@ -104,7 +104,7 @@ public abstract class AbstractWindowIterator implements Iterator<Location> {
 					parameters.getWindowSize(), 
 					coordinate.getEnd());
 			
-			pileupBuilders[i] = pileupBuilderFactory.newInstance(windowCoordinates, readers[i], sample, parameters);
+			pileupBuilders[i] = pileupBuilderFactory.newInstance(windowCoordinates, readers[i], condition, parameters);
 		}
 
 		return pileupBuilders;

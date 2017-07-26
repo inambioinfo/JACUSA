@@ -5,7 +5,7 @@ import java.util.Set;
 
 import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.DistanceStorageFilter;
 import jacusa.filter.storage.DistanceFilterStorage;
 import jacusa.pileup.builder.WindowCache;
@@ -83,7 +83,7 @@ public class SpliceSiteDistanceFilterFactory extends AbstractFilterFactory<Windo
 	}
 
 	@Override
-	public DistanceFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final SampleParameters sampleParameters) {
-		return new DistanceFilterStorage(getC(), distance, windowCoordinates, sampleParameters, parameters);
+	public DistanceFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
+		return new DistanceFilterStorage(getC(), distance, windowCoordinates, condition, parameters);
 	}
 }

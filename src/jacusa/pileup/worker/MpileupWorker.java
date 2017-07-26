@@ -1,15 +1,15 @@
 package jacusa.pileup.worker;
 
-import jacusa.cli.parameters.SampleParameters;
-import jacusa.cli.parameters.TwoSamplePileupParameters;
+import jacusa.cli.parameters.ConditionParameters;
+import jacusa.cli.parameters.TwoConditionPileupParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Result;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
-import jacusa.pileup.iterator.AbstractTwoSampleIterator;
+import jacusa.pileup.iterator.AbstractTwoConditionIterator;
 import jacusa.pileup.iterator.AbstractWindowIterator;
-import jacusa.pileup.iterator.TwoSampleIterator;
+import jacusa.pileup.iterator.TwoConditionIterator;
 import jacusa.pileup.iterator.variant.AllParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -19,7 +19,7 @@ import net.sf.samtools.SAMFileReader;
 
 public class MpileupWorker extends AbstractWorker {
 
-	private final TwoSamplePileupParameters parameters;
+	private final TwoConditionPileupParameters parameters;
 	private final SAMFileReader[] readers1;
 	private final SAMFileReader[] readers2;
 
@@ -28,7 +28,7 @@ public class MpileupWorker extends AbstractWorker {
 	public MpileupWorker(
 			MpileupWorkerDispatcher workerDispatcher,
 			int threadId,
-			TwoSamplePileupParameters parameters) {
+			TwoConditionPileupParameters parameters) {
 		super(
 				workerDispatcher, 
 				threadId,
@@ -36,8 +36,8 @@ public class MpileupWorker extends AbstractWorker {
 		);
 		this.parameters = parameters;
 
-		readers1 = initReaders(parameters.getSample1().getPathnames());
-		readers2 = initReaders(parameters.getSample2().getPathnames());
+		readers1 = initReaders(parameters.getCondition1().getPathnames());
+		readers2 = initReaders(parameters.getCondition2().getPathnames());
 		
 		variant = new AllParallelPileup();
 	}
@@ -59,11 +59,11 @@ public class MpileupWorker extends AbstractWorker {
 	}
 
 	@Override
-	protected AbstractTwoSampleIterator buildIterator(Coordinate coordinate) {
-		SampleParameters sample1 = parameters.getSample1();
-		SampleParameters sample2 = parameters.getSample2();
+	protected AbstractTwoConditionIterator buildIterator(Coordinate coordinate) {
+		ConditionParameters condition1 = parameters.getCondition1();
+		ConditionParameters condition2 = parameters.getCondition2();
 		
-		return new TwoSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
+		return new TwoConditionIterator(coordinate, variant, readers1, readers2, condition1, condition2, parameters);
 	}
 
 	@Override

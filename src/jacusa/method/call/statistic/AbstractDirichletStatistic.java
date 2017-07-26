@@ -157,7 +157,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 	}
 	
 	public double estimate(
-			final String sample, 
+			final String condition, 
 			final int[] baseIs,
 			double[] alpha, 
 			double[] initAlphaValues, 
@@ -176,7 +176,7 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 		System.arraycopy(initAlphaValues, 0, alpha, 0, alpha.length);
 
 		// estimate alpha(s), capture and info(s), and store log-likelihood
-		return estimateAlpha.maximizeLogLikelihood(baseIs, alpha, matrix, sample, estimateInfo, backtrack);
+		return estimateAlpha.maximizeLogLikelihood(baseIs, alpha, matrix, condition, estimateInfo, backtrack);
 	}
 	
 	@Override
@@ -193,10 +193,10 @@ public abstract class AbstractDirichletStatistic implements StatisticCalculator 
 		// parameters for distribution
 		alpha1 = new double[baseN];
 		initAlpha1 = new double[baseN];
-		// the same for sample 2
+		// the same for condition 2
 		alpha2 = new double[baseN];
 		initAlpha2 = new double[baseN];
-		// the same for pooled sample 1, 2
+		// the same for pooled condition 1, 2
 		alphaP = new double[baseN];
 		initAlphaP = new double[baseN];
 

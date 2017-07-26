@@ -2,7 +2,7 @@ package jacusa.filter.factory;
 
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.DummyFilterFillCache;
 import jacusa.pileup.ParallelPileup;
@@ -13,13 +13,13 @@ import jacusa.util.WindowCoordinates;
 
 public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 
-	private int sample;
+	private int conditionIndex;
 	private AbstractParameters parameters;
 	private boolean strict;
 	
 	public HomozygousFilterFactory(AbstractParameters parameters) {
-		super('H', "Filter non-homozygous pileup/BAM in sample 1 or 2 (MUST be set to H:1 or H:2). Default: none");
-		sample = 0;
+		super('H', "Filter non-homozygous pileup/BAM in condition 1 or 2 (MUST be set to H:1 or H:2). Default: none");
+		conditionIndex = 0;
 		this.parameters = parameters;
 		strict = parameters.collectLowQualityBaseCalls();
 	}
@@ -35,9 +35,9 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 		for (int i = 1; i < s.length; ++i) {
 			switch(i) {
 			case 1:
-				final int sample = Integer.parseInt(s[1]);
-				if (sample == 1 || sample == 2) {
-					setSample(sample);
+				final int conditionIndex = Integer.parseInt(s[1]);
+				if (conditionIndex == 1 || conditionIndex == 2) {
+					setConditionIndex(conditionIndex);
 				}
 				break;
 
@@ -56,18 +56,18 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 	}
 
 	@Override
-	public DummyFilterFillCache createFilterStorage(final WindowCoordinates windowCoordinates, final SampleParameters sampleParameters) {
+	public DummyFilterFillCache createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
 		// storage is not needed - done 
 		// Low Quality Base Calls are stored in AbstractBuilder 
 		return new DummyFilterFillCache(getC());
 	}
 	
-	public final void setSample(final int sample) {
-		this.sample = sample;
+	public final void setConditionIndex(final int conditionIndex) {
+		this.conditionIndex = conditionIndex;
 	}
 
-	public final int getSample() {
-		return sample;
+	public final int getConditionIndex() {
+		return conditionIndex;
 	}
 
 	@Override
@@ -89,7 +89,7 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 		public boolean filter(final Result result, final Location location,	final AbstractWindowIterator windowIterator) {
 			int alleles = 0;
 	
-			switch (sample) {
+			switch (conditionIndex) {
 	
 			case 1:
 				alleles = windowIterator.getAlleleCount1(location);
@@ -100,7 +100,7 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 				break;
 	
 			default:
-				throw new IllegalArgumentException("Unsupported sample!");
+				throw new IllegalArgumentException("Unsupported condition: " + conditionIndex);
 			}
 	
 			if (alleles > 1) {
@@ -123,7 +123,7 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 			int alleles = 0;
 			final ParallelPileup parallelPileup = result.getParellelPileup();
 	
-			switch (sample) {
+			switch (conditionIndex) {
 	
 			case 1:
 				alleles = parallelPileup.getPooledPileup1().getAlleles().length;
@@ -134,7 +134,7 @@ public class HomozygousFilterFactory extends AbstractFilterFactory<Void> {
 				break;
 	
 			default:
-				throw new IllegalArgumentException("Unsupported sample! Must be sample 1 or 2 (H:1 or H:2)");
+				throw new IllegalArgumentException("Unsupported condition! Must be condition 1 or 2 (H:1 or H:2)");
 			}
 	
 			if (alleles > 1) {

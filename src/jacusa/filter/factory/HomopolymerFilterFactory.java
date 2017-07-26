@@ -5,7 +5,7 @@ import java.util.Set;
 
 import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.SampleParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.HomopolymerStorageFilter;
 import jacusa.filter.storage.HomopolymerFilterStorage;
@@ -52,8 +52,8 @@ public class HomopolymerFilterFactory extends AbstractFilterFactory<WindowCache>
 	}
 
 	@Override
-	public HomopolymerFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final SampleParameters sampleParameters) {
-		return new HomopolymerFilterStorage(getC(), length, windowCoordinates, sampleParameters, parameters);
+	public HomopolymerFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
+		return new HomopolymerFilterStorage(getC(), length, windowCoordinates, condition, parameters);
 	}
 
 	@Override
