@@ -3,7 +3,7 @@ THREADS 			= 4
 
 # what JAR to test
 # path relative to method directory e.g.: rt-arrest
-JACUSA_BIN		:= ../../../build/JACUSA_v2.x.x.jar
+JACUSA_BIN		:= ../../../build/JACUSA_v2.0.0-BETA.jar
 
 # io for JACUSA
 JACUSA_OUTPUT = $@.tmp
