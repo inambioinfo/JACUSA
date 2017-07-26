@@ -3,30 +3,25 @@ package jacusa.pileup.builder;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.pileup.builder.inverted.FRPairedEnd1InvertedPileupBuilder;
-import jacusa.util.Coordinate;
+import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMFileReader;
 
-public class FRPairedEnd1PileupBuilderFactory implements PileupBuilderFactory {
+public class FRPairedEnd1PileupBuilderFactory extends AbstractPileupBuilderFactory {
 
 	public FRPairedEnd1PileupBuilderFactory() {
-		// Nothing to be done
+		super(LibraryType.FR_FIRSTSTRAND);
 	}
 
 	@Override
-	public AbstractStrandedPileupBuilder newInstance(
-			final Coordinate coordinate, 
-			final SAMFileReader reader, 
-			final SampleParameters sample,
-			final AbstractParameters parameters) {
+	public AbstractPileupBuilder newInstance(
+			WindowCoordinates windowCoordinates, 
+			SAMFileReader reader, 
+			SampleParameters sample, 
+			AbstractParameters parameters) {
 		if (sample.isInvertStrand()) {
-			return new FRPairedEnd1InvertedPileupBuilder(coordinate, reader, sample, parameters);
+			return new FRPairedEnd1InvertedPileupBuilder(windowCoordinates, reader, sample, parameters);
 		}
-		return new FRPairedEnd1PileupBuilder(coordinate, reader, sample, parameters);
-	}
-
-	@Override
-	public boolean isStranded() {
-		return true;
+		return new FRPairedEnd1PileupBuilder(windowCoordinates, reader, sample, parameters);
 	}
 
 }

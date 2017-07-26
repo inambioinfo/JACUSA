@@ -18,6 +18,7 @@ import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
 import jacusa.cli.options.VersionOption;
 import jacusa.cli.options.WindowSizeOption;
+import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
 // import jacusa.cli.options.pileupbuilder.TwoSamplePileupBuilderOption;
 import jacusa.cli.options.sample.filter.FilterFlagOption;
 
@@ -88,8 +89,7 @@ public class RTArrestFactory extends AbstractMethodFactory {
 		acOptions.add(new MaxDepthOption(parameters));
 		acOptions.add(new FilterFlagOption(samples));
 		
-		// TODO currently only unstranded supported
-		// acOptions.add(new TwoSamplePileupBuilderOption(sample1, sample2));
+		acOptions.add(new TwoSamplePileupBuilderOption(parameters, sample1, sample2));
 
 		acOptions.add(new BedCoordinatesOption(parameters));
 		acOptions.add(new ResultFileOption(parameters));

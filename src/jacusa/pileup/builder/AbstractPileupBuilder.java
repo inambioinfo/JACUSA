@@ -1,6 +1,5 @@
 package jacusa.pileup.builder;
 
-import jacusa.JACUSA;
 import jacusa.cli.options.sample.filter.samtag.SamTagFilter;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
@@ -9,7 +8,6 @@ import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.pileup.BaseConfig;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.DefaultPileup.STRAND;
-import jacusa.util.Coordinate;
 import jacusa.util.WindowCoordinates;
 
 import java.util.Arrays;
@@ -22,7 +20,7 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import net.sf.samtools.SAMValidationError;
 
-public abstract class AbstractPileupBuilder {
+public abstract class AbstractPileupBuilder implements hasLibraryType {
 
 	// in genomic coordinates
 	protected WindowCoordinates windowCoordinates;
@@ -46,25 +44,24 @@ public abstract class AbstractPileupBuilder {
 
 	protected int distance;
 	
+	protected LibraryType libraryType;
+	
 	public AbstractPileupBuilder (
-			final Coordinate coordinate,
+			final WindowCoordinates windowCoordinates,
 			final STRAND strand, 
 			final SAMFileReader SAMFileReader, 
 			final SampleParameters sampleParameters,
-			final AbstractParameters parameters) {
+			final AbstractParameters parameters,
+			final LibraryType libraryType) {
 
 		// check if coordinates are fine
+		/*
 		final int sequenceLength = SAMFileReader.getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
 		if (coordinate.getEnd() > sequenceLength) {
 			Coordinate samHeader = new Coordinate(coordinate.getSequenceName(), 1, sequenceLength);
 			JACUSA.printWarning("Coordinates in BED file (" +  coordinate.toString() + ") do not fit to SAM sequence header (" + samHeader.toString()+ ").");
 		}
-
-		windowCoordinates		= new WindowCoordinates(
-				coordinate.getSequenceName(), 
-				coordinate.getStart(), 
-				parameters.getWindowSize(), 
-				coordinate.getEnd());
+		*/
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
@@ -82,6 +79,8 @@ public abstract class AbstractPileupBuilder {
 		byte2int 				= parameters.getBaseConfig().getByte2Int();
 		this.strand				= strand;
 
+		this.libraryType		= libraryType;
+		
 		// get max overhang
 		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
 			distance = Math.max(filter.getDistance(), distance);
@@ -621,4 +620,8 @@ public abstract class AbstractPileupBuilder {
 		}
 	}
 
+	public LibraryType getLibraryType() {
+		return libraryType;
+	}
+	
 }

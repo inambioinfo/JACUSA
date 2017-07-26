@@ -2,6 +2,7 @@ package jacusa.cli.options.pileupbuilder;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;

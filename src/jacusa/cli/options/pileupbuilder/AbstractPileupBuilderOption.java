@@ -5,9 +5,10 @@ import jacusa.cli.parameters.AbstractParameters;
 import jacusa.method.rtarrest.RTArrestFactory;
 import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
-import jacusa.pileup.builder.PileupBuilderFactory;
+import jacusa.pileup.builder.AbstractPileupBuilderFactory;
+import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
-import jacusa.pileup.builder.UnstrandedRTArrestPileupBuilderFactory;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
 public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 	
@@ -20,23 +21,27 @@ public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 		this.parameters = parameters;
 	}
 
-	protected PileupBuilderFactory buildPileupBuilderFactory(LibraryType libraryType) {
+	protected AbstractPileupBuilderFactory buildPileupBuilderFactory(LibraryType libraryType) {
+		AbstractPileupBuilderFactory pbf;
+		
 		switch(libraryType) {
 		case UNSTRANDED:
-			if (parameters.getMethodFactory().getName().equals(RTArrestFactory.NAME)) {
-				return new UnstrandedRTArrestPileupBuilderFactory();				
-			}
-			return new UnstrandedPileupBuilderFactory();
+			pbf = new UnstrandedPileupBuilderFactory();
 		
 		case FR_FIRSTSTRAND:
-			return new FRPairedEnd1PileupBuilderFactory();
+			pbf = new FRPairedEnd1PileupBuilderFactory();
 		
 		case FR_SECONDSTRAND:
-			return new FRPairedEnd2PileupBuilderFactory();
+			pbf =  new FRPairedEnd2PileupBuilderFactory();
 			
 		default:
-			return null;
+			pbf = null;
 		}
+		
+		if (parameters.getMethodFactory().getName().equals(RTArrestFactory.NAME)) {
+			return new RTArrestPileupBuilderFactory(pbf);				
+		}
+		return pbf;
 	}
 
 	public LibraryType parse(String s) {
@@ -94,7 +99,7 @@ public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 				break;
 
 			}
-			
+
 			sb.append(option);
 			sb.append("\t\t");
 			sb.append(desc);
@@ -102,12 +107,6 @@ public abstract class AbstractPileupBuilderOption extends AbstractACOption {
 		}
 		
 		return sb.toString();
-	}
-
-	protected enum LibraryType {
-		FR_FIRSTSTRAND, 
-		FR_SECONDSTRAND,
-		UNSTRANDED
 	}
 	
 }

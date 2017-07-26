@@ -7,7 +7,7 @@ import jacusa.pileup.BaseConfig;
 import jacusa.pileup.DefaultPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.DefaultPileup.STRAND;
-import jacusa.util.Coordinate;
+import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
 
@@ -23,11 +23,12 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 	protected int[][] byte2intAr;
 	
 	public AbstractStrandedPileupBuilder(
-			final Coordinate annotatedCoordinate, 
+			final WindowCoordinates windowCoordinates,
 			final SAMFileReader reader, 
 			final SampleParameters sample,
-			final AbstractParameters parameters) {
-		super(annotatedCoordinate, STRAND.FORWARD, reader, sample, parameters);
+			final AbstractParameters parameters,
+			final LibraryType libraryType) {
+		super(windowCoordinates, STRAND.FORWARD, reader, sample, parameters, libraryType);
 
 		/* Ar[0, 1]
 		 * 0 -> reversed
@@ -89,10 +90,6 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 
 		// copy base and qual info from cache
 		pileup.setCounts(windowCache.getCounts(windowPosition));
-		
-		// TODO read coverage
-		// pileup.setReadStartCount(readStartCount[windowPosition]);
-		// pileup.setReadEndCount(readEndCount[windowPosition]);
 
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {

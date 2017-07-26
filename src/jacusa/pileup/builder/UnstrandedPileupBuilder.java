@@ -9,7 +9,7 @@ import jacusa.filter.FilterContainer;
 import jacusa.pileup.DefaultPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.DefaultPileup.STRAND;
-import jacusa.util.Coordinate;
+import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMFileReader;
 
 /**
@@ -19,11 +19,11 @@ import net.sf.samtools.SAMFileReader;
 public class UnstrandedPileupBuilder extends AbstractPileupBuilder {
 	
 	public UnstrandedPileupBuilder(
-			final Coordinate annotatedCoordinate, 
-			final SAMFileReader reader, 
+			final WindowCoordinates windowCoordinates,
+			final SAMFileReader SAMFileReader,
 			final SampleParameters sample,
 			final AbstractParameters parameters) {
-		super(annotatedCoordinate, STRAND.UNKNOWN, reader, sample, parameters);
+		super(windowCoordinates, STRAND.UNKNOWN, SAMFileReader, sample, parameters, LibraryType.UNSTRANDED);
 	}
 
 	public FilterContainer getFilterContainer(int windowPosition, STRAND strand) {

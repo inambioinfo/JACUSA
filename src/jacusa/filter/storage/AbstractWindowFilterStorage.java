@@ -69,7 +69,8 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<
 
 		for (int i = 0; i < length && windowPosition + i < windowSize && readPosition + i < record.getReadLength(); ++i) {
 			if (! visited[windowPosition + i]) {
-				int baseI = -1; 	
+				int baseI = -1;
+				// TODO
 				if (sampleParameters.getPileupBuilderFactory().isStranded() && record.getReadNegativeStrandFlag()) {
 					baseI = baseConfig.getComplementBaseI(record.getReadBases()[readPosition + i]);
 				} else {

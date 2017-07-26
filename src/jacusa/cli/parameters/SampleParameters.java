@@ -2,13 +2,14 @@ package jacusa.cli.parameters;
 
 import jacusa.cli.options.sample.filter.samtag.SamTagFilter;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.builder.PileupBuilderFactory;
+import jacusa.pileup.builder.AbstractPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
+import jacusa.pileup.builder.hasLibraryType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class SampleParameters {
+public class SampleParameters implements hasLibraryType {
 
 	// cache related
 	private int maxDepth;
@@ -31,9 +32,7 @@ public class SampleParameters {
 	private String[] pathnames;
 	// properties for BAM files
 	private BaseConfig baseConfig;
-	private PileupBuilderFactory pileupBuilderFactory;
-
-	
+	private AbstractPileupBuilderFactory pileupBuilderFactory;
 	
 	public SampleParameters() {
 		maxDepth 		= -1;
@@ -165,14 +164,14 @@ public class SampleParameters {
 	/**
 	 * @return the pileupBuilderFactory
 	 */
-	public PileupBuilderFactory getPileupBuilderFactory() {
+	public AbstractPileupBuilderFactory getPileupBuilderFactory() {
 		return pileupBuilderFactory;
 	}
 
 	/**
 	 * @param pileupBuilderFactory the pileupBuilderFactory to set
 	 */
-	public void setPileupBuilderFactory(PileupBuilderFactory pileupBuilderFactory) {
+	public void setPileupBuilderFactory(AbstractPileupBuilderFactory pileupBuilderFactory) {
 		this.pileupBuilderFactory = pileupBuilderFactory;
 	}
 
@@ -190,6 +189,10 @@ public class SampleParameters {
 	
 	public boolean isInvertStrand() {
 		return invertStrand;
+	}
+
+	public LibraryType getLibraryType() {
+		return getPileupBuilderFactory().getLibraryType();
 	}
 	
 }

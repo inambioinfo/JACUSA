@@ -5,10 +5,13 @@ import jacusa.cli.parameters.SampleParameters;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMFileReader;
 
-public class UnstrandedPileupBuilderFactory extends AbstractPileupBuilderFactory {
+public class RTArrestPileupBuilderFactory extends AbstractPileupBuilderFactory {
 
-	public UnstrandedPileupBuilderFactory() {
-		super(LibraryType.UNSTRANDED);
+	final AbstractPileupBuilderFactory pbf;
+	
+	public RTArrestPileupBuilderFactory(final AbstractPileupBuilderFactory pbf) {
+		super(pbf.getLibraryType());
+		this.pbf = pbf;
 	}
 
 	@Override
@@ -17,7 +20,8 @@ public class UnstrandedPileupBuilderFactory extends AbstractPileupBuilderFactory
 			final SAMFileReader reader, 
 			final SampleParameters sample, 
 			final AbstractParameters parameters) {
-		return new UnstrandedPileupBuilder(windowCoordinates, reader, sample, parameters);
+
+		return new RTArrestPileupBuilder(pbf.newInstance(windowCoordinates, reader, sample, parameters));
 	}
-	
+
 }

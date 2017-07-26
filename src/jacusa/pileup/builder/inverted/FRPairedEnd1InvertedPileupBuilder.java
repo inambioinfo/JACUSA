@@ -4,7 +4,7 @@ import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.pileup.DefaultPileup.STRAND;
 import jacusa.pileup.builder.AbstractStrandedPileupBuilder;
-import jacusa.util.Coordinate;
+import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
@@ -16,11 +16,11 @@ import net.sf.samtools.SAMRecord;
 public class FRPairedEnd1InvertedPileupBuilder extends AbstractStrandedPileupBuilder {
 
 	public FRPairedEnd1InvertedPileupBuilder(
-			final Coordinate annotatedCoordinate, 
+			final WindowCoordinates windowCoordinate, 
 			final SAMFileReader reader, 
 			final SampleParameters sample,
 			final AbstractParameters parameters) {
-		super(annotatedCoordinate, reader, sample, parameters);
+		super(windowCoordinate, reader, sample, parameters, LibraryType.FR_FIRSTSTRAND);
 	}
 
 	// invert

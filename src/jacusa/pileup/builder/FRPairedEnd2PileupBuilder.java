@@ -3,7 +3,7 @@ package jacusa.pileup.builder;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.pileup.DefaultPileup.STRAND;
-import jacusa.util.Coordinate;
+import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
@@ -15,11 +15,11 @@ import net.sf.samtools.SAMRecord;
 public class FRPairedEnd2PileupBuilder extends AbstractStrandedPileupBuilder {
 
 	public FRPairedEnd2PileupBuilder(
-			final Coordinate annotatedCoordinate, 
+			final WindowCoordinates windowCoordinates, 
 			final SAMFileReader reader, 
 			final SampleParameters sample,
 			final AbstractParameters parameters) {
-		super(annotatedCoordinate, reader, sample, parameters);
+		super(windowCoordinates, reader, sample, parameters, LibraryType.FR_SECONDSTRAND);
 	}
 	
 	protected void processRecord(SAMRecord record) {

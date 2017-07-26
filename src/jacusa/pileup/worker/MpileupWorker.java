@@ -62,11 +62,6 @@ public class MpileupWorker extends AbstractWorker {
 	protected AbstractTwoSampleIterator buildIterator(Coordinate coordinate) {
 		SampleParameters sample1 = parameters.getSample1();
 		SampleParameters sample2 = parameters.getSample2();
-
-		if (sample1.getPileupBuilderFactory().isStranded() || 
-				sample2.getPileupBuilderFactory().isStranded()) {
-			return new TwoSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
-		}
 		
 		return new TwoSampleIterator(coordinate, variant, readers1, readers2, sample1, sample2, parameters);
 	}

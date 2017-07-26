@@ -1,5 +1,6 @@
 package jacusa.pileup.iterator;
 
+import jacusa.JACUSA;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.SampleParameters;
 import jacusa.filter.FilterContainer;
@@ -9,11 +10,12 @@ import jacusa.pileup.ParallelPileup;
 import jacusa.pileup.Pileup;
 import jacusa.pileup.DefaultPileup.STRAND;
 import jacusa.pileup.builder.AbstractPileupBuilder;
-import jacusa.pileup.builder.PileupBuilderFactory;
+import jacusa.pileup.builder.AbstractPileupBuilderFactory;
 import jacusa.pileup.iterator.location.AbstractLocationAdvancer;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import jacusa.util.Location;
+import jacusa.util.WindowCoordinates;
 
 import java.util.HashSet;
 import java.util.Iterator;
@@ -38,7 +40,9 @@ public abstract class AbstractWindowIterator implements Iterator<Location> {
 		parallelPileup  = new DefaultParallelPileup();
 	}
 
-	protected Location initLocation(Coordinate coordinate, final boolean isDirectional, final AbstractPileupBuilder[] pileupBuilders) {
+	protected Location initLocation(Coordinate coordinate, 
+			final boolean isDirectional, 
+			final AbstractPileupBuilder[] pileupBuilders) {
 		parallelPileup.setContig(coordinate.getSequenceName());
 
 		// Default value for: not within coordinate
@@ -75,21 +79,32 @@ public abstract class AbstractWindowIterator implements Iterator<Location> {
 	/**
 	 * 
 	 * @param pileupBuilderFactory
-	 * @param annotatedCoordinate
+	 * @param coordinate
 	 * @param readers
 	 * @param parameters
 	 * @return
 	 */
 	protected AbstractPileupBuilder[] createPileupBuilders(
-			final PileupBuilderFactory pileupBuilderFactory, 
-			final Coordinate annotatedCoordinate, 
+			final AbstractPileupBuilderFactory pileupBuilderFactory, 
+			final Coordinate coordinate, 
 			final SAMFileReader[] readers, 
 			final SampleParameters sample,
 			final AbstractParameters parameters) {
 		AbstractPileupBuilder[] pileupBuilders = new AbstractPileupBuilder[readers.length];
 
 		for(int i = 0; i < readers.length; ++i) {
-			pileupBuilders[i] = pileupBuilderFactory.newInstance(annotatedCoordinate, readers[i], sample, parameters);
+			final int sequenceLength = readers[i].getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
+			if (coordinate.getEnd() > sequenceLength) {
+				Coordinate samHeader = new Coordinate(coordinate.getSequenceName(), 1, sequenceLength);
+				JACUSA.printWarning("Coordinates in BED file (" + coordinate.toString() + ") exceed SAM sequence header (" + samHeader.toString()+ ").");
+			}
+			final WindowCoordinates windowCoordinates = new WindowCoordinates(
+					coordinate.getSequenceName(), 
+					coordinate.getStart(), 
+					parameters.getWindowSize(), 
+					coordinate.getEnd());
+			
+			pileupBuilders[i] = pileupBuilderFactory.newInstance(windowCoordinates, readers[i], sample, parameters);
 		}
 
 		return pileupBuilders;
