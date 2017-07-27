@@ -1,8 +1,8 @@
 package jacusa.method.rtarrest;
 
 import jacusa.cli.options.BedCoordinatesOption;
-import jacusa.cli.options.FilterConfigOption;
-import jacusa.cli.options.FilterModusOption;
+// import jacusa.cli.options.FilterConfigOption;
+// import jacusa.cli.options.FilterModusOption;
 import jacusa.cli.options.FormatOption;
 import jacusa.cli.options.HelpOption;
 import jacusa.cli.options.MaxDepthOption;
@@ -16,7 +16,6 @@ import jacusa.cli.options.ShowReferenceOption;
 import jacusa.cli.options.StatisticCalculatorOption;
 import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
-import jacusa.cli.options.VersionOption;
 import jacusa.cli.options.WindowSizeOption;
 import jacusa.cli.options.condition.filter.FilterFlagOption;
 import jacusa.cli.options.pileupbuilder.TwoConditionPileupBuilderOption;
@@ -114,16 +113,15 @@ public class RTArrestFactory extends AbstractMethodFactory {
 		}
 
 		// TODO do we need this?
-		acOptions.add(new FilterModusOption(parameters));
+		// acOptions.add(new FilterModusOption(parameters));
 		// TODO do we need this?
-		acOptions.add(new FilterConfigOption(parameters, getFilterFactories()));
+		// acOptions.add(new FilterConfigOption(parameters, getFilterFactories()));
 		
 		acOptions.add(new StatisticFilterOption(parameters.getStatisticParameters()));
 
-		// TODO do we need this?  
+ 
 		acOptions.add(new ShowReferenceOption(parameters));
 		acOptions.add(new HelpOption(CLI.getSingleton()));
-		acOptions.add(new VersionOption());
 	}
 
 	public Map<String, StatisticCalculator> getStatistics() {
@@ -136,7 +134,7 @@ public class RTArrestFactory extends AbstractMethodFactory {
 		return statistics;
 	}
 
-	// TODO
+	// TODO what filters to use
 	public Map<Character, AbstractFilterFactory<?>> getFilterFactories() {
 		Map<Character, AbstractFilterFactory<?>> abstractPileupFilters = new HashMap<Character, AbstractFilterFactory<?>>();
 

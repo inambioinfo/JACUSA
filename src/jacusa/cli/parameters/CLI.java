@@ -129,7 +129,7 @@ public class CLI {
 			sb.append('\n');
 		}
 
-		sb.append(JACUSA.VERSION + "\n");
+		sb.append("Version: " + JACUSA.VERSION + "\n");
 		System.err.print(sb.toString());
 	}
 

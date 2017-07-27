@@ -13,8 +13,8 @@ public interface Pileup {
 	 char getRefBase();
 	 int getCoverage();
 
-	 // TODO
 	 int getReadStartCount();
+	 // read start and end must be set
 	 int getReadInnerCount();
 	 int getReadEndCount();
 	 void setReadStartCount(int readStartCount);

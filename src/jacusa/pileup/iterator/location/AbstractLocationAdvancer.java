@@ -48,7 +48,6 @@ public abstract class AbstractLocationAdvancer {
 	
 	public abstract void advance();
 
-	// TODO comment
 	public void advanceLocation() {
 		loc1.genomicPosition += 1;
 		loc2.genomicPosition += 2;

@@ -14,7 +14,6 @@ import jacusa.cli.options.SAMPathnameArg;
 import jacusa.cli.options.ResultFileOption;
 import jacusa.cli.options.ShowReferenceOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
-import jacusa.cli.options.VersionOption;
 import jacusa.cli.options.WindowSizeOption;
 import jacusa.cli.options.condition.InvertStrandOption;
 import jacusa.cli.options.condition.MaxDepthConditionOption;
@@ -117,7 +116,6 @@ public class TwoConditionPileupFactory extends AbstractMethodFactory {
 		// acOptions.add(new DebugOption(parameters));
 		acOptions.add(new ShowReferenceOption(parameters));
 		acOptions.add(new HelpOption(CLI.getSingleton()));
-		acOptions.add(new VersionOption());
 	}
 
 	public Map<Character, AbstractOutputFormat> getOuptutFormats() {
