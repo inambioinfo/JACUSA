@@ -1,6 +1,6 @@
 package jacusa.util;
 
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.util.Coordinate.STRAND;
 
 public class Location {
 

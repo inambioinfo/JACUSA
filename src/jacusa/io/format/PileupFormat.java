@@ -1,14 +1,15 @@
 package jacusa.io.format;
 
 import jacusa.phred2prob.Phred2Prob;
+
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.ParallelPileup;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.BasePileup;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.util.Coordinate.STRAND;
 import net.sf.samtools.SAMUtils;
 
-public class PileupFormat extends AbstractOutputFormat {
+public class PileupFormat extends AbstractOutputFormat<BasePileup> {
 
 	public final static char CHAR = 'M';
 	public static char EMPTY 	= '*';
@@ -26,31 +27,32 @@ public class PileupFormat extends AbstractOutputFormat {
 	}
 
 	@Override
-	public String convert2String(final Result result) {
+	public String convert2String(final Result<BasePileup> result) {
 		final StringBuilder sb = new StringBuilder();
-		final ParallelPileup parallelPileup = result.getParellelPileup();
+		final ParallelData<BasePileup> parallelPileup = result.getParellelData();
 
 		// coordinates
 		sb.append(parallelPileup.getContig());
 		sb.append(SEP);
 		sb.append(parallelPileup.getStart());
 
-		addPileups(sb, parallelPileup.getStrand1(), parallelPileup.getPileups1());
-		addPileups(sb, parallelPileup.getStrand2(), parallelPileup.getPileups2());
+		for (int conditionIndex = 0; conditionIndex < parallelPileup.getConditions(); conditionIndex++) {
+			addPileups(sb, parallelPileup.getStrand(conditionIndex), parallelPileup.getData(conditionIndex));
+		}
 
 		if (showReferenceBase) {
 			sb.append(getSEP());
-			sb.append(parallelPileup.getPooledPileup().getRefBase());
+			// FIXME sb.append(parallelPileup.getCombinedPooledData().getRefBase());
 		}
 
 		return sb.toString();		
 	}
 	
-	protected void addPileups(StringBuilder sb, STRAND strand, Pileup[] pileups) {
+	protected void addPileups(StringBuilder sb, STRAND strand, BasePileup[] pileups) {
 		sb.append(SEP);
 		sb.append(strand.character());
 		
-		for(Pileup pileup : pileups) {
+		for(final BasePileup pileup : pileups) {
 
 			sb.append(SEP);
 			sb.append(pileup.getCoverage());
@@ -58,7 +60,7 @@ public class PileupFormat extends AbstractOutputFormat {
 			
 			for (int baseI : pileup.getAlleles()) {
 				// print bases 
-				for (int i = 0; i < pileup.getCounts().getBaseCount(baseI); ++i) {
+				for (int i = 0; i < pileup.getBaseCount().getBaseCount(baseI); ++i) {
 					sb.append(baseConfig.getBases()[baseI]);
 				}
 			}
@@ -69,7 +71,7 @@ public class PileupFormat extends AbstractOutputFormat {
 			for (int base : pileup.getAlleles()) {
 				for (byte qual = 0; qual < Phred2Prob.MAX_Q; ++qual) {
 
-					int count = pileup.getCounts().getQualCount(base, qual);
+					int count = pileup.getBaseCount().getQualCount(base, qual);
 					if (count > 0) {
 						// repeat count times
 						for (int j = 0; j < count; ++j) {

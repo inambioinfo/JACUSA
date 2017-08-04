@@ -1,23 +1,24 @@
 package jacusa.filter.storage;
 
+import jacusa.pileup.builder.WindowCache;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMRecord;
 
-public abstract class AbstractFilterStorage<T> {
+public abstract class AbstractFilterStorage {
 
 	// corresponds to CLI option 
 	private char c; 
-	private T container;
+	private WindowCache container;
 
 	public AbstractFilterStorage(final char c) {
 		this.c = c;
 	}
 	
-	protected void setContainer(T container) {
+	protected void setContainer(WindowCache container) {
 		this.container = container;
 	}
 
-	public T getContainer() {
+	public WindowCache getContainer() {
 		return container;
 	}
 

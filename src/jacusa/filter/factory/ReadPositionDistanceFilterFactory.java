@@ -8,10 +8,13 @@ import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.DistanceStorageFilter;
 import jacusa.filter.storage.DistanceFilterStorage;
-import jacusa.pileup.builder.WindowCache;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public class ReadPositionDistanceFilterFactory extends AbstractFilterFactory<WindowCache> {
+public class ReadPositionDistanceFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractFilterFactory<T> {
 
 	private static int DISTANCE = 6;
 	private static double MIN_RATIO = 0.5;
@@ -21,14 +24,14 @@ public class ReadPositionDistanceFilterFactory extends AbstractFilterFactory<Win
 	private double minRatio;
 	private int minCount;
 
-	private AbstractParameters parameters;
+	private AbstractParameters<T> parameters;
 
 	private static Set<CigarOperator> cigarOperator = new HashSet<CigarOperator>();
 	static {
 		cigarOperator.add(CigarOperator.M);
 	}
 
-	public ReadPositionDistanceFilterFactory(AbstractParameters parameters) {
+	public ReadPositionDistanceFilterFactory(AbstractParameters<T> parameters) {
 		super(
 				'B', 
 				//"Filter distance to Read Start/End. Default: " + DISTANCE + ":" + MIN_RATIO + ":" + MIN_COUNT +" (F:distance:min_ratio:min_count)",
@@ -83,8 +86,8 @@ public class ReadPositionDistanceFilterFactory extends AbstractFilterFactory<Win
 		}
 	}
 
-	public DistanceStorageFilter createStorageFilter() {
-		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig());
+	public DistanceStorageFilter<T> createStorageFilter() {
+		return new DistanceStorageFilter<T>(getC(), minRatio, minCount, parameters.getBaseConfig());
 	}
 
 	@Override

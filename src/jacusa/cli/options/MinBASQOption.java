@@ -10,11 +10,15 @@ public class MinBASQOption extends AbstractACOption {
 
 	private ConditionParameters[] conditions;
 	
-	public MinBASQOption(ConditionParameters[] conditions) {
-		this.conditions = conditions;
-
+	public MinBASQOption() {
 		opt = "q";
 		longOpt = "min-basq";
+		conditions = new ConditionParameters[] {new ConditionParameters()};
+	}
+	
+	public MinBASQOption(ConditionParameters[] conditions) {
+		this();
+		this.conditions = conditions;
 	}
 	
 	@SuppressWarnings("static-access")

@@ -1,12 +1,16 @@
 package jacusa.pileup.iterator.variant;
 
-import jacusa.pileup.ParallelPileup;
+import jacusa.pileup.BasePileup;
+import jacusa.pileup.ParallelData;
 
-public class VariantParallelPileup implements Variant {
+public class VariantParallelPileup implements Variant<BasePileup> {
 	
 	@Override
-	public boolean isValid(ParallelPileup parallelPileup) {
-		return parallelPileup.getPooledPileup().getAlleles().length > 1;
+	public boolean isValid(ParallelData<BasePileup> parallelData) {
+		return parallelData
+				.getCombinedPooledData()
+				.getBaseCount()
+				.getAlleles().length > 1;
 	}
 
 }

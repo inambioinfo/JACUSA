@@ -2,11 +2,13 @@ package jacusa.io.format;
 
 import jacusa.filter.FilterConfig;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.ParallelPileup;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasRefBase;
 
-public class BED6ResultFormat extends AbstractOutputFormat {
+public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> extends AbstractOutputFormat<T> {
 
 	public static final char CHAR = 'B';
 	
@@ -19,7 +21,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 	protected BaseConfig baseConfig;
 	private boolean showReferenceBase;
 
-	public BED6ResultFormat(
+	public BED6callFormat(
 			final char c,
 			final String desc,
 			final BaseConfig baseConfig, 
@@ -33,7 +35,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		this.showReferenceBase = showReferenceBase;
 	}
 
-	public BED6ResultFormat(
+	public BED6callFormat(
 			final BaseConfig baseConfig, 
 			final FilterConfig filterConfig,
 			final boolean showReferenceBase) {
@@ -41,7 +43,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 	}
 
 	@Override
-	public String getHeader(String[] pathnames1, String[] pathnames2) {
+	public String getHeader(String[][] pathnames) {
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(COMMENT);
@@ -64,13 +66,11 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		sb.append("strand");
 		sb.append(getSEP());
 		
-		// (1) first condition  infos
-		addConditionHeader(sb, '1', pathnames1.length);
-		sb.append(getSEP());
-		// (2) second condition  infos
-		addConditionHeader(sb, '2', pathnames2.length);
-
-		sb.append(getSEP());
+		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
+			addConditionHeader(sb, conditionIndex, pathnames[conditionIndex].length);
+			sb.append(getSEP());
+		}
+		
 		sb.append("info");
 		
 		// add filtering info
@@ -87,7 +87,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		return sb.toString();
 	}
 	
-	protected void addConditionHeader(StringBuilder sb, char condition, int replicates) {
+	protected void addConditionHeader(StringBuilder sb, int condition, int replicates) {
 		sb.append("bases");
 		sb.append(condition);
 		sb.append(1);
@@ -103,18 +103,17 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		}
 	}
 
-	@Override
-	public String convert2String(Result result) {
-		final ParallelPileup parallelPileup = result.getParellelPileup();
+	public String convert2String(Result<T> result) {
+		final ParallelData<T> parallelData = result.getParellelData();
 		final double statistic = result.getStatistic();
 		final StringBuilder sb = new StringBuilder();
 
 		// coordinates
-		sb.append(parallelPileup.getContig());
+		sb.append(parallelData.getContig());
 		sb.append(SEP);
-		sb.append(parallelPileup.getStart() - 1);
+		sb.append(parallelData.getStart() - 1);
 		sb.append(SEP);
-		sb.append(parallelPileup.getEnd());
+		sb.append(parallelData.getEnd());
 		
 		sb.append(SEP);
 		sb.append("variant");
@@ -127,12 +126,11 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		}
 
 		sb.append(SEP);
-		sb.append(parallelPileup.getStrand().character());
+		sb.append(parallelData.getStrand().character());
 
-		// (1) first pileups
-		addPileups(sb, parallelPileup.getPileups1());
-		// (2) second pileups
-		addPileups(sb, parallelPileup.getPileups2());
+		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); conditionIndex++) {
+			addPileups(sb, parallelData.getData(conditionIndex));
+		}
 
 		sb.append(getSEP());
 		sb.append(result.getResultInfo().combine());
@@ -145,7 +143,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 		
 		if (showReferenceBase) {
 			sb.append(getSEP());
-			sb.append(parallelPileup.getPooledPileup().getRefBase());
+			sb.append(parallelData.getCombinedPooledData().getRefBase());
 		}
 
 		return sb.toString();		
@@ -154,9 +152,9 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 	/*
 	 * Helper function
 	 */
-	protected void addPileups(StringBuilder sb, Pileup[] pileups) {
+	protected void addPileups(final StringBuilder sb, final T[] pileups) {
 		// output condition: Ax,Cx,Gx,Tx
-		for (Pileup pileup : pileups) {
+		for (final T pileup : pileups) {
 			sb.append(SEP);
 
 			int i = 0;
@@ -164,7 +162,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 			int baseI = baseConfig.getBaseI((byte)b);
 			int count = 0;
 			if (baseI >= 0) {
-				count = pileup.getCounts().getBaseCount(baseI);
+				count = pileup.getBaseCount().getBaseCount(baseI);
 			}
 			sb.append(count);
 			++i;
@@ -173,7 +171,7 @@ public class BED6ResultFormat extends AbstractOutputFormat {
 				baseI = baseConfig.getBaseI((byte)b);
 				count = 0;
 				if (baseI >= 0) {
-					count = pileup.getCounts().getBaseCount(baseI);
+					count = pileup.getBaseCount().getBaseCount(baseI);
 				}
 				sb.append(SEP2);
 				sb.append(count);

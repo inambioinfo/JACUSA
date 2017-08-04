@@ -1,45 +1,47 @@
 package jacusa.pileup.worker;
 
-import jacusa.cli.parameters.OneConditionCallParameters;
+import jacusa.cli.parameters.CallParameters;
+import jacusa.pileup.Result;
+import jacusa.pileup.BasePileup;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.dispatcher.call.OneConditionCallWorkerDispatcher;
-import jacusa.pileup.iterator.OneConditionIterator;
+import jacusa.pileup.iterator.OneConditionCallIterator;
+import jacusa.pileup.iterator.WindowIterator;
 import jacusa.pileup.iterator.variant.Variant;
-import jacusa.pileup.iterator.variant.VariantParallelPileup1;
+import jacusa.pileup.iterator.variant.VariantParallelPileup;
 import jacusa.util.Coordinate;
-import net.sf.samtools.SAMFileReader;
+import jacusa.util.Location;
 
-public class OneConditionCallWorker extends AbstractCallWorker {
+public class OneConditionCallWorker extends AbstractWorker<BasePileup> {
 
-	private SAMFileReader[] readers1;
-	private final OneConditionCallParameters parameters;
-	
-	private final Variant variant;
+	private final Variant<BasePileup> variant;
 
 	public OneConditionCallWorker(
 			final OneConditionCallWorkerDispatcher threadDispatcher,
 			final int threadId,
-			final OneConditionCallParameters parameters) {
-		super(
-				threadDispatcher,
+			final CallParameters<BasePileup> parameters) {
+		super(threadDispatcher,
 				threadId,
-				parameters.getStatisticParameters(),
-				parameters
-		);
-
-		this.parameters = parameters;
-		readers1 = initReaders(parameters.getCondition1().getPathnames());
-
-		variant = new VariantParallelPileup1();
+				parameters);
+		variant = new VariantParallelPileup();
 	}
 
 	@Override
-	protected OneConditionIterator buildIterator(final Coordinate coordinate) {
-		return new OneConditionIterator(coordinate, variant, readers1, parameters.getCondition1(), parameters);
+	protected OneConditionCallIterator buildIterator(final Coordinate coordinate) {
+		return new OneConditionCallIterator(coordinate, 
+				variant, readers, getParameters());
+	}
+	
+	public CallParameters<BasePileup> getParameters() {
+		return (CallParameters<BasePileup>) super.getParameters();
 	}
 
 	@Override
-	protected void close() {
-		close(readers1);
+	protected Result<BasePileup> processParallelData(
+			ParallelData<BasePileup> parallelData, Location location,
+			WindowIterator<BasePileup> parallelPileupIterator) {
+		// TODO Auto-generated method stub
+		return null;
 	}
 
 }

@@ -9,9 +9,13 @@ import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.AbstractFilterStorage;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public abstract class AbstractFilterFactory<T> {
+public abstract class AbstractFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
 
 	public final static char SEP = ':';
 
@@ -21,7 +25,8 @@ public abstract class AbstractFilterFactory<T> {
 	private boolean filterByRecord;
 	private Set<CigarOperator> cigarOperators;
 
-	public AbstractFilterFactory(final char c, final String desc, final boolean filterByRecord, final Set<CigarOperator> cigarOperators) {
+	public AbstractFilterFactory(final char c, final String desc, 
+			final boolean filterByRecord, final Set<CigarOperator> cigarOperators) {
 		this.c 				= c;
 		this.desc 			= desc;
 
@@ -37,7 +42,9 @@ public abstract class AbstractFilterFactory<T> {
 		this(c, desc, false, new HashSet<CigarOperator>());
 	}
 
-	public abstract AbstractFilterStorage<T> createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition);
+	public abstract AbstractFilterStorage createFilterStorage(
+			final WindowCoordinates windowCoordinates, final ConditionParameters condition);
+
 	public abstract AbstractStorageFilter<T> createStorageFilter();
 
 	public char getC() {

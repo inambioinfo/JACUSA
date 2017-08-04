@@ -8,10 +8,13 @@ import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.DistanceStorageFilter;
 import jacusa.filter.storage.DistanceFilterStorage;
-import jacusa.pileup.builder.WindowCache;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public class DistanceFilterFactory extends AbstractFilterFactory<WindowCache> {
+public class DistanceFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractFilterFactory<T> {
 
 	private static int DISTANCE = 5;
 	private static double MIN_RATIO = 0.5;
@@ -74,8 +77,8 @@ public class DistanceFilterFactory extends AbstractFilterFactory<WindowCache> {
 		}
 	}
 
-	public DistanceStorageFilter createStorageFilter() {
-		return new DistanceStorageFilter(getC(), minRatio, minCount, parameters.getBaseConfig());
+	public DistanceStorageFilter<T> createStorageFilter() {
+		return new DistanceStorageFilter<T>(getC(), minRatio, minCount, parameters.getBaseConfig());
 	}
 
 	@Override

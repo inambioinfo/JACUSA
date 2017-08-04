@@ -2,8 +2,12 @@ package jacusa.pileup.builder.inverted;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.AbstractStrandedPileupBuilder;
+import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -13,14 +17,15 @@ import net.sf.samtools.SAMRecord;
  * @author Michael Piechotta
  *
  */
-public class FRPairedEnd2InvertedPileupBuilder extends AbstractStrandedPileupBuilder {
+public class FRPairedEnd2InvertedPileupBuilder<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> extends AbstractStrandedPileupBuilder<T> {
 
 	public FRPairedEnd2InvertedPileupBuilder(
+			final T dataContainer,
 			final WindowCoordinates windowCoordinates, 
 			final SAMFileReader reader, 
 			final ConditionParameters condition,
-			final AbstractParameters parameters) {
-		super(windowCoordinates, reader, condition, parameters, LibraryType.FR_SECONDSTRAND);
+			final AbstractParameters<T> parameters) {
+		super(dataContainer, windowCoordinates, reader, condition, parameters, LibraryType.FR_SECONDSTRAND);
 	}
 
 	// invert

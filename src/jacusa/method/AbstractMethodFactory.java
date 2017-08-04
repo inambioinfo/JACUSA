@@ -2,6 +2,7 @@ package jacusa.method;
 
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
+import jacusa.cli.options.SAMPathnameArg;
 import jacusa.cli.options.condition.InvertStrandOption;
 import jacusa.cli.options.condition.MaxDepthConditionOption;
 import jacusa.cli.options.condition.MinBASQConditionOption;
@@ -11,10 +12,14 @@ import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.Coordinate;
 import jacusa.util.coordinateprovider.CoordinateProvider;
+import jacusa.util.coordinateprovider.SAMCoordinateProvider;
 
 import java.io.File;
 import java.io.IOException;
@@ -29,27 +34,32 @@ import org.apache.commons.cli.Options;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMSequenceRecord;
 
-public abstract class AbstractMethodFactory {
+public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
 
-	private String name;
-	private String desc;
+	final private String name;
+	final private String desc;
 
-	protected AbstractParameters parameters;
+	private AbstractParameters<T> parameters;
+
 	protected CoordinateProvider coordinateProvider;
 	protected Set<AbstractACOption> acOptions;
 
-	public AbstractMethodFactory(String name, String desc) {
+	public AbstractMethodFactory(final String name, final String desc, 
+			final AbstractParameters<T> parameters) {
 		this.name = name;
 		this.desc = desc;
 
 		acOptions = new HashSet<AbstractACOption>();
+		this.parameters = parameters;
 	}
-
+	
 	/**
 	 * 
 	 * @return
 	 */
-	public abstract AbstractParameters getParameters();
+	public AbstractParameters<T> getParameters() {
+		return parameters;
+	}
 
 	/**
 	 * 
@@ -68,16 +78,12 @@ public abstract class AbstractMethodFactory {
 
 	/**
 	 * 
-	 * @param pathnames1
-	 * @param pathnames2
+	 * @param pathnames
 	 * @param coordinateProvider
 	 * @return
 	 * @throws IOException
 	 */
-	public abstract AbstractWorkerDispatcher<? extends AbstractWorker> getInstance(
-			String[] pathnames1, 
-			String[] pathnames2, 
-			CoordinateProvider coordinateProvider) throws IOException; 
+	public abstract AbstractWorkerDispatcher<?> getInstance(CoordinateProvider coordinateProvider) throws IOException; 
 
 	/**
 	 * 
@@ -91,7 +97,7 @@ public abstract class AbstractMethodFactory {
 	 * 
 	 * @return
 	 */
-	public final String getName() {
+	public String getName() {
 		return name;
 	}
 
@@ -99,7 +105,7 @@ public abstract class AbstractMethodFactory {
 	 * 
 	 * @return
 	 */
-	public final String getDescription() {
+	public String getDescription() {
 		return desc;
 	}
 	
@@ -121,7 +127,7 @@ public abstract class AbstractMethodFactory {
 				JACUSA.JAR + 
 				" " + 
 				getName() + 
-				"[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]", 
+				"[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...] ...", 
 				options);
 	}
 	
@@ -129,16 +135,33 @@ public abstract class AbstractMethodFactory {
 	 * 
 	 * @throws Exception
 	 */
-	public abstract void initCoordinateProvider() throws Exception;
+	public void initCoordinateProvider() throws Exception {
+		int conditions = parameters.getConditions();
+		String[][] pathnames = new String[conditions][];
 
+		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+			pathnames[conditionIndex] = parameters.getConditionParameters(conditionIndex).getPathnames();
+		}
+
+		List<SAMSequenceRecord> records = getSAMSequenceRecords(pathnames);
+		coordinateProvider = new SAMCoordinateProvider(records);
+	}
+	
 	/**
 	 * 
 	 * @param args
 	 * @return
 	 * @throws Exception
 	 */
-	public abstract boolean parseArgs(String[] args) throws Exception;
-
+	public boolean parseArgs(String[] args) throws Exception {
+		for (int conditionIndex = 0; conditionIndex < args.length; conditionIndex++) {
+			SAMPathnameArg pa = new SAMPathnameArg(conditionIndex + 1, parameters.getConditionParameters(conditionIndex));
+			pa.processArg(args[conditionIndex]);
+		}
+		
+		return true;
+	}
+	
 	/**
 	 * 
 	 * @param pathnames
@@ -166,15 +189,14 @@ public abstract class AbstractMethodFactory {
 	
 	/**
 	 * 
-	 * @param pathnames1
-	 * @param pathnames2
+	 * @param pathnames
 	 * @return
 	 * @throws Exception
 	 */
-	protected List<SAMSequenceRecord> getSAMSequenceRecords(String[] pathnames1, String[] pathnames2) throws Exception {
+	protected List<SAMSequenceRecord> getSAMSequenceRecords(String[][] pathnames) throws Exception {
 		String error = "Sequence Dictionaries of BAM files do not match";
 
-		List<SAMSequenceRecord> records 	= getSAMSequenceRecords(pathnames1);
+		List<SAMSequenceRecord> records = getSAMSequenceRecords(pathnames[0]);
 
 		List<Coordinate> coordinates = new ArrayList<Coordinate>();
 		Set<String> targetSequenceNames = new HashSet<String>();
@@ -183,12 +205,15 @@ public abstract class AbstractMethodFactory {
 			targetSequenceNames.add(record.getSequenceName());
 		}
 
-		if(!isValid(targetSequenceNames, pathnames1) || !isValid(targetSequenceNames, pathnames2)) {
-			throw new Exception(error);
+		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
+			if (! isValid(targetSequenceNames, pathnames[conditionIndex])) {
+				throw new Exception(error);
+			}
 		}
 
-		return records;
+		return records;		
 	}
+
 
 	/**
 	 * 
@@ -213,5 +238,5 @@ public abstract class AbstractMethodFactory {
 
 		return true;
 	}
-	
+
 }

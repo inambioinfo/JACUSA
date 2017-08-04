@@ -6,9 +6,12 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.FilterContainer;
 import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Pileup;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
+import jacusa.util.Coordinate.STRAND;
 
 import java.util.Arrays;
 import java.util.List;
@@ -20,7 +23,7 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import net.sf.samtools.SAMValidationError;
 
-public abstract class AbstractPileupBuilder implements hasLibraryType {
+public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements hasLibraryType {
 
 	// in genomic coordinates
 	protected WindowCoordinates windowCoordinates;
@@ -32,13 +35,13 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 
 	protected BaseConfig baseConfig;
 	protected ConditionParameters condition;
-	protected AbstractParameters parameters;
+	protected AbstractParameters<T> parameters;
 	
 	protected boolean isCached;
 
 	protected WindowCache windowCache;
 	
-	protected FilterContainer filterContainer;
+	protected FilterContainer<T> filterContainer;
 	protected int[] byte2int;
 	protected STRAND strand;
 
@@ -46,14 +49,18 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 	
 	protected LibraryType libraryType;
 	
+	protected T dataContainer;
+	
 	public AbstractPileupBuilder (
+			final T dataContainer,
 			final WindowCoordinates windowCoordinates,
 			final STRAND strand, 
 			final SAMFileReader SAMFileReader, 
 			final ConditionParameters condition,
-			final AbstractParameters parameters,
+			final AbstractParameters<T> parameters,
 			final LibraryType libraryType) {
-		this.windowCoordinates		= windowCoordinates;
+		this.dataContainer		= dataContainer.copy();
+		this.windowCoordinates	= windowCoordinates;
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
@@ -74,11 +81,11 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 		this.libraryType		= libraryType;
 		
 		// get max overhang
-		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
+		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
 			distance = Math.max(filter.getDistance(), distance);
 		}
 	}
-	
+
 	/**
 	 * 
 	 * @param targetPosition
@@ -240,10 +247,10 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 	// strand dependent methods
 	public abstract boolean isCovered(int windowPosition, STRAND strand);
 	public abstract int getCoverage(int windowPosition, STRAND strand);
-	public abstract Pileup getPileup(int windowPosition, STRAND strand);
+	public abstract T getData(int windowPosition, STRAND strand);
 	public abstract WindowCache getWindowCache(STRAND strand);
 
-	public abstract FilterContainer getFilterContainer(int windowPosition, STRAND strand);
+	public abstract FilterContainer<T> getFilterContainer(int windowPosition, STRAND strand);
 
 	/*
 	 * process CIGAR string methods
@@ -362,7 +369,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 		alignmentBlockLength[record.getAlignmentBlocks().size() + 1] = 0;
 
 		// process record specific filters
-		for (AbstractFilterStorage<?> filter : filterContainer.getPR()) {
+		for (AbstractFilterStorage filter : filterContainer.getPR()) {
 			filter.processRecord(windowCoordinates.getGenomicWindowStart(), record);
 		}
 		
@@ -472,7 +479,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			byte[] referenceBases) {
 		// process alignmentBlock specific filters
 
-		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
+		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
 			filter.processAlignmentBlock(windowPosition, readPosition, genomicPosition, cigarElement, record);
 		}
 		
@@ -506,7 +513,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			case 1:
 				if ((genomicPosition + offset) - windowCoordinates.getGenomicWindowEnd() <= distance) {
 					if (qualI >= condition.getMinBASQ()) {
-						for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
+						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
 							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
 						}
 					}
@@ -519,7 +526,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 					offset += windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) - distance - 1;
 				} else {
 					if (qualI >= condition.getMinBASQ()) {
-						for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
+						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
 							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
 						}
 					}
@@ -531,7 +538,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 						addHighQualityBaseCall(windowPosition, baseI, qualI, strand);
 
 						// process any alignmentMatch specific filters
-						for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.M)) {
+						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
 							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
 						}
 					} else if (parameters.collectLowQualityBaseCalls()) { 
@@ -560,7 +567,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			int downstreamMatch,
 			final CigarElement cigarElement, 
 			final SAMRecord record) {
-		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.I)) {
+		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.I)) {
 			filter.processInsertion(
 					windowPosition, 
 					readPosition, 
@@ -580,7 +587,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			int downstreamMatch,
 			final CigarElement cigarElement, 
 			final SAMRecord record) {
-		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.D)) {
+		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.D)) {
 			filter.processDeletion(
 					windowPosition, 
 					readPosition, 
@@ -600,7 +607,7 @@ public abstract class AbstractPileupBuilder implements hasLibraryType {
 			int downstreamMatch,
 			final CigarElement cigarElement, 
 			final SAMRecord record) {
-		for (AbstractFilterStorage<?> filter : filterContainer.get(CigarOperator.N)) {
+		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.N)) {
 			filter.processSkipped(
 					windowPosition, 
 					readPosition, 

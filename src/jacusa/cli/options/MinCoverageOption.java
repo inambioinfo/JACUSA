@@ -10,6 +10,13 @@ public class MinCoverageOption extends AbstractACOption {
 
 	private ConditionParameters[] conditions;
 	
+	public MinCoverageOption() {
+		opt = "c";
+		longOpt = "min-coverage";
+		
+		conditions = new ConditionParameters[] {new ConditionParameters()};
+	}
+	
 	public MinCoverageOption(ConditionParameters[] conditions) {
 		this.conditions = conditions;
 

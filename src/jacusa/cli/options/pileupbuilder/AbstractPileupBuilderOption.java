@@ -3,6 +3,11 @@ package jacusa.cli.options.pileupbuilder;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.method.rtarrest.RTArrestFactory;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasReadInfoCount;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
 import jacusa.pileup.builder.AbstractPileupBuilderFactory;
@@ -10,55 +15,42 @@ import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
-public abstract class AbstractPileupBuilderOption extends AbstractACOption {
+public abstract class AbstractPileupBuilderOption<T extends Data<T> & hasReadInfoCount & hasBaseCount & hasCoordinate & hasRefBase> extends AbstractACOption {
 	
 	protected static final char SEP = ',';
-	private final AbstractParameters parameters;
+	private final AbstractParameters<?> parameters;
 	
-	public AbstractPileupBuilderOption(final AbstractParameters parameters) {
+	public AbstractPileupBuilderOption(final AbstractParameters<T> parameters) {
 		opt = "P";
 		longOpt = "build-pileup";
 		this.parameters = parameters;
 	}
 
-	protected AbstractPileupBuilderFactory buildPileupBuilderFactory(LibraryType libraryType) {
-		AbstractPileupBuilderFactory pbf;
+	protected AbstractPileupBuilderFactory<T> buildPileupBuilderFactory(LibraryType libraryType) {
+		AbstractPileupBuilderFactory<T> pbf;
 		
 		switch(libraryType) {
 		case UNSTRANDED:
-			pbf = new UnstrandedPileupBuilderFactory();
+			pbf = new UnstrandedPileupBuilderFactory<T>();
 		
 		case FR_FIRSTSTRAND:
-			pbf = new FRPairedEnd1PileupBuilderFactory();
+			pbf = new FRPairedEnd1PileupBuilderFactory<T>();
 		
 		case FR_SECONDSTRAND:
-			pbf =  new FRPairedEnd2PileupBuilderFactory();
+			pbf =  new FRPairedEnd2PileupBuilderFactory<T>();
 			
 		default:
 			pbf = null;
 		}
 		
 		if (parameters.getMethodFactory().getName().equals(RTArrestFactory.NAME)) {
-			return new RTArrestPileupBuilderFactory(pbf);				
+			return new RTArrestPileupBuilderFactory<T>(pbf);				
 		}
 		return pbf;
 	}
 
 	public LibraryType parse(String s) {
 		s = s.toUpperCase();
-
-		// for compatibility with older versions 
-		/* SE stranded now - flips the strand
-		if (s.length() == 1) {
-			switch(s.charAt(0)) {
-			case 'S':
-				return LibraryType.SE_STRANDED;
-				
-			case 'U':
-				return LibraryType.UNSTRANDED;
-			}	
-		}
-		*/
 
 		s = s.replace("-", "_");
 		

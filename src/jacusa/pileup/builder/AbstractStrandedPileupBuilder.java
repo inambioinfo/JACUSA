@@ -4,9 +4,11 @@ import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.FilterContainer;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.DefaultPileup;
-import jacusa.pileup.Pileup;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
+import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -15,7 +17,7 @@ import net.sf.samtools.SAMFileReader;
  * @author Michael Piechotta
  *
  */
-public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
+public class AbstractStrandedPileupBuilder<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> extends AbstractPileupBuilder<T> {
 
 	protected WindowCache[] windowCaches;
 
@@ -23,12 +25,13 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 	protected int[][] byte2intAr;
 	
 	public AbstractStrandedPileupBuilder(
+			final T dataContainer,
 			final WindowCoordinates windowCoordinates,
 			final SAMFileReader reader, 
-			final ConditionParameters condition2,
-			final AbstractParameters parameters,
+			final ConditionParameters condition,
+			final AbstractParameters<T> parameters,
 			final LibraryType libraryType) {
-		super(windowCoordinates, STRAND.FORWARD, reader, condition2, parameters, libraryType);
+		super(dataContainer, windowCoordinates, STRAND.FORWARD, reader, condition, parameters, libraryType);
 
 		/* Ar[0, 1]
 		 * 0 -> reversed
@@ -78,26 +81,26 @@ public class AbstractStrandedPileupBuilder extends AbstractPileupBuilder {
 	}
 
 	@Override
-	public Pileup getPileup(int windowPosition, STRAND strand) {
-		final Pileup pileup = new DefaultPileup(
-				windowCoordinates.getContig(), 
-				windowCoordinates.getGenomicPosition(windowPosition), 
-				strand, 
-				baseConfig.getBaseLength());
+	public T getData(int windowPosition, STRAND strand) {
+		dataContainer = dataContainer.copy();
+		// FIXME baseConfig.getBaseLength()
+		dataContainer.setContig(windowCoordinates.getContig()); 
+		dataContainer.setPosition(windowCoordinates.getGenomicPosition(windowPosition));
+		dataContainer.setStrand(strand);
 
 		int i = strand.integer() - 1;
 		WindowCache windowCache = windowCaches[i];
 
 		// copy base and qual info from cache
-		pileup.setCounts(windowCache.getCounts(windowPosition));
+		dataContainer.setBaseCount(windowCache.getBaseCount(windowPosition));
 
 		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (refBaseByte != (byte)'N') {
-			pileup.setRefBase((char)refBaseByte);
+			dataContainer.setRefBase((char)refBaseByte);
 		}
 		
 		// for "Stranded"PileupBuilder the basesCounts in the pileup are already inverted (when on the reverse strand) 
-		return pileup;
+		return dataContainer;
 	}
 
 	@Override

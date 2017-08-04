@@ -1,5 +1,6 @@
 package jacusa.method.call;
 
+
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;
@@ -13,9 +14,7 @@ import jacusa.cli.options.MaxThreadOption;
 import jacusa.cli.options.MinBASQOption;
 import jacusa.cli.options.MinCoverageOption;
 import jacusa.cli.options.MinMAPQOption;
-import jacusa.cli.options.SAMPathnameArg;
 import jacusa.cli.options.ResultFileOption;
-import jacusa.cli.options.ShowReferenceOption;
 import jacusa.cli.options.StatisticCalculatorOption;
 import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
@@ -25,9 +24,8 @@ import jacusa.cli.options.condition.filter.FilterFlagOption;
 import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.options.pileupbuilder.OneConditionPileupBuilderOption;
-import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.OneConditionCallParameters;
+import jacusa.cli.parameters.CallParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.factory.DistanceFilterFactory;
@@ -37,13 +35,14 @@ import jacusa.filter.factory.MaxAlleleCountFilterFactors;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
-import jacusa.io.format.BED6OneConditionResultFormat;
+import jacusa.io.format.BED6callFormat;
 import jacusa.io.format.VCF_ResultFormat;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.ACCUSA2Statistic;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialCompoundError;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
+import jacusa.pileup.BasePileup;
 import jacusa.pileup.dispatcher.call.OneConditionCallWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 import jacusa.util.coordinateprovider.SAMCoordinateProvider;
@@ -61,87 +60,84 @@ import org.apache.commons.cli.ParseException;
 
 import net.sf.samtools.SAMSequenceRecord;
 
-public class OneConditionCallFactory extends AbstractMethodFactory {
+public class OneConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 
-	private OneConditionCallParameters parameters = new OneConditionCallParameters();
 	private static OneConditionCallWorkerDispatcher instance;
 	
 	public OneConditionCallFactory() {
-		super("call-1", "Call variants - one condition");
-		parameters = new OneConditionCallParameters();
+		super("call-1", "Call variants - one condition", new CallParameters<BasePileup>(1));
 	}
 	
 	public void initACOptions() {
-		ConditionParameters condition1 = parameters.getCondition1();
+		ConditionParameters condition = getParameters().getConditionParameters(0);
 		ConditionParameters[] conditions = new ConditionParameters[] {
-				condition1
+				condition
 		};
 		
 		acOptions.add(new MinMAPQOption(conditions));
 		acOptions.add(new MinBASQOption(conditions));
 		acOptions.add(new MinCoverageOption(conditions));
-		acOptions.add(new MaxDepthOption(parameters));
+		acOptions.add(new MaxDepthOption(getParameters()));
 		acOptions.add(new FilterFlagOption(conditions));
+
 		final int conditionIndex = 1;
-		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition1));
-		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition1));
-		acOptions.add(new InvertStrandOption(conditionIndex, condition1));
+		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition));
+		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition));
+		acOptions.add(new InvertStrandOption(conditionIndex, condition));
 		
+		// FIXME
+		acOptions.add(new OneConditionPileupBuilderOption(getParameters(), condition));
 		
-		acOptions.add(new OneConditionPileupBuilderOption(parameters, condition1));
-		
-		acOptions.add(new BedCoordinatesOption(parameters));
-		acOptions.add(new ResultFileOption(parameters));
+		acOptions.add(new BedCoordinatesOption(getParameters()));
+		acOptions.add(new ResultFileOption(getParameters()));
 		if(getFormats().size() == 1 ) {
 			Character[] a = getFormats().keySet().toArray(new Character[1]);
-			parameters.setFormat(getFormats().get(a[0]));
+			getParameters().setFormat(getFormats().get(a[0]));
 		} else {
-			parameters.setFormat(new BED6OneConditionResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig(), parameters.showReferenceBase()));
-			acOptions.add(new FormatOption<AbstractOutputFormat>(parameters, getFormats()));
+			getParameters().setFormat(new BED6callFormat<BasePileup>(getParameters().getBaseConfig(), getParameters().getFilterConfig(), true));
+			acOptions.add(new FormatOption<AbstractOutputFormat<BasePileup>>(getParameters(), getFormats()));
 		}
 
-		acOptions.add(new MaxThreadOption(parameters));
-		acOptions.add(new WindowSizeOption(parameters));
-		acOptions.add(new ThreadWindowSizeOption(parameters));
+		acOptions.add(new MaxThreadOption(getParameters()));
+		acOptions.add(new WindowSizeOption(getParameters()));
+		acOptions.add(new ThreadWindowSizeOption(getParameters()));
 
 		if (getStatistics().size() == 1 ) {
 			String[] a = getStatistics().keySet().toArray(new String[1]);
-			parameters.getStatisticParameters().setStatisticCalculator(getStatistics().get(a[0]));
+			getParameters().getStatisticParameters().setStatisticCalculator(getStatistics().get(a[0]));
 		} else {
-			acOptions.add(new StatisticCalculatorOption(parameters.getStatisticParameters(), getStatistics()));
+			acOptions.add(new StatisticCalculatorOption(getParameters().getStatisticParameters(), getStatistics()));
 		}
 
-		acOptions.add(new FilterConfigOption(parameters, getFilterFactories()));
-		acOptions.add(new FilterModusOption(parameters));
+		acOptions.add(new FilterConfigOption(getParameters(), getFilterFactories()));
+		acOptions.add(new FilterModusOption(getParameters()));
 		
-		acOptions.add(new BaseConfigOption(parameters));
-		acOptions.add(new StatisticFilterOption(parameters.getStatisticParameters()));
+		acOptions.add(new BaseConfigOption(getParameters()));
+		acOptions.add(new StatisticFilterOption(getParameters().getStatisticParameters()));
 		
-		// acOptions.add(new DebugOption(parameters));
-		acOptions.add(new ShowReferenceOption(parameters));
 		acOptions.add(new HelpOption(CLI.getSingleton()));
 	}
 
 	@Override
-	public OneConditionCallWorkerDispatcher getInstance(String[] pathnames1, String[] pathnames2, CoordinateProvider coordinateProvider) throws IOException {
+	public OneConditionCallWorkerDispatcher getInstance(CoordinateProvider coordinateProvider) throws IOException {
 		if(instance == null) {
-			instance = new OneConditionCallWorkerDispatcher(pathnames1, pathnames2, coordinateProvider, parameters);
+			instance = new OneConditionCallWorkerDispatcher(coordinateProvider, getParameters());
 		}
 		return instance;
 	}
 	
-	public Map<String, StatisticCalculator> getStatistics() {
-		Map<String, StatisticCalculator> statistics = new TreeMap<String, StatisticCalculator>();
+	public Map<String, StatisticCalculator<BasePileup>> getStatistics() {
+		Map<String, StatisticCalculator<BasePileup>> statistics = new TreeMap<String, StatisticCalculator<BasePileup>>();
 
-		StatisticCalculator statistic = null;
+		StatisticCalculator<BasePileup> statistic = null;
 
-		statistic = new ACCUSA2Statistic(parameters.getBaseConfig(), parameters.getStatisticParameters());
+		statistic = new ACCUSA2Statistic<BasePileup>(getParameters().getBaseConfig(), getParameters().getStatisticParameters());
 		statistics.put(statistic.getName(), statistic);
 		
-		statistic = new DirichletMultinomialCompoundError(parameters.getBaseConfig(), parameters.getStatisticParameters());
+		statistic = new DirichletMultinomialCompoundError<BasePileup>(getParameters().getBaseConfig(), getParameters().getStatisticParameters());
 		statistics.put(statistic.getName(), statistic);
 
-		statistic = new DirichletMultinomialRobustCompoundError	(parameters.getBaseConfig(), parameters.getStatisticParameters());
+		statistic = new DirichletMultinomialRobustCompoundError<BasePileup>(getParameters().getBaseConfig(), getParameters().getStatisticParameters());
 		statistics.put(statistic.getName(), statistic);
 
 		return statistics;
@@ -151,12 +147,12 @@ public class OneConditionCallFactory extends AbstractMethodFactory {
 		Map<Character, AbstractFilterFactory<?>> abstractPileupFilters = new HashMap<Character, AbstractFilterFactory<?>>();
 
 		AbstractFilterFactory<?>[] filters = new AbstractFilterFactory[] {
-				new DistanceFilterFactory(parameters),
-				new INDEL_DistanceFilterFactory(parameters),
-				new ReadPositionDistanceFilterFactory(parameters),
-				new SpliceSiteDistanceFilterFactory(parameters),
-				new MaxAlleleCountFilterFactors(parameters),
-				new HomopolymerFilterFactory(parameters)
+				new DistanceFilterFactory(getParameters()),
+				new INDEL_DistanceFilterFactory(getParameters()),
+				new ReadPositionDistanceFilterFactory(getParameters()),
+				new SpliceSiteDistanceFilterFactory(getParameters()),
+				new MaxAlleleCountFilterFactors(getParameters()),
+				new HomopolymerFilterFactory(getParameters())
 		};
 		for (AbstractFilterFactory<?> filter : filters) {
 			abstractPileupFilters.put(filter.getC(), filter);
@@ -165,20 +161,17 @@ public class OneConditionCallFactory extends AbstractMethodFactory {
 		return abstractPileupFilters;
 	}
 
-	public Map<Character, AbstractOutputFormat> getFormats() {
-		Map<Character, AbstractOutputFormat> resultFormats = new HashMap<Character, AbstractOutputFormat>();
+	public Map<Character, AbstractOutputFormat<BasePileup>> getFormats() {
+		Map<Character, AbstractOutputFormat<BasePileup>> resultFormats = new HashMap<Character, AbstractOutputFormat<BasePileup>>();
 
-		AbstractOutputFormat resultFormat = null;
-		
-		resultFormat = new BED6OneConditionResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig(), parameters.showReferenceBase());
+		AbstractOutputFormat<BasePileup> resultFormat = null;
+
+		// BED like output
+		resultFormat = new BED6callFormat<BasePileup>(getParameters().getBaseConfig(), getParameters().getFilterConfig(), true);
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
-		/*
-		resultFormat = new BED6ResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig(), parameters.showReferenceBase());
-		resultFormats.put(resultFormat.getC(), resultFormat);
-		*/
-		
-		resultFormat = new VCF_ResultFormat(parameters.getBaseConfig(), parameters.getFilterConfig());
+		// VCF output
+		resultFormat = new VCF_ResultFormat<BasePileup>(getParameters().getBaseConfig(), getParameters().getFilterConfig());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		return resultFormats;
@@ -186,15 +179,16 @@ public class OneConditionCallFactory extends AbstractMethodFactory {
 
 	@Override
 	public void initCoordinateProvider() throws Exception {
-		String[] pathnames = parameters.getCondition1().getPathnames();
+		String[] pathnames = getParameters().getConditionParameters(0).getPathnames();
 
 		List<SAMSequenceRecord> records = getSAMSequenceRecords(pathnames);
 		coordinateProvider = new SAMCoordinateProvider(records);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public AbstractParameters getParameters() {
-		return parameters;
+	public CallParameters<BasePileup> getParameters() {
+		return (CallParameters<BasePileup>) super.getParameters();
 	}
 	
 	@Override
@@ -202,11 +196,7 @@ public class OneConditionCallFactory extends AbstractMethodFactory {
 		if (args == null || args.length != 1) {
 			throw new ParseException("BAM File is not provided!");
 		}
-		
-		SAMPathnameArg pa = new SAMPathnameArg(1, parameters.getCondition1());
-		pa.processArg(args[0]);
-		
-		return true;
+		return super.parseArgs(args);
 	}
 	
 	@Override

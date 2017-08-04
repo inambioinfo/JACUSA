@@ -1,9 +1,10 @@
 package jacusa.pileup.iterator.variant;
 
-import jacusa.pileup.ParallelPileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 
-public interface Variant {
+public interface Variant<T extends Data<T>> {
 	
-	boolean isValid(ParallelPileup parallelPileup);
+	boolean isValid(final ParallelData<T> parallelData);
 	
 }

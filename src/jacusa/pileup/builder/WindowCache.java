@@ -3,7 +3,7 @@ package jacusa.pileup.builder;
 import java.util.Arrays;
 
 import jacusa.phred2prob.Phred2Prob;
-import jacusa.pileup.Counts;
+import jacusa.pileup.BaseCount;
 import jacusa.util.WindowCoordinates;
 
 public class WindowCache {
@@ -121,8 +121,8 @@ public class WindowCache {
 		return baseLength;
 	}
 
-	public Counts getCounts(final int windowPosition) {
-		return new Counts(baseCount[windowPosition], qualCount[windowPosition], minQual[windowPosition]);
+	public BaseCount getBaseCount(final int windowPosition) {
+		return new BaseCount(baseCount[windowPosition], qualCount[windowPosition], minQual[windowPosition]);
 	}
 	
 	public WindowCoordinates getWindowCoordinates() {

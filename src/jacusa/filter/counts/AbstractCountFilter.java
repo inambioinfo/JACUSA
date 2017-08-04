@@ -1,13 +1,14 @@
 package jacusa.filter.counts;
 
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Counts;
-import jacusa.pileup.DefaultParallelPileup;
-import jacusa.pileup.DefaultPileup;
-import jacusa.pileup.ParallelPileup;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.BaseCount;
+import jacusa.pileup.Data;
+import jacusa.pileup.DefaultParallelData;
+import jacusa.pileup.ParallelData;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasRefBase;
 
-public abstract class AbstractCountFilter {
+public abstract class AbstractCountFilter<T extends Data<T> & hasBaseCount & hasRefBase> {
 
 	protected final BaseConfig baseConfig;
 
@@ -16,25 +17,28 @@ public abstract class AbstractCountFilter {
 	}
 
 	// ORDER RESULTS [0] SHOULD BE THE VARIANTs TO TEST
-	public int[] getVariantBaseIs(final ParallelPileup parallelPileup) {
-		final int[] variantBasesIs = parallelPileup.getVariantBaseIs();
-		final int[] allelesIs = parallelPileup.getPooledPileup().getAlleles();
-		final char refBase = parallelPileup.getPooledPileup().getRefBase();
+	public int[] getVariantBaseIndexs(final ParallelData<T> parallelData) {
+		final int[] variantBasesIs = DefaultParallelData.getVariantBaseIndexs(parallelData);
+		final int[] allelesIndexs = parallelData
+				.getCombinedPooledData()
+				.getBaseCount()
+				.getAlleles();
+		final char refBase = parallelData.getCombinedPooledData().getRefBase();
 
 		// A | G
 		// define all non-reference bases as potential variants
-		if (DefaultParallelPileup.isHoHo(parallelPileup)) {
+		if (DefaultParallelData.isHoHo(parallelData)) {
 			if (refBase == 'N') {
 				return new int[0];
 			}
-			final int refBaseI = baseConfig.getBaseI((byte)refBase);
+			final int refBaseIndex = baseConfig.getBaseI((byte)refBase);
 
 			// find non-reference base(s)
 			int i = 0;
-			final int[] tmp = new int[allelesIs.length];
-			for (final int baseI : allelesIs) {
-				if (baseI != refBaseI) {
-					tmp[i] = baseI;
+			final int[] tmp = new int[allelesIndexs.length];
+			for (final int baseIndex : allelesIndexs) {
+				if (baseIndex != refBaseIndex) {
+					tmp[i] = baseIndex;
 					++i;
 				}
 			}
@@ -58,17 +62,18 @@ public abstract class AbstractCountFilter {
 	 * @param extendedPileups
 	 * @return
 	 */
-	protected Pileup[] applyFilter(final int variantBaseI, final Pileup[] pileups, final Counts[] counts) {
-		final Pileup[] filtered = new DefaultPileup[pileups.length];
+	protected T[] applyFilter(final int variantBaseIndex, final T[] pileups, final BaseCount[] counts) {
+		@SuppressWarnings("unchecked")
+		final T[] filtered = (T[]) new Object[pileups.length];
 
 		// indicates if something has been filtered
 		boolean processed = false;
 		
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			filtered[pileupI] = new DefaultPileup(pileups[pileupI]);
-			final Counts count = counts[pileupI];
+		for (int pileupIndex = 0; pileupIndex < pileups.length; ++pileupIndex) {
+			filtered[pileupIndex] = pileups[pileupIndex].copy();
+			final BaseCount count = counts[pileupIndex];
 			if (count != null) { 
-				filtered[pileupI].getCounts().substract(variantBaseI, count);
+				filtered[pileupIndex].getBaseCount().substract(variantBaseIndex, count);
 				processed = true;
 			}
 		}
@@ -76,43 +81,59 @@ public abstract class AbstractCountFilter {
 		return processed ? filtered : null;
 	}
 
-	final protected ParallelPileup applyFilter(final int variantBaseI, final ParallelPileup parallelPileup, Counts[] counts1, Counts[] counts2) {
-		final Pileup[] filteredPileups1 = applyFilter(variantBaseI, parallelPileup.getPileups1(), counts1);
-		final Pileup[] filteredPileups2 = applyFilter(variantBaseI, parallelPileup.getPileups2(), counts2);
+	final protected ParallelData<T> applyFilter(final int variantBaseI, 
+			final ParallelData<T> parallelData, 
+			BaseCount[] baseCounts1, BaseCount[] baseCounts2) {
+		final T[] filteredParallelData1 = applyFilter(variantBaseI, parallelData.getData(0), baseCounts1);
+		final T[] filteredParallelData2 = applyFilter(variantBaseI, parallelData.getData(1), baseCounts2);
 
-		if (filteredPileups1 == null && filteredPileups2 == null) {
+		if (filteredParallelData1 == null && filteredParallelData2 == null) {
 			// nothing has been filtered
 			return null;
 		}
 
-		final ParallelPileup filteredParallelPileup = new DefaultParallelPileup(parallelPileup.getN1(), parallelPileup.getN2());
-		filteredParallelPileup.setContig(parallelPileup.getContig());
-		filteredParallelPileup.setStart(parallelPileup.getStart());
-		filteredParallelPileup.setStrand(parallelPileup.getStrand());
+		
 
-		if (filteredPileups1 == null) {
-			filteredParallelPileup.setPileups1(parallelPileup.getPileups1());
+		
+		T[] data1 = null;
+		if (filteredParallelData1 == null) {
+			data1 = parallelData.getData(0);
 		} else {
-			filteredParallelPileup.setPileups1(filteredPileups1);
+			data1 = filteredParallelData1;
 		}
-
-		if (filteredPileups2 == null) {
-			filteredParallelPileup.setPileups2(parallelPileup.getPileups2());
+		
+		T[] data2 = null;
+		if (filteredParallelData2 == null) {
+			data2 = parallelData.getData(1);
 		} else {
-			filteredParallelPileup.setPileups2(filteredPileups2);
+			data2 = filteredParallelData2;
 		}
+		
+		@SuppressWarnings("unchecked")
+		T[][] data = (T[][]) new Object[2][];
+		System.arraycopy(data1, 0, data, 0, data1.length);
+		System.arraycopy(data2, 0, data, data1.length, data2.length);
+		
+		final ParallelData<T> filteredParallelData = 
+		new DefaultParallelData<T>(parallelData.getContig(),
+				parallelData.getStart(),
+				parallelData.getEnd(),
+				parallelData.getStrand(),
+				data);
 
-		return filteredParallelPileup;
+		return filteredParallelData;
 	}
 
 	/**
 	 * Apply filter on each variant base
 	 */
-	public boolean filter(final int[] variantBaseIs, ParallelPileup parallelPileup, Counts[] counts1, Counts[] counts2) {
+	public boolean filter(final int[] variantBaseIndexs, 
+			ParallelData<T> parallelData, 
+			BaseCount[] baseCounts1, BaseCount[] baseCounts2) {
 		// final int[] variantBaseIs = getVariantBaseIs(parallelPileup);
 
-		for (int variantBaseI : variantBaseIs) {
-			if (filter(variantBaseI, parallelPileup, counts1, counts2)) {
+		for (int variantBaseI : variantBaseIndexs) {
+			if (filter(variantBaseI, parallelData, baseCounts1, baseCounts2)) {
 				return true;
 			}
 		}
@@ -120,6 +141,8 @@ public abstract class AbstractCountFilter {
 		return false;
 	}
 
-	protected abstract boolean filter(final int variantBaseI, final ParallelPileup parallelPileup, Counts[] counts1, Counts[] counts2);
+	protected abstract boolean filter(final int variantBaseIndexs, 
+			final ParallelData<T> parallelData, 
+			BaseCount[] baseCounts1, BaseCount[] baseCounts2);
 
 }

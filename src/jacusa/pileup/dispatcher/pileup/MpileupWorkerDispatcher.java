@@ -1,30 +1,19 @@
 package jacusa.pileup.dispatcher.pileup;
 
-import jacusa.cli.parameters.TwoConditionPileupParameters;
+import jacusa.cli.parameters.PileupParameters;
 
+import jacusa.pileup.BasePileup;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.MpileupWorker;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
-public class MpileupWorkerDispatcher extends AbstractWorkerDispatcher<MpileupWorker> {
-
-	private final TwoConditionPileupParameters parameters;
+public class MpileupWorkerDispatcher extends AbstractWorkerDispatcher<BasePileup> {
 	
 	public MpileupWorkerDispatcher(
-			String[] pathnames1, 
-			String[] pathnames2,
 			final CoordinateProvider coordinateProvider, 
-			final TwoConditionPileupParameters parameters) {
-		super(
-				pathnames1,
-				pathnames2,
-				coordinateProvider, 
-				parameters.getMaxThreads(), 
-				parameters.getOutput(), 
-				parameters.getFormat(),
-				parameters.isSeparate()
-		);
-		this.parameters = parameters;
+			final PileupParameters parameters) {
+		super(coordinateProvider, 
+				parameters);
 	}
 
 	@Override
@@ -32,8 +21,11 @@ public class MpileupWorkerDispatcher extends AbstractWorkerDispatcher<MpileupWor
 		return new MpileupWorker(
 				this, 
 				this.getWorkerContainer().size(), 
-				parameters
-		);
+				getParameters());
 	}
 
+	public PileupParameters getParameters() {
+		return (PileupParameters) getParameters();
+	}
+	
 }

@@ -7,7 +7,7 @@ import jacusa.util.MathUtil;
 
 import org.apache.commons.math3.special.Gamma;
 
-public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
+public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T> {
 
 	private final static double EPSILON = 0.001;
 	

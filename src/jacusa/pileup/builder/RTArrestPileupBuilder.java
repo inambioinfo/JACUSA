@@ -1,29 +1,30 @@
-/**
- * 
- */
 package jacusa.pileup.builder;
-
 
 import java.util.Arrays;
 
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.Pileup;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasReadInfoCount;
+import jacusa.pileup.hasRefBase;
+import jacusa.util.Coordinate.STRAND;
 import net.sf.samtools.SAMRecord;
 
 /**
  * @author Michael Piechotta
  *
  */
-public class RTArrestPileupBuilder extends AbstractPileupBuilder {
+public class RTArrestPileupBuilder<T extends Data<T> & hasReadInfoCount & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractPileupBuilder<T> {
 	
 	final private int[] readStartCount;
 	final private int[] readEndCount;
 
-	final private AbstractPileupBuilder pileupBuilder;
+	final private AbstractPileupBuilder<T> pileupBuilder;
 	
-	public RTArrestPileupBuilder(AbstractPileupBuilder pileupBuilder) {
-		super(pileupBuilder.windowCoordinates,
+	public RTArrestPileupBuilder(final T dataContainer, final AbstractPileupBuilder<T> pileupBuilder) {
+		super(dataContainer,
+				pileupBuilder.windowCoordinates,
 				pileupBuilder.strand,
 				pileupBuilder.reader,
 				pileupBuilder.condition, 
@@ -36,13 +37,13 @@ public class RTArrestPileupBuilder extends AbstractPileupBuilder {
 	}
 	
 	@Override
-	public Pileup getPileup(int windowPosition, STRAND strand) {
-		Pileup pileup = pileupBuilder.getPileup(windowPosition, strand);
+	public T getData(int windowPosition, STRAND strand) {
+		dataContainer = pileupBuilder.getData(windowPosition, strand);
 
-		pileup.setReadStartCount(readStartCount[windowPosition]);
-		pileup.setReadEndCount(readEndCount[windowPosition]);
+		dataContainer.getReadInfoCount().setStart(readStartCount[windowPosition]);
+		dataContainer.getReadInfoCount().setEnd(readEndCount[windowPosition]);
 
-		return pileup;
+		return dataContainer;
 	}
 
 	protected void processRecord(SAMRecord record) {
@@ -94,7 +95,7 @@ public class RTArrestPileupBuilder extends AbstractPileupBuilder {
 	}
 
 	@Override
-	public FilterContainer getFilterContainer(int windowPosition, STRAND strand) {
+	public FilterContainer<T> getFilterContainer(int windowPosition, STRAND strand) {
 		return getFilterContainer(windowPosition, strand);
 	}
 

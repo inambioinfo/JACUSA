@@ -1,12 +1,11 @@
 package jacusa.method.call.statistic.dirmult.initalpha;
 
-import jacusa.pileup.Pileup;
 
 /**
  * 
  * @author Michael Piechotta
  */
-public abstract class AbstractAlphaInit {
+public abstract class AbstractAlphaInit<T> {
 
 	private String name;
 	private String desc;
@@ -44,7 +43,7 @@ public abstract class AbstractAlphaInit {
 	 */
 	public abstract double[] init(
 			final int[] baseIs,
-			final Pileup[] pileups,
+			final T[] pileups,
 			final double[][] pileupMatrix);
 
 	/**
@@ -69,7 +68,7 @@ public abstract class AbstractAlphaInit {
 	 * @param line
 	 * @return
 	 */
-	public abstract AbstractAlphaInit newInstance(final String line);
+	public abstract AbstractAlphaInit<T> newInstance(final String line);
 
 	/**
 	 * Calculate the coverage per pileup/replicate taking pseudocounts into account

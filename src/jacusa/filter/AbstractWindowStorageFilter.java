@@ -1,20 +1,24 @@
 package jacusa.filter;
 
-
-import jacusa.pileup.Counts;
-import jacusa.pileup.DefaultPileup.STRAND;
+import jacusa.pileup.BaseCount;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.WindowCache;
+import jacusa.util.Coordinate.STRAND;
 import jacusa.util.Location;
 
-public abstract class AbstractWindowStorageFilter extends AbstractStorageFilter<WindowCache> {
+public abstract class AbstractWindowStorageFilter<T extends Data<T> & hasBaseCount & hasRefBase & hasCoordinate> extends AbstractStorageFilter<T> {
 
 	public AbstractWindowStorageFilter(final char c) {
 		super(c);
 	}
 
-	protected Counts[] getCounts(final Location location, FilterContainer[] replicateFilterContainer) {
+	protected BaseCount[] getCounts(final Location location, 
+			FilterContainer[] replicateFilterContainer) {
 		final int n = replicateFilterContainer.length;
-		Counts[] counts = new Counts[n];
+		BaseCount[] baseCount = new BaseCount[n];
 
 		// correct orientation in U,S S,U cases
 		boolean invert = false;
@@ -27,14 +31,14 @@ public abstract class AbstractWindowStorageFilter extends AbstractStorageFilter<
 			final WindowCache windowCache = getData(filterContainer);
 			final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
 
-			counts[i] = windowCache.getCounts(windowPosition);
+			baseCount[i] = windowCache.getBaseCount(windowPosition);
 			if (invert) {
-				counts[i].invertCounts();
+				baseCount[i].invert();
 			}
 			
 		}
 
-		return counts;
+		return baseCount;
 	}
 
 }

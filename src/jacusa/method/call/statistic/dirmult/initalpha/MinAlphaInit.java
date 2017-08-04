@@ -3,23 +3,22 @@ package jacusa.method.call.statistic.dirmult.initalpha;
 import java.util.Arrays;
 
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Pileup;
 
-public class MinAlphaInit extends AbstractAlphaInit {
+public class MinAlphaInit<T> extends AbstractAlphaInit<T> {
 
 	public MinAlphaInit() {
 		super("min", "alpha = min_k mean(p)");
 	}
 
 	@Override
-	public AbstractAlphaInit newInstance(String line) {
-		return new MinAlphaInit();
+	public AbstractAlphaInit<T> newInstance(String line) {
+		return new MinAlphaInit<T>();
 	}
 
 	@Override
 	public double[] init(
 			final int[] baseIs,
-			final Pileup[] pileups,
+			final T[] pileups,
 			final double[][] pileupMatrix) {
 		final double[] alpha = new double[BaseConfig.VALID.length];
 		Arrays.fill(alpha, Double.MAX_VALUE);

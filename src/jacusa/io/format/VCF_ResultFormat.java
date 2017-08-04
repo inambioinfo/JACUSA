@@ -4,26 +4,29 @@ import jacusa.JACUSA;
 import jacusa.filter.FilterConfig;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.ParallelPileup;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 
 import java.util.Calendar;
 
-public class VCF_ResultFormat extends AbstractOutputFormat {
+public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & hasCoordinate> extends AbstractOutputFormat<T> {
 
 	private BaseConfig baseConfig;
-	private FilterConfig filterConfig;
+	private FilterConfig<T> filterConfig;
 	public static final char CHAR = 'V';
 
-	public VCF_ResultFormat(final BaseConfig baseConfig, final FilterConfig filterConfig) {
+	public VCF_ResultFormat(final BaseConfig baseConfig, final FilterConfig<T> filterConfig) {
 		super(CHAR, "VCF Output format. Option -P will be ignored (VCF is unstranded)");
 		this.baseConfig = baseConfig;
 		this.filterConfig = filterConfig;
 	}
 	
 	@Override
-	public String getHeader(String[] pathnames1, String[] pathnames2) {
+	public String getHeader(String[][] pathnames) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append(getCOMMENT());
@@ -76,22 +79,22 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 			sb.append(getSEP());
 			sb.append(cols[i]);
 		}
-		for (String pathname : pathnames1)  {
-			sb.append(getSEP());
-			sb.append(pathname);
+		
+		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
+			for (String pathname : pathnames[conditionIndex])  {
+				sb.append(getSEP());
+				sb.append(pathname);
+			}
 		}
-		for (String pathname : pathnames2)  {
-			sb.append(getSEP());
-			sb.append(pathname);
-		}
+
 
 		return sb.toString();
 	}
 
 	@Override
-	public String convert2String(Result result) {
+	public String convert2String(Result<T> result) {
 		final StringBuilder sb = new StringBuilder();
-		final ParallelPileup parallelPileup = result.getParellelPileup();
+		final ParallelData<T> parallelData = result.getParellelData();
 		String filterInfo = result.getFilterInfo().combine();
 		if (filterInfo == null || filterInfo.length() == 0) {
 			filterInfo = "PASS";
@@ -99,8 +102,8 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 
 		StringBuilder sb2 = new StringBuilder();
 		boolean first = true;
-		for (int allelI : parallelPileup.getPooledPileup().getAlleles()) {
-			if (parallelPileup.getPooledPileup().getRefBase() != baseConfig.getBases()[allelI]) {
+		for (int allelI : parallelData.getCombinedPooledData().getBaseCount().getAlleles()) {
+			if (parallelData.getCombinedPooledData().getRefBase() != baseConfig.getBases()[allelI]) {
 				if (! first) {
 					sb2.append(',');
 				} else {
@@ -112,13 +115,13 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 
 		String[] cols = {
 				// contig
-				parallelPileup.getPooledPileup().getContig(),
+				parallelData.getCombinedPooledData().getContig(),
 				// position
-				Integer.toString(parallelPileup.getPooledPileup().getPosition()),
+				Integer.toString(parallelData.getCombinedPooledData().getPosition()),
 				// ID
 				Character.toString(getEMPTY()),
 				// REF
-				Character.toString(parallelPileup.getPooledPileup().getRefBase()),
+				Character.toString(parallelData.getCombinedPooledData().getRefBase()),
 				// ALT
 				sb2.toString(),
 				// QUAL
@@ -137,13 +140,14 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 			sb.append(cols[i]);
 		}
 
-		addParallelPileup(sb, parallelPileup.getPileups1());
-		addParallelPileup(sb, parallelPileup.getPileups2());
+		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); conditionIndex++) {
+			addParallelPileup(sb, parallelData.getData(conditionIndex));
+		}
 		
 		return sb.toString();
 	}
 
-	private void addParallelPileup(final StringBuilder sb, final Pileup pileups[]) {
+	private void addParallelPileup(final StringBuilder sb, final T pileups[]) {
 		for (int i = 0; i < pileups.length; ++i) {
 			// add DP
 			sb.append(getSEP());
@@ -154,19 +158,19 @@ public class VCF_ResultFormat extends AbstractOutputFormat {
 			// add BC - base counts
 			int j = 0;
 			char b = BaseConfig.VALID[j];
-			int baseI = baseConfig.getBaseI((byte)b);
+			int baseIndex = baseConfig.getBaseI((byte)b);
 			int count = 0;
-			if (baseI >= 0) {
-				count = pileups[i].getCounts().getBaseCount(baseI);
+			if (baseIndex >= 0) {
+				count = pileups[i].getBaseCount().getBaseCount(baseIndex);
 			}
 			sb.append(count);
 			++j;
 			for (; j < BaseConfig.VALID.length; ++j) {
 				b = BaseConfig.VALID[j];
-				baseI = baseConfig.getBaseI((byte)b);
+				baseIndex = baseConfig.getBaseI((byte)b);
 				count = 0;
-				if (baseI >= 0) {
-					count = pileups[i].getCounts().getBaseCount(baseI);
+				if (baseIndex >= 0) {
+					count = pileups[i].getBaseCount().getBaseCount(baseIndex);
 				}
 				sb.append(',');
 				sb.append(count);

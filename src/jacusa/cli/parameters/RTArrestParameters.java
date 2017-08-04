@@ -1,36 +1,38 @@
 package jacusa.cli.parameters;
 
-import jacusa.io.format.AbstractOutputFormat;
+import jacusa.pileup.BaseReadPileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasReadInfoCount;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 
-public class RTArrestParameters extends AbstractParameters implements hasCondition2, hasStatisticCalculator {
+public class RTArrestParameters<T extends Data<T> & hasReadInfoCount & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractParameters<T> implements hasStatisticCalculator {
 
-	private ConditionParameters condition2;
-	private StatisticParameters statisticParameters;
+	private StatisticParameters<BaseReadPileup> statisticParameters;
 
+	public RTArrestParameters(int conditions) {
+		super(conditions);
+
+		for (int conditionIndex = 0; conditionIndex < conditions; ++conditionIndex) {
+			getConditionParameters(conditionIndex).setPileupBuilderFactory(
+					new RTArrestPileupBuilderFactory<T>(new UnstrandedPileupBuilderFactory<T>()));
+		}
+		
+		statisticParameters = new StatisticParameters<BaseReadPileup>();
+	}
+	
 	public RTArrestParameters() {
 		super();
 
-		getCondition1().setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
-		condition2				= new ConditionParameters();
-		condition2.setPileupBuilderFactory(new RTArrestPileupBuilderFactory(new UnstrandedPileupBuilderFactory()));
-		statisticParameters = new StatisticParameters();
+		statisticParameters = new StatisticParameters<BaseReadPileup>();
 	}
 
 	@Override
-	public ConditionParameters getCondition2() {
-		return condition2;
-	}
-
-	@Override
-	public StatisticParameters getStatisticParameters() {
+	public StatisticParameters<BaseReadPileup> getStatisticParameters() {
 		return statisticParameters;
-	}
-
-	@Override
-	public AbstractOutputFormat getFormat() {
-		return (AbstractOutputFormat)super.getFormat();
 	}
 
 }

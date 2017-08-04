@@ -1,10 +1,15 @@
 package jacusa.filter;
 
+import jacusa.pileup.Data;
 import jacusa.pileup.Result;
-import jacusa.pileup.iterator.AbstractWindowIterator;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
+import jacusa.pileup.builder.WindowCache;
+import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Location;
 
-public abstract class AbstractStorageFilter<T> {
+public abstract class AbstractStorageFilter<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
 
 	private final char c;
 
@@ -16,24 +21,23 @@ public abstract class AbstractStorageFilter<T> {
 		return c;
 	}
 	
-	protected T getData(FilterContainer filterContainer) {
+	protected WindowCache getData(FilterContainer filterContainer) {
 		int filterI = filterContainer.getFilterConfig().c2i(c);
 
-		@SuppressWarnings("unchecked")
-		T data = (T)filterContainer.get(filterI).getContainer();
+		WindowCache data = filterContainer.get(filterI).getContainer();
 
 		return data;
 	}
 
 	protected abstract boolean filter(
-			final Result result, 
+			final Result<T> result, 
 			final Location location, 
-			final AbstractWindowIterator windowIterator);
+			final WindowIterator<T> windowIterator);
 	
 	public boolean applyFilter(
-			final Result result, 
+			final Result<T> result, 
 			final Location location, 
-			final AbstractWindowIterator windowIterator) {
+			final WindowIterator<T> windowIterator) {
 		if (filter(result, location, windowIterator)) {
 			addFilterInfo(result);
 			return true;
@@ -42,7 +46,7 @@ public abstract class AbstractStorageFilter<T> {
 		return false;
 	}
 
-	public void addFilterInfo(Result result) {
+	public void addFilterInfo(Result<T> result) {
 		result.getFilterInfo().add(Character.toString(getC()));
 	}
 

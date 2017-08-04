@@ -25,7 +25,10 @@ public class TwoConditionPileupBuilderOption extends AbstractPileupBuilderOption
 		return OptionBuilder.withLongOpt(longOpt)
 			.withArgName(longOpt.toUpperCase())
 			.hasArg(true)
-			.withDescription("Choose the library types and how parallel pileups are build for condition1(c1) and condition2(c2).\nFormat: s1,s2. \nPossible values for s1 and s2:\n" + getPossibleValues() + "\ndefault: " + LibraryType.UNSTRANDED + SEP + LibraryType.UNSTRANDED)
+			.withDescription("Choose the library types and how parallel pileups are build for " +
+					"condition1(cond1) and condition2(cond2).\nFormat: cond1,cond2. \n" +
+					"Possible values for cond1 and cond2:\n" + getPossibleValues() + "\n" +
+					"default: " + LibraryType.UNSTRANDED + SEP + LibraryType.UNSTRANDED)
 			.create(opt);
 	}
 
@@ -36,8 +39,8 @@ public class TwoConditionPileupBuilderOption extends AbstractPileupBuilderOption
 	    	String[] ss = s.split(Character.toString(SEP));
 	    	
 	    	StringBuilder sb = new StringBuilder();
-	    	sb.append("Format: s1,s2. \n");
-	    	sb.append("Possible values for s1 and s2:\n");
+	    	sb.append("Format: cond1,cond2. \n");
+	    	sb.append("Possible values for cond1 and cond2:\n");
 	    	sb.append(getPossibleValues());
 	    	
 	    	if (ss.length != 2) {

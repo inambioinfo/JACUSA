@@ -3,35 +3,40 @@ package jacusa.filter;
 import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.RatioCountFilter;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Counts;
-import jacusa.pileup.ParallelPileup;
+import jacusa.pileup.BaseCount;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
-import jacusa.pileup.iterator.AbstractWindowIterator;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
+import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Location;
 
-public class DistanceStorageFilter extends AbstractWindowStorageFilter {
+public class DistanceStorageFilter<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> extends AbstractWindowStorageFilter<T> {
 
-	private AbstractCountFilter countFilter;
-	
+	private AbstractCountFilter<T> countFilter;
+
 	public DistanceStorageFilter(final char c, final double minRatio, final int minCount, final BaseConfig baseConfig) {
 		super(c);
 
-		countFilter = new RatioCountFilter(minRatio, baseConfig);
+		countFilter = new RatioCountFilter<T>(minRatio, baseConfig);
 	}
 
 	@Override
-	protected boolean filter(final Result result, final Location location, final AbstractWindowIterator windowIterator) {
-		final ParallelPileup parallelPileup = result.getParellelPileup();
+	protected boolean filter(final Result<T> result, final Location location, final WindowIterator<T> windowIterator) {
+		final ParallelData<T> parallelData = result.getParellelData();
 
-		Counts[] counts1 = getCounts(location, windowIterator.getFilterContainers4Replicates1(location));
-		Counts[] counts2 = getCounts(location, windowIterator.getFilterContainers4Replicates2(location));
+		// FIXME make n
+		BaseCount[] baseCounts1 = getCounts(location, windowIterator.getFilterContainers(0, location));
+		BaseCount[] baseCounts2 = getCounts(location, windowIterator.getFilterContainers(1, location));
 
-		final int[] variantBaseIs = countFilter.getVariantBaseIs(parallelPileup);
-		if (variantBaseIs.length == 0) {
+		final int[] variantBaseIndexs = countFilter.getVariantBaseIndexs(parallelData);
+		if (variantBaseIndexs.length == 0) {
 			return false;
 		}
 		
-		return countFilter.filter(variantBaseIs, parallelPileup, counts1, counts2);
+		return countFilter.filter(variantBaseIndexs, parallelData, baseCounts1, baseCounts2);
 	}
 
 }

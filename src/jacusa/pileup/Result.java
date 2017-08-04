@@ -6,34 +6,33 @@ import jacusa.util.Info;
  * 
  * @author Michael Piechotta
  */
-public class Result {
+public class Result<T extends Data<T>> {
 
-	private ParallelPileup parallelPileup;
+	private ParallelData<T> parallelData;
 	private double statistic;
 	private Info filterInfo;
 	private Info resultInfo;
 	
 	public Result() {
-		parallelPileup = null;
 		statistic = Double.NaN;
-		filterInfo = new Info();
-		resultInfo = new Info();
+		filterInfo 		= new Info();
+		resultInfo 		= new Info();
 	}
 	
 	/**
 	 * 
-	 * @param parallelPileup
+	 * @param parallelData
 	 */
-	public void setParellelPileup(ParallelPileup parallelPileup) {
-		this.parallelPileup = parallelPileup;
+	public void setParallelData(ParallelData<T> parallelData) {
+		this.parallelData = parallelData;
 	}
 	
 	/**
 	 * 
 	 * @return
 	 */
-	public ParallelPileup getParellelPileup() {
-		return parallelPileup;
+	public ParallelData<T> getParellelData() {
+		return parallelData;
 	}
 
 	/**
@@ -51,7 +50,7 @@ public class Result {
 	public double getStatistic() {
 		return statistic;
 	}
-
+	
 	/**
 	 * 
 	 * @return

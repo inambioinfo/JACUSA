@@ -5,14 +5,15 @@ import jacusa.estimate.MinkaEstimateDirMultParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.AbstractDirichletStatistic;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
 
-public class DirichletMultinomialCompoundError extends AbstractDirichletStatistic {
+public class DirichletMultinomialCompoundError<T extends Data<T> & hasBaseCount> extends AbstractDirichletStatistic<T> {
 
 	protected double estimatedError = 0.01;
 	protected double priorError = 0d;
 
-	public DirichletMultinomialCompoundError(final BaseConfig baseConfig, final StatisticParameters parameters) {
+	public DirichletMultinomialCompoundError(final BaseConfig baseConfig, final StatisticParameters<T> parameters) {
 		// sorry for ugly, code call to super constructor must be first call
 		super(new MinkaEstimateDirMultParameters(), baseConfig, parameters);
 	}
@@ -28,18 +29,18 @@ public class DirichletMultinomialCompoundError extends AbstractDirichletStatisti
 	}
 
 	@Override
-	protected void populate(final Pileup pileup, final int[] baseIs, double[] pileupMatrix) {
-		double[] pileupCount = phred2Prob.colSumCount(baseIs, pileup);
-		double[] pileupError = phred2Prob.colMeanErrorProb(baseIs, pileup);
+	protected void populate(final T pileup, final int[] baseIndexs, double[] pileupMatrix) {
+		double[] pileupCount = phred2Prob.colSumCount(baseIndexs, pileup);
+		double[] pileupError = phred2Prob.colMeanErrorProb(baseIndexs, pileup);
 
-		for (int baseI : baseIs) {
+		for (int baseI : baseIndexs) {
 			pileupMatrix[baseI] += priorError;
 
 			if (pileupCount[baseI] > 0.0) {
 				pileupMatrix[baseI] += pileupCount[baseI];
-				for (int baseI2 : baseIs) {
+				for (int baseI2 : baseIndexs) {
 					if (baseI != baseI2) {
-						double combinedError = (pileupError[baseI2] + estimatedError) * (double)pileupCount[baseI] / (double)(baseIs.length - 1);
+						double combinedError = (pileupError[baseI2] + estimatedError) * (double)pileupCount[baseI] / (double)(baseIndexs.length - 1);
 						pileupMatrix[baseI2] += combinedError;
 					} else {
 						// pileupMatrix[pileupI][baseI2] -= (estimatedError) * (double)pileupCount[baseI];
@@ -52,8 +53,8 @@ public class DirichletMultinomialCompoundError extends AbstractDirichletStatisti
 	}
 
 	@Override
-	public DirichletMultinomialCompoundError newInstance() {
-		return new DirichletMultinomialCompoundError(baseConfig, parameters);
+	public DirichletMultinomialCompoundError<T> newInstance() {
+		return new DirichletMultinomialCompoundError<T>(baseConfig, parameters);
 	}
 
 	

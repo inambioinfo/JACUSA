@@ -3,6 +3,7 @@ package jacusa.cli.options;
 import jacusa.cli.parameters.StatisticParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
+import jacusa.pileup.Data;
 
 import java.util.Map;
 
@@ -10,12 +11,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class StatisticCalculatorOption extends AbstractACOption {
+public class StatisticCalculatorOption<T extends Data<T>> extends AbstractACOption {
 
-	private StatisticParameters parameters;
-	private Map<String,StatisticCalculator> statistics;
+	private StatisticParameters<T> parameters;
+	private Map<String,StatisticCalculator<T>> statistics;
 
-	public StatisticCalculatorOption(StatisticParameters parameters, Map<String,StatisticCalculator> pileup2Statistic) {
+	public StatisticCalculatorOption(StatisticParameters<T> parameters, Map<String, StatisticCalculator<T>> pileup2Statistic) {
 		this.parameters = parameters;
 
 		opt = "u";
@@ -30,7 +31,7 @@ public class StatisticCalculatorOption extends AbstractACOption {
 		StringBuilder sb = new StringBuilder();
 
 		for (String name : statistics.keySet()) {
-			StatisticCalculator statistic = statistics.get(name);
+			StatisticCalculator<T> statistic = statistics.get(name);
 
 			if(parameters.getStatisticCalculator() != null && statistic.getName().equals(parameters.getStatisticCalculator().getName())) {
 				sb.append("<*>");

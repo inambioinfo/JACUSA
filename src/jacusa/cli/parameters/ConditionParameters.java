@@ -2,6 +2,10 @@ package jacusa.cli.parameters;
 
 import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
 import jacusa.pileup.BaseConfig;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.AbstractPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 import jacusa.pileup.builder.hasLibraryType;
@@ -32,7 +36,7 @@ public class ConditionParameters implements hasLibraryType {
 	private String[] pathnames;
 	// properties for BAM files
 	private BaseConfig baseConfig;
-	private AbstractPileupBuilderFactory pileupBuilderFactory;
+	private AbstractPileupBuilderFactory<?> pileupBuilderFactory;
 	
 	public ConditionParameters() {
 		maxDepth 		= -1;
@@ -164,14 +168,14 @@ public class ConditionParameters implements hasLibraryType {
 	/**
 	 * @return the pileupBuilderFactory
 	 */
-	public AbstractPileupBuilderFactory getPileupBuilderFactory() {
+	public AbstractPileupBuilderFactory<?> getPileupBuilderFactory() {
 		return pileupBuilderFactory;
 	}
 
 	/**
 	 * @param pileupBuilderFactory the pileupBuilderFactory to set
 	 */
-	public void setPileupBuilderFactory(AbstractPileupBuilderFactory pileupBuilderFactory) {
+	public void setPileupBuilderFactory(AbstractPileupBuilderFactory<?> pileupBuilderFactory) {
 		this.pileupBuilderFactory = pileupBuilderFactory;
 	}
 

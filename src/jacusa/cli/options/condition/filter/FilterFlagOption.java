@@ -11,11 +11,15 @@ public class FilterFlagOption extends AbstractACOption {
 
 	private ConditionParameters[] conditions;
 	
-	public FilterFlagOption(final ConditionParameters[] conditions) {
-		this.conditions = conditions;
-
+	public FilterFlagOption() {
 		opt = "F";
 		longOpt = "filter-flags";
+		conditions = new ConditionParameters[] {new ConditionParameters()};
+	}
+	
+	public FilterFlagOption(final ConditionParameters[] conditions) {
+		this();
+		this.conditions = conditions;
 	}
 
 	@SuppressWarnings("static-access")

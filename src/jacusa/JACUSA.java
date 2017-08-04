@@ -19,18 +19,15 @@ nucleotide variants (SNVs) from comparing matched sequencing samples.
 
 package jacusa;
 
-
-
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.hasCondition2;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.OneConditionCallFactory;
 import jacusa.method.call.TwoConditionCallFactory;
-import jacusa.method.pileup.TwoConditionPileupFactory;
+import jacusa.method.pileup.nConditionPileupFactory;
 import jacusa.method.rtarrest.RTArrestFactory;
+import jacusa.pileup.BaseReadPileup;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.SimpleTimer;
 import jacusa.util.coordinateprovider.BedCoordinateProvider;
 import jacusa.util.coordinateprovider.CoordinateProvider;
@@ -48,7 +45,7 @@ public class JACUSA {
 	private static SimpleTimer timer;
 	public static final String NAME = "jacusa";	
 	public static final String JAR = NAME + ".jar";
-	public static final String VERSION = "2.0.0-BETA1";
+	public static final String VERSION = "2.0.0-BETA2";
 
 	// command line interface
 	private CLI cli;
@@ -60,17 +57,17 @@ public class JACUSA {
 		cli = CLI.getSingleton();
 
 		// container for available methods (e.g.: call, pileup)
-		Map<String, AbstractMethodFactory> methodFactories = new TreeMap<String, AbstractMethodFactory>();
+		Map<String, AbstractMethodFactory<?>> methodFactories = new TreeMap<String, AbstractMethodFactory<?>>();
 
-		AbstractMethodFactory[] factories = new AbstractMethodFactory[] {
+		AbstractMethodFactory<?>[] factories = new AbstractMethodFactory[] {
 			new OneConditionCallFactory(), 
 			new TwoConditionCallFactory(),
 			
-			new TwoConditionPileupFactory(),
+			new nConditionPileupFactory(0),
 
-			new RTArrestFactory()
+			new RTArrestFactory<BaseReadPileup>()
 		};
-		for (AbstractMethodFactory factory : factories) {
+		for (AbstractMethodFactory<?> factory : factories) {
 			methodFactories.put(factory.getName(), factory);
 		}
 
@@ -166,8 +163,8 @@ public class JACUSA {
 		}
 
 		// instantiate chosen method
-		AbstractMethodFactory methodFactory = cmd.getMethodFactory();
-		AbstractParameters parameters = methodFactory.getParameters();
+		AbstractMethodFactory<?> methodFactory = cmd.getMethodFactory();
+		AbstractParameters<?> parameters = methodFactory.getParameters();
 
 		// process coordinate provider
 		CoordinateProvider coordinateProvider = null;
@@ -180,19 +177,18 @@ public class JACUSA {
 
 		// prolog
 		jacusa.printProlog(args);
-		String[] pathnames1 = parameters.getCondition1().getPathnames();
-		String[] pathnames2 = new String[0];
-		if (parameters instanceof hasCondition2) {
-			pathnames2 = ((hasCondition2)parameters).getCondition2().getPathnames();
+		String[][] pathnames = new String[parameters.getConditionParameters().length][]; 
+		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
+			pathnames[conditionIndex] = parameters.getConditionParameters(conditionIndex).getPathnames();
 		}
 
 		// wrap chosen coordinate provider 
 		if (parameters.getMaxThreads() > 1) {
-			coordinateProvider = new ThreadedCoordinateProvider(coordinateProvider, pathnames1, pathnames2, parameters.getThreadWindowSize());
+			coordinateProvider = new ThreadedCoordinateProvider(coordinateProvider, pathnames, parameters.getThreadWindowSize());
 		}
 
 		// main
-		AbstractWorkerDispatcher<? extends AbstractWorker> workerDispatcher = methodFactory.getInstance(pathnames1, pathnames2, coordinateProvider);
+		AbstractWorkerDispatcher<?> workerDispatcher = methodFactory.getInstance(coordinateProvider);
 		int comparisons = workerDispatcher.run();
 
 		// epilog

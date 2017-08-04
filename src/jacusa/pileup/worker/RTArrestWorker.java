@@ -2,53 +2,68 @@ package jacusa.pileup.worker;
 
 import jacusa.cli.parameters.RTArrestParameters;
 
-import jacusa.cli.parameters.ConditionParameters;
+import jacusa.filter.AbstractStorageFilter;
+import jacusa.filter.factory.AbstractFilterFactory;
+import jacusa.method.call.statistic.StatisticCalculator;
+import jacusa.pileup.BaseReadPileup;
+import jacusa.pileup.ParallelData;
+import jacusa.pileup.Result;
 import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
-import jacusa.pileup.iterator.AbstractWindowIterator;
-import jacusa.pileup.iterator.TwoConditionIterator;
+import jacusa.pileup.iterator.WindowIterator;
 import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
-import net.sf.samtools.SAMFileReader;
+import jacusa.util.Location;
 
-public class RTArrestWorker extends AbstractRTArrestWorker {
+public class RTArrestWorker extends AbstractWorker<BaseReadPileup> {
 
-	private SAMFileReader[] readers1;
-	private SAMFileReader[] readers2;
-	private RTArrestParameters parameters;
+	private RTArrestParameters<BaseReadPileup> parameters;
+	private StatisticCalculator<BaseReadPileup> statisticCalculator;
 	
-	private final Variant variant;
+	private final Variant<BaseReadPileup> variant;
 	
 	public RTArrestWorker(
-			final RTArrestWorkerDispatcher threadDispatcher,
+			final RTArrestWorkerDispatcher workerDispatcher,
 			final int threadId,
-			final RTArrestParameters parameters) {
-		super(
-				threadDispatcher, 
+			final RTArrestParameters<BaseReadPileup> parameters) {
+		super(workerDispatcher, 
 				threadId,
-				parameters.getStatisticParameters(), 
-				parameters
-		);
+				parameters);
 
 		this.parameters = parameters;
-		readers1 = initReaders(parameters.getCondition1().getPathnames());
-		readers2 = initReaders(parameters.getCondition2().getPathnames());
-
-		variant = new RTArrestVariantParallelPileup();
-	}
-
-	@Override
-	protected AbstractWindowIterator buildIterator(final Coordinate coordinate) {
-		ConditionParameters condition1 = parameters.getCondition1();
-		ConditionParameters condition2 = parameters.getCondition2();
+		statisticCalculator = parameters.getStatisticParameters().getStatisticCalculator().newInstance();
 		
-		return new TwoConditionIterator(coordinate, variant, readers1, readers2, condition1, condition2, parameters);
+		variant = new RTArrestVariantParallelPileup(parameters.getConditionParameters());
 	}
 
 	@Override
-	protected void close() {
-		close(readers1);
-		close(readers2);
+	protected WindowIterator<BaseReadPileup> buildIterator(final Coordinate coordinate) {
+		return new WindowIterator<BaseReadPileup>(coordinate, variant, readers, parameters);
+	}
+	
+	@Override
+	protected Result<BaseReadPileup> processParallelData(
+			final ParallelData<BaseReadPileup> parallelData, 
+			final Location location, 
+			final WindowIterator<BaseReadPileup> parallelDataIterator) {
+		// result object
+		Result<BaseReadPileup> result = new Result<BaseReadPileup>();
+		result.setParallelData(parallelData);
+		statisticCalculator.addStatistic(result);
+		
+		if (statisticCalculator.filter(result.getStatistic())) {
+			return null;
+		}
+
+		if (parameters.getFilterConfig().hasFiters()) {
+			// apply each filter
+			for (AbstractFilterFactory<BaseReadPileup> filterFactory : parameters.getFilterConfig().getFactories()) {
+				AbstractStorageFilter<BaseReadPileup> storageFilter = filterFactory.createStorageFilter();
+				storageFilter.applyFilter(result, location, parallelDataIterator);
+			}
+		}
+
+		return result;
 	}
 
 }

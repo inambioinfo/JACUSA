@@ -1,13 +1,20 @@
 package jacusa.cli.parameters;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import jacusa.filter.FilterConfig;
 import jacusa.io.Output;
 import jacusa.io.OutputPrinter;
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.BaseConfig;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 
-public abstract class AbstractParameters implements hasCondition1 {
+public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements hasConditions {
 	
 	// cache related
 	private int windowSize;
@@ -22,13 +29,13 @@ public abstract class AbstractParameters implements hasCondition1 {
 	private String bedPathname;
 
 	// chosen method
-	private AbstractMethodFactory methodFactory;
+	private AbstractMethodFactory<?> methodFactory;
 
-	private ConditionParameters condition1;
+	protected List<ConditionParameters> conditionParameters;
 
 	private Output output;
-	private AbstractOutputFormat format;
-	private FilterConfig filterConfig;
+	private AbstractOutputFormat<T> format;
+	private FilterConfig<T> filterConfig;
 
 	private boolean separate;
 	
@@ -46,10 +53,10 @@ public abstract class AbstractParameters implements hasCondition1 {
 		maxThreads		= 1;
 		
 		bedPathname		= new String();
-		condition1			= new ConditionParameters();
-		
+		conditionParameters	= new ArrayList<ConditionParameters>(2);
+
 		output			= new OutputPrinter();
-		filterConfig	= new FilterConfig();
+		filterConfig	= new FilterConfig<T>();
 		
 		separate		= false;
 		
@@ -57,18 +64,26 @@ public abstract class AbstractParameters implements hasCondition1 {
 		collectLQBCs	= false;
 	}
 
-	public AbstractOutputFormat getFormat() {
+	public AbstractParameters(final int conditions) {
+		this();
+		
+		for (int i = 0; i < conditions; i++) {
+			conditionParameters.add(new ConditionParameters());
+		}
+	}
+	
+	public AbstractOutputFormat<T> getFormat() {
 		return format;
 	}
 
-	public void setFormat(AbstractOutputFormat format) {
+	public void setFormat(AbstractOutputFormat<T> format) {
 		this.format = format;
 	}
 	
 	/**
 	 * @return the filterConfig
 	 */
-	public FilterConfig getFilterConfig() {
+	public FilterConfig<T> getFilterConfig() {
 		return filterConfig;
 	}
 	
@@ -86,11 +101,24 @@ public abstract class AbstractParameters implements hasCondition1 {
 		this.output = output;
 	}
 
-	/**
-	 * @return the condition1
-	 */
-	public ConditionParameters getCondition1() {
-		return condition1;
+	@Override
+	public ConditionParameters[] getConditionParameters() {
+		return (ConditionParameters[])conditionParameters.toArray();
+	}
+	
+	@Override
+	public ConditionParameters getConditionParameters(int conditionIndex) {
+		return conditionParameters.get(conditionIndex);
+	}
+	
+	@Override
+	public int getConditions() {
+		return conditionParameters.size();
+	}
+	
+	@Override
+	public int getReplicates(int conditionIndex) {
+		return getConditionParameters(conditionIndex).getPathnames().length;
 	}
 	
 	/**
@@ -159,14 +187,14 @@ public abstract class AbstractParameters implements hasCondition1 {
 	/**
 	 * @return the methodFactory
 	 */
-	public AbstractMethodFactory getMethodFactory() {
+	public AbstractMethodFactory<?> getMethodFactory() {
 		return methodFactory;
 	}
 
 	/**
 	 * @param methodFactory the methodFactory to set
 	 */
-	public void setMethodFactory(AbstractMethodFactory methodFactory) {
+	public void setMethodFactory(AbstractMethodFactory<?> methodFactory) {
 		this.methodFactory = methodFactory;
 	}
 

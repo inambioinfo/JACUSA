@@ -6,9 +6,9 @@ import jacusa.util.Info;
 
 import org.apache.commons.math3.special.Gamma;
 
-public abstract class MinkaEstimateParameters {
+public abstract class MinkaEstimateParameters<T> {
 
-	protected AbstractAlphaInit alphaInit;
+	protected AbstractAlphaInit<T> alphaInit;
 	
 	// options for paremeters estimation
 	protected int maxIterations;
@@ -17,7 +17,7 @@ public abstract class MinkaEstimateParameters {
 	protected boolean reset;
 	
 	public MinkaEstimateParameters() {
-		alphaInit = new MeanAlphaInit();
+		alphaInit = new MeanAlphaInit<T>();
 		maxIterations = 100;
 		epsilon = 0.001;
 		reset = false;
@@ -106,11 +106,11 @@ public abstract class MinkaEstimateParameters {
 		this.epsilon = epsilon;
 	}
 
-	public AbstractAlphaInit getAlphaInit() {
+	public AbstractAlphaInit<T> getAlphaInit() {
 		return alphaInit;
 	}
 	
-	public void setAlphaInit(AbstractAlphaInit alphaInit) {
+	public void setAlphaInit(AbstractAlphaInit<T> alphaInit) {
 		this.alphaInit = alphaInit;
 	}
 

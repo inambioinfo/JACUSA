@@ -1,23 +1,22 @@
 package jacusa.method.call.statistic.dirmult.initalpha;
 
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Pileup;
 
-public class MeanAlphaInit extends AbstractAlphaInit {
+public class MeanAlphaInit<T> extends AbstractAlphaInit<T> {
 
 	public MeanAlphaInit() {
 		super("mean", "alpha = mean * n * p * q");
 	}
 
 	@Override
-	public AbstractAlphaInit newInstance(String line) {
-		return new MeanAlphaInit();
+	public AbstractAlphaInit<T> newInstance(String line) {
+		return new MeanAlphaInit<T>();
 	}
 	
 	@Override
 	public double[] init(
 			final int[] baseIs,
-			final Pileup[] pileups,
+			final T[] pileups,
 			final double[][] pileupMatrix) {
 		final double[] alpha = new double[BaseConfig.VALID.length];
 		final double[] mean = new double[BaseConfig.VALID.length];

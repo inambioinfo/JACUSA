@@ -11,7 +11,7 @@ import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMRecord;
 
-public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage<WindowCache> {
+public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage {
 
 	// count indel, read start/end, splice site as only 1!!!
 	// this ensure that a base-call will only be counted once...

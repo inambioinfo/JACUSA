@@ -5,9 +5,10 @@ import jacusa.cli.parameters.StatisticParameters;
 import jacusa.estimate.BayesEstimateParameters;
 import jacusa.phred2prob.Phred2Prob;
 import jacusa.pileup.BaseConfig;
-import jacusa.pileup.ParallelPileup;
-import jacusa.pileup.Pileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
+import jacusa.pileup.hasBaseCount;
 
 /**
  * 
@@ -17,13 +18,13 @@ import jacusa.pileup.Result;
  * Tested if distributions are equal.
  * Same as in ACCUSA2 paper
  */
-public class ACCUSA2Statistic implements StatisticCalculator {
+public class ACCUSA2Statistic<T extends Data<T> & hasBaseCount> implements StatisticCalculator<T> {
 
-	protected final StatisticParameters parameters;
+	protected final StatisticParameters<T> parameters;
 	protected final BayesEstimateParameters estimateParameters;
 	protected final BaseConfig baseConfig;
 
-	public ACCUSA2Statistic(final BaseConfig baseConfig, final StatisticParameters parameters) {
+	public ACCUSA2Statistic(final BaseConfig baseConfig, final StatisticParameters<T> parameters) {
 		this.parameters = parameters;
 
 		final int k = baseConfig.getK();
@@ -34,30 +35,30 @@ public class ACCUSA2Statistic implements StatisticCalculator {
 	}
 
 	@Override
-	public StatisticCalculator newInstance() {
-		return new ACCUSA2Statistic(baseConfig, parameters);
+	public StatisticCalculator<T> newInstance() {
+		return new ACCUSA2Statistic<T>(baseConfig, parameters);
 	}
 
 	@Override
-	public void addStatistic(Result result) {
-		final double statistic = getStatistic(result.getParellelPileup());
+	public void addStatistic(Result<T> result) {
+		final double statistic = getStatistic(result.getParellelData());
 		result.setStatistic(statistic);
 	}
 	
 	@Override
-	public double getStatistic(final ParallelPileup parallelPileup) {
+	public double getStatistic(final ParallelData<T> parallelData) {
 		// use all bases for calculation
-		final int baseIs[] = baseConfig.getBasesI();
+		final int baseIs[] = baseConfig.getBasesIndex();
 
 		// first condition
 		// probability matrix for all pileups in condition1 (bases in column, pileups in rows)
-		final double[][] probs1 = estimateParameters.probabilityMatrix(baseIs, parallelPileup.getPileups1());
-		final DirichletDist dirichlet1 = getDirichlet(baseIs, parallelPileup.getPileups1());
+		final double[][] probs1 = estimateParameters.probabilityMatrix(baseIs, parallelData.getData(0));
+		final DirichletDist dirichlet1 = getDirichlet(baseIs, parallelData.getData(0));
 		final double density11 = getDensity(baseIs, probs1, dirichlet1);
 
 		// second condition - see above
-		final double[][] probs2 = estimateParameters.probabilityMatrix(baseIs, parallelPileup.getPileups2());
-		final DirichletDist dirichlet2 = getDirichlet(baseIs, parallelPileup.getPileups2());
+		final double[][] probs2 = estimateParameters.probabilityMatrix(baseIs, parallelData.getData(1));
+		final DirichletDist dirichlet2 = getDirichlet(baseIs, parallelData.getData(1));
 		final double density22 = getDensity(baseIs, probs2, dirichlet2);
 
 		// null model - distributions are the same
@@ -88,7 +89,7 @@ public class ACCUSA2Statistic implements StatisticCalculator {
 		return density;
 	}
 
-	protected DirichletDist getDirichlet(final int[] baseIs, final Pileup[] pileups) {
+	protected DirichletDist getDirichlet(final int[] baseIs, final T[] pileups) {
 		final double[] alpha = estimateParameters.estimateAlpha(baseIs, pileups);
 		return new DirichletDist(alpha);
 	}

@@ -19,13 +19,26 @@ public class ThreadedCoordinateProvider implements CoordinateProvider {
 
 	private SAMFileReader[] readers;
 	
-	public ThreadedCoordinateProvider(final CoordinateProvider cp, String[] pathnames1, String[] pathnames2, final int windowSize) {
+	public ThreadedCoordinateProvider(final CoordinateProvider cp, final String[][] pathnames, final int windowSize) {
 		this.cp = cp;
 		this.windowSize = windowSize;
 		
-		readers = new SAMFileReader[pathnames1.length + pathnames2.length];
-		System.arraycopy(initReaders(pathnames1), 0, readers, 0, pathnames1.length);
-		System.arraycopy(initReaders(pathnames2), 0, readers, pathnames1.length, pathnames2.length);
+		int totalReplicates = 0;
+		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
+			totalReplicates += pathnames[conditionIndex].length;
+		}
+		
+		readers = new SAMFileReader[totalReplicates];
+		int globalReplicates = 0;
+		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
+			System.arraycopy(
+					initReaders(pathnames[conditionIndex]), 
+					0, 
+					readers, 
+					globalReplicates, 
+					pathnames[conditionIndex].length);
+			globalReplicates += pathnames[conditionIndex].length;
+		}
 	}
 
 	@Override

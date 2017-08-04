@@ -1,9 +1,10 @@
 package jacusa.cli.options.condition;
 
+
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
-import jacusa.filter.factory.MaxDepthFilterFactory;
+// import jacusa.filter.factory.MaxDepthFilterFactory;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -46,9 +47,12 @@ public class MaxDepthConditionOption extends AbstractACOption {
 	    	}
 	    	condition.setMaxDepth(maxDepth);
 
+	    	/*
+	    	 * FIXME
 	    	if (! parameters.getFilterConfig().hasFilter(MaxDepthFilterFactory.C)) {
 	    		parameters.getFilterConfig().getFactories().add(new MaxDepthFilterFactory(parameters));
 	    	}
+	    	*/
 
 	    }
 	}

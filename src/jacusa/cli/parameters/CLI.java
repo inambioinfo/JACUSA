@@ -5,6 +5,7 @@ import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.io.format.VCF_ResultFormat;
 import jacusa.method.AbstractMethodFactory;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -20,14 +21,14 @@ public class CLI {
 	// singleton
 	private static CLI CLI;
 
-	private Map<String, AbstractMethodFactory> methodFactories;
-	private AbstractMethodFactory methodFactory;
+	private Map<String, AbstractMethodFactory<?>> methodFactories;
+	private AbstractMethodFactory<?> methodFactory;
 
 	/**
 	 * 
 	 */
 	private CLI() {
-		this.methodFactories = new HashMap<String, AbstractMethodFactory>();
+		this.methodFactories = new HashMap<String, AbstractMethodFactory<?>>();
 	}
 
 	public static CLI getSingleton() {
@@ -42,7 +43,7 @@ public class CLI {
 	 * 
 	 * @param methodFactories
 	 */
-	public void setMethodFactories(Map<String, AbstractMethodFactory> methodFactories) {
+	public void setMethodFactories(Map<String, AbstractMethodFactory<?>> methodFactories) {
 		this.methodFactories = methodFactories;
 	}
 
@@ -94,13 +95,8 @@ public class CLI {
 		// check stranded and VCF chosen
 		if (methodFactory.getParameters().getFormat().getC() == VCF_ResultFormat.CHAR) {
 			boolean error = false;
-			if(methodFactory.getParameters() instanceof hasCondition1) {
-				if (methodFactory.getParameters().getCondition1().getPileupBuilderFactory().isStranded()) {
-					error = true;
-				}
-			}
-			if(methodFactory.getParameters() instanceof hasCondition2) {
-				if (((hasCondition2)methodFactory.getParameters()).getCondition2().getPileupBuilderFactory().isStranded()) {
+			for (final ConditionParameters cp : methodFactory.getParameters().getConditionParameters()) {
+				if (cp.getLibraryType() != LibraryType.UNSTRANDED) {
 					error = true;
 				}
 			}
@@ -121,7 +117,7 @@ public class CLI {
 	public void printUsage() {
 		StringBuilder sb = new StringBuilder();
 		
-		for (AbstractMethodFactory methodFactory : methodFactories.values()) {
+		for (AbstractMethodFactory<?> methodFactory : methodFactories.values()) {
 			sb.append("  ");
 			sb.append(methodFactory.getName());
 			sb.append("\t\t");
@@ -133,7 +129,7 @@ public class CLI {
 		System.err.print(sb.toString());
 	}
 
-	public AbstractMethodFactory getMethodFactory() {
+	public AbstractMethodFactory<?> getMethodFactory() {
 		return methodFactory;
 	}
 

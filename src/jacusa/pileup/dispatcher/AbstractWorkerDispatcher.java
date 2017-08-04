@@ -1,8 +1,13 @@
 package jacusa.pileup.dispatcher;
 
+
+import jacusa.cli.parameters.AbstractParameters;
 import jacusa.io.Output;
 import jacusa.io.OutputWriter;
-import jacusa.io.format.AbstractOutputFormat;
+import jacusa.pileup.Data;
+import jacusa.pileup.hasBaseCount;
+import jacusa.pileup.hasCoordinate;
+import jacusa.pileup.hasRefBase;
 import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.Coordinate;
 import jacusa.util.coordinateprovider.CoordinateProvider;
@@ -16,48 +21,44 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
+public abstract class AbstractWorkerDispatcher<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> {
 
 	private final CoordinateProvider coordinateProvider;
-	private final int maxThreads;
-	private final Output output;
+	private final AbstractParameters<T> parameters;
 
-	private final AbstractOutputFormat format;
-	private final boolean separate;
-
-	private final List<T> workerContainer;
-	private final List<T> runningWorkers;
+	private final List<AbstractWorker<T>> workerContainer;
+	private final List<AbstractWorker<T>> runningWorkers;
 
 	private Integer comparisons;
 	private List<Integer> threadIds;
 	
-	private String[] pathnames1;
-	private String[] pathnames2;
+	private String[][] pathnames;
 	
 	public AbstractWorkerDispatcher(
-			final String[] pathnames1,
-			final String[] pathnames2,
 			final CoordinateProvider coordinateProvider, 
-			final int maxThreads, 
-			final Output output, 
-			final AbstractOutputFormat format,
-			final boolean separate) {
-		this.pathnames1 = pathnames1;
-		this.pathnames2 = pathnames2;
-		
+			final AbstractParameters<T> parameters) {
 		this.coordinateProvider = coordinateProvider;
-		this.maxThreads 		= maxThreads;
-		this.output 			= output;
-		this.format				= format;
-		this.separate			= separate;
 		
-		workerContainer 		= new ArrayList<T>(maxThreads);
-		runningWorkers			= new ArrayList<T>(maxThreads);
+		pathnames = new String[parameters.getConditions()][];
+		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
+			System.arraycopy(
+					parameters.getConditionParameters(conditionIndex).getPathnames(), 
+					0, 
+					pathnames[conditionIndex], 
+					0, 
+					parameters.getConditionParameters(conditionIndex).getPathnames().length);
+			
+		}
+		
+		workerContainer 		= new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
+		runningWorkers			= new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
 		comparisons 			= 0;
 		threadIds				= new ArrayList<Integer>(10000);
+		
+		this.parameters 		= parameters;
 	}
 
-	protected abstract T buildNextWorker();	
+	protected abstract AbstractWorker<T> buildNextWorker();	
 
 	public synchronized Coordinate next() {
 		return coordinateProvider.next();
@@ -70,9 +71,9 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 	public int run() {
 		// write Header
 		try {
-			String header = format.getHeader(pathnames1, pathnames2);
+			String header = parameters.getFormat().getHeader(pathnames);
 			if (header != null) {
-				output.write(header);
+				parameters.getOutput().write(header);
 			}
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -80,7 +81,7 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 		
 		while (hasNext() || ! runningWorkers.isEmpty()) {
 			for (int i = 0; i < runningWorkers.size(); ++i) {
-				T runningWorker = runningWorkers.get(i);
+				AbstractWorker<T> runningWorker = runningWorkers.get(i);
 				
 				switch (runningWorker.getStatus()) {
 				case FINISHED:
@@ -99,8 +100,8 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 
 			synchronized (this) {
 				// fill thread container
-				while (runningWorkers.size() < maxThreads && hasNext()) {
-					T worker = buildNextWorker();
+				while (runningWorkers.size() < parameters.getMaxThreads() && hasNext()) {
+					AbstractWorker<T> worker = buildNextWorker();
 					
 					workerContainer.add(worker);
 					runningWorkers.add(worker);
@@ -129,16 +130,8 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 	 * @return
 	 */
 
-	public List<T> getWorkerContainer() {
+	public List<AbstractWorker<T>> getWorkerContainer() {
 		return workerContainer;
-	}
-
-	public AbstractOutputFormat getFormat() {
-		return format;
-	}
-
-	public Output getOutput() {
-		return output;
 	}
 
 	public List<Integer> getThreadIds() {
@@ -147,20 +140,20 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 	
 	protected void writeOutput() {
 		Output filteredOutput = null;
-		if (separate) {
-			final String filename = output.getInfo().concat(".filtered");
+		if (parameters.isSeparate()) {
+			final String filename = parameters.getOutput().getInfo().concat(".filtered");
 			final File file = new File(filename);
 			try {
 				filteredOutput = new OutputWriter(file);
-				filteredOutput.write(format.getHeader(pathnames1, pathnames2));
+				filteredOutput.write(parameters.getFormat().getHeader(pathnames));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
 
-		BufferedReader[] brs = new BufferedReader[maxThreads];
-		for (int threadId = 0; threadId < maxThreads; ++threadId) {
-			String filename = output.getInfo() + "_" + threadId + "_tmp.gz";
+		BufferedReader[] brs = new BufferedReader[parameters.getMaxThreads()];
+		for (int threadId = 0; threadId < brs.length; ++threadId) {
+			String filename = parameters.getOutput().getInfo() + "_" + threadId + "_tmp.gz";
 			final File file = new File(filename);
 
 			try {
@@ -179,8 +172,8 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 				while((line = br.readLine()) != null && ! line.startsWith("##")) {
 					final int i = line.length() - 1;
 					final char c = line.charAt(i);
-					if (separate == false || c == 'F') {
-						output.write(line.substring(0, i));
+					if (parameters.isSeparate() == false || c == 'F') {
+						parameters.getOutput().write(line.substring(0, i));
 					} else {
 						filteredOutput.write(line.substring(0, i));
 					}
@@ -199,13 +192,13 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 			}
 		}
 		
-		for (int threadId = 0; threadId < maxThreads; ++threadId) {
-			String filename = output.getInfo() + "_" + threadId + "_tmp.gz";
+		for (int threadId = 0; threadId < parameters.getMaxThreads(); ++threadId) {
+			String filename = parameters.getOutput().getInfo() + "_" + threadId + "_tmp.gz";
 			new File(filename).delete();
 		}
 		
 		try {
-			output.close();
+			parameters.getOutput().close();
 			if (filteredOutput != null) {
 				filteredOutput.close();
 			}
@@ -213,6 +206,10 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractWorker> {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	public AbstractParameters<T> getParameters() {
+		return parameters;
 	}
 
 }

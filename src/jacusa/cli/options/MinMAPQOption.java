@@ -10,13 +10,17 @@ public class MinMAPQOption extends AbstractACOption {
 
 	private ConditionParameters[] conditions;
 	
-	public MinMAPQOption(final ConditionParameters[] conditions) {
-		this.conditions = conditions;
-
+	public MinMAPQOption() {
 		opt = "m";
 		longOpt = "min-mapq";
+		
+		conditions = new ConditionParameters[] {new ConditionParameters()};
 	}
-
+	
+	public MinMAPQOption(final ConditionParameters[] conditions) {
+		this();
+		this.conditions = conditions;
+	}
 
 	@SuppressWarnings("static-access")
 	@Override

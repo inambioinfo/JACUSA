@@ -112,7 +112,7 @@ public class BaseConfig {
 		}
 	}
 
-	public int[] getBasesI() {
+	public int[] getBasesIndex() {
 		return basesI;
 	}
 

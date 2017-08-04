@@ -1,13 +1,14 @@
 package jacusa.method.call.statistic;
 
-import jacusa.pileup.ParallelPileup;
+import jacusa.pileup.Data;
+import jacusa.pileup.ParallelData;
 import jacusa.pileup.Result;
 
 /**
  * 
  * @author Michael Piechotta
  */
-public interface StatisticCalculator {
+public interface StatisticCalculator<T extends Data<T>> {
 
 	/**
 	 * Add test-statistic to result.
@@ -15,15 +16,15 @@ public interface StatisticCalculator {
 	 * 
 	 * @param result
 	 */
-	public void addStatistic(final Result result);
+	public void addStatistic(final Result<T> result);
 	
 	/**
 	 * Calculate test-statistic for parallelPileup.
 	 * 
-	 * @param parallelPileup
+	 * @param parallelData
 	 * @return
 	 */
-	public double getStatistic(final ParallelPileup parallelPileup);
+	public double getStatistic(final ParallelData<T> parallelData);
 
 	/**
 	 * Indicates if a value is valid.
@@ -38,7 +39,7 @@ public interface StatisticCalculator {
 	 * 
 	 * @return
 	 */
-	public StatisticCalculator newInstance();
+	public StatisticCalculator<T> newInstance();
 
 	/**
 	 * Return the short name of this StatisticCalculator.

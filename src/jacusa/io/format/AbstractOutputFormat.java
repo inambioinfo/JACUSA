@@ -1,8 +1,9 @@
 package jacusa.io.format;
 
+import jacusa.pileup.Data;
 import jacusa.pileup.Result;
 
-public abstract class AbstractOutputFormat {
+public abstract class AbstractOutputFormat<T extends Data<T>> {
 
 	private char c;
 	private String desc;
@@ -21,10 +22,10 @@ public abstract class AbstractOutputFormat {
 	}
 
 	// Header is empty by default
-	public String getHeader(String[] pathnames1, String[] pathnames2) {
+	public String getHeader(String[][] pathnames) {
 		return null;
 	}
 
-	public abstract String convert2String(Result result);
+	public abstract String convert2String(Result<T> result);
 
 }
