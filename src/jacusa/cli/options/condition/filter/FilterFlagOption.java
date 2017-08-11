@@ -1,24 +1,22 @@
 package jacusa.cli.options.condition.filter;
 
+import java.util.List;
+
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FilterFlagOption extends AbstractACOption {
+public class FilterFlagOption<T extends AbstractData> extends AbstractACOption {
 
-	private ConditionParameters[] conditions;
+	private final List<ConditionParameters<T>> conditions;
 	
-	public FilterFlagOption() {
+	public FilterFlagOption(final List<ConditionParameters<T>> conditions) {
 		opt = "F";
 		longOpt = "filter-flags";
-		conditions = new ConditionParameters[] {new ConditionParameters()};
-	}
-	
-	public FilterFlagOption(final ConditionParameters[] conditions) {
-		this();
 		this.conditions = conditions;
 	}
 
@@ -28,7 +26,7 @@ public class FilterFlagOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 				.withArgName(longOpt.toUpperCase())
 				.hasArg(true)
-		        .withDescription("filter reads with flags " + longOpt.toUpperCase() + " \n default: " + conditions[0].getFilterFlags())
+		        .withDescription("filter reads with flags " + longOpt.toUpperCase() + " \n default: " + conditions.get(0).getFilterFlags())
 		        .create(opt);
 	}
 
@@ -40,7 +38,7 @@ public class FilterFlagOption extends AbstractACOption {
 	    	if (filterFlags <= 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + filterFlags + " not valid.");
 	    	}
-	    	for (ConditionParameters condition : conditions) {
+	    	for (ConditionParameters<?> condition : conditions) {
 	    		condition.setFilterFlags(filterFlags);
 	    	}
 	    }

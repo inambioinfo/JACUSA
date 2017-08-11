@@ -10,11 +10,11 @@ import org.apache.commons.cli.OptionBuilder;
 public class MinMAPQConditionOption extends AbstractACOption {
 
 	private int conditionIndex;
-	private ConditionParameters parameters;
+	private ConditionParameters<?> condition;
 	
-	public MinMAPQConditionOption(final int conditionIndex, final ConditionParameters parameters) {
+	public MinMAPQConditionOption(final int conditionIndex, final ConditionParameters<?> condition) {
 		this.conditionIndex = conditionIndex;
-		this.parameters = parameters;
+		this.condition = condition;
 
 		opt = "m" + conditionIndex;
 		longOpt = "min-mapq" + conditionIndex;
@@ -26,7 +26,7 @@ public class MinMAPQConditionOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 				.withArgName(longOpt.toUpperCase())
 				.hasArg(true)
-		        .withDescription("filter " + conditionIndex + " positions with MAPQ < " + longOpt.toUpperCase() + "\n default: " + parameters.getMinMAPQ())
+		        .withDescription("filter " + conditionIndex + " positions with MAPQ < " + longOpt.toUpperCase() + "\n default: " + condition.getMinMAPQ())
 		        .create(opt);
 	}
 
@@ -38,7 +38,7 @@ public class MinMAPQConditionOption extends AbstractACOption {
 	    	if(minMapq < 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minMapq + " not valid.");
 	    	}
-	    	parameters.setMinMAPQ(minMapq);
+	    	condition.setMinMAPQ(minMapq);
 	    }
 	}
 

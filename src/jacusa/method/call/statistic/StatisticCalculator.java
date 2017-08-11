@@ -1,14 +1,14 @@
 package jacusa.method.call.statistic;
 
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
+import jacusa.data.AbstractData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 
 /**
  * 
  * @author Michael Piechotta
  */
-public interface StatisticCalculator<T extends Data<T>> {
+public interface StatisticCalculator<T extends AbstractData> {
 
 	/**
 	 * Add test-statistic to result.
@@ -24,7 +24,7 @@ public interface StatisticCalculator<T extends Data<T>> {
 	 * @param parallelData
 	 * @return
 	 */
-	public double getStatistic(final ParallelData<T> parallelData);
+	public double getStatistic(final ParallelPileupData<T> parallelData);
 
 	/**
 	 * Indicates if a value is valid.

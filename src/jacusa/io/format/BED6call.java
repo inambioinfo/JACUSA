@@ -1,14 +1,12 @@
 package jacusa.io.format;
 
+import jacusa.data.BaseQualData;
+import jacusa.data.BaseConfig;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.filter.FilterConfig;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasRefBase;
 
-public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> extends AbstractOutputFormat<T> {
+public class BED6call extends AbstractOutputFormat<BaseQualData> {
 
 	public static final char CHAR = 'B';
 	
@@ -17,15 +15,15 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 	public static final char SEP 	= '\t';
 	public static final char SEP2 	= ',';
 	
-	protected FilterConfig filterConfig;
+	protected FilterConfig<BaseQualData> filterConfig;
 	protected BaseConfig baseConfig;
 	private boolean showReferenceBase;
 
-	public BED6callFormat(
+	public BED6call(
 			final char c,
 			final String desc,
 			final BaseConfig baseConfig, 
-			final FilterConfig filterConfig,
+			final FilterConfig<BaseQualData> filterConfig,
 			final boolean showReferenceBase) {
 		super(c, desc);
 		
@@ -35,9 +33,9 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 		this.showReferenceBase = showReferenceBase;
 	}
 
-	public BED6callFormat(
+	public BED6call(
 			final BaseConfig baseConfig, 
-			final FilterConfig filterConfig,
+			final FilterConfig<BaseQualData> filterConfig,
 			final boolean showReferenceBase) {
 		this(CHAR, "Default", baseConfig, filterConfig, showReferenceBase);
 	}
@@ -103,8 +101,8 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 		}
 	}
 
-	public String convert2String(Result<T> result) {
-		final ParallelData<T> parallelData = result.getParellelData();
+	public String convert2String(Result<BaseQualData> result) {
+		final ParallelPileupData<BaseQualData> parallelData = result.getParellelData();
 		final double statistic = result.getStatistic();
 		final StringBuilder sb = new StringBuilder();
 
@@ -126,10 +124,10 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 		}
 
 		sb.append(SEP);
-		sb.append(parallelData.getStrand().character());
+		sb.append(parallelData.getCombinedPooledData().getStrand().character());
 
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); conditionIndex++) {
-			addPileups(sb, parallelData.getData(conditionIndex));
+			addData(sb, parallelData.getData(conditionIndex));
 		}
 
 		sb.append(getSEP());
@@ -143,7 +141,7 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 		
 		if (showReferenceBase) {
 			sb.append(getSEP());
-			sb.append(parallelData.getCombinedPooledData().getRefBase());
+			sb.append(parallelData.getCombinedPooledData().getReferenceBase());
 		}
 
 		return sb.toString();		
@@ -152,26 +150,26 @@ public class BED6callFormat<T extends Data<T> & hasBaseCount & hasRefBase> exten
 	/*
 	 * Helper function
 	 */
-	protected void addPileups(final StringBuilder sb, final T[] pileups) {
+	protected void addData(final StringBuilder sb, final BaseQualData[] data) {
 		// output condition: Ax,Cx,Gx,Tx
-		for (final T pileup : pileups) {
+		for (final BaseQualData d : data) {
 			sb.append(SEP);
 
 			int i = 0;
-			char b = BaseConfig.VALID[i];
-			int baseI = baseConfig.getBaseI((byte)b);
+			char b = BaseConfig.BASES[i];
+			int baseI = baseConfig.getBaseIndex((byte)b);
 			int count = 0;
 			if (baseI >= 0) {
-				count = pileup.getBaseCount().getBaseCount(baseI);
+				count = d.getBaseQualCount().getBaseCount(baseI);
 			}
 			sb.append(count);
 			++i;
-			for (; i < BaseConfig.VALID.length; ++i) {
-				b = BaseConfig.VALID[i];
-				baseI = baseConfig.getBaseI((byte)b);
+			for (; i < BaseConfig.BASES.length; ++i) {
+				b = BaseConfig.BASES[i];
+				baseI = baseConfig.getBaseIndex((byte)b);
 				count = 0;
 				if (baseI >= 0) {
-					count = pileup.getBaseCount().getBaseCount(baseI);
+					count = d.getBaseQualCount().getBaseCount(baseI);
 				}
 				sb.append(SEP2);
 				sb.append(count);

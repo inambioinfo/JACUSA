@@ -1,9 +1,14 @@
 package jacusa.cli.parameters;
 
+import jacusa.data.AbstractData;
 import jacusa.method.call.statistic.StatisticCalculator;
-import jacusa.pileup.Data;
 
-public class StatisticParameters<T extends Data<T>> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class StatisticParameters<T extends AbstractData> {
 
 	// filter: statistic
 	private StatisticCalculator<T> statisticCalculator;
@@ -26,7 +31,7 @@ public class StatisticParameters<T extends Data<T>> {
 	public void setThreshold(double threshold) {
 		this.threshold = threshold;
 	}
-	
+
 	/**
 	 * @return the statisticCalculator
 	 */

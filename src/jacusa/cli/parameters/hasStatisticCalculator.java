@@ -1,7 +1,14 @@
 package jacusa.cli.parameters;
 
-public interface hasStatisticCalculator {
+import jacusa.data.AbstractData;
 
-	StatisticParameters getStatisticParameters();
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public interface hasStatisticCalculator<T extends AbstractData> {
+
+	StatisticParameters<T> getStatisticParameters();
 
 }

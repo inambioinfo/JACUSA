@@ -1,20 +1,17 @@
 package jacusa.filter.factory;
 
-
 import java.util.HashSet;
 import java.util.Set;
 import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
 import jacusa.filter.HomopolymerStorageFilter;
 import jacusa.filter.storage.HomopolymerFilterStorage;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public class HomopolymerFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractFilterFactory<T> {
+public class HomopolymerFilterFactory<T extends BaseQualData> 
+extends AbstractFilterFactory<T> {
 
 	private static int LENGTH = 7;
 	private int length;
@@ -26,7 +23,8 @@ public class HomopolymerFilterFactory<T extends Data<T> & hasCoordinate & hasBas
 	}
 	
 	public HomopolymerFilterFactory(final AbstractParameters<T> parameters) {
-		super('Y', "Filter wrong variant calls in the vicinity of homopolymers. Default: " + LENGTH + " (Y:length)", cigarOperator);
+		super('Y', "Filter wrong variant calls within homopolymers. " +
+				"Default: " + LENGTH + " (Y:length)", cigarOperator);
 		this.parameters = parameters;
 		length = LENGTH;
 	}
@@ -54,13 +52,17 @@ public class HomopolymerFilterFactory<T extends Data<T> & hasCoordinate & hasBas
 	}
 
 	@Override
-	public HomopolymerFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
-		return new HomopolymerFilterStorage(getC(), length, windowCoordinates, condition, parameters);
+	public HomopolymerFilterStorage createFilterStorage(
+			final WindowCoordinates windowCoordinates, 
+			final ConditionParameters<T> condition) {
+		return new HomopolymerFilterStorage(getC(), 
+				length, windowCoordinates, condition, parameters.getWindowSize(), 
+				parameters.getBaseConfig());
 	}
 
 	@Override
 	public HomopolymerStorageFilter<T> createStorageFilter() {
-		return new HomopolymerStorageFilter<T>(getC(), parameters.getBaseConfig());
+		return new HomopolymerStorageFilter<T>(getC(), parameters);
 	}
 
 	public final void setLength(int length) {

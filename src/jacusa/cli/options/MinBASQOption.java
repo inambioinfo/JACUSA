@@ -1,33 +1,32 @@
 package jacusa.cli.options;
 
+import java.util.List;
+
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class MinBASQOption extends AbstractACOption {
+public class MinBASQOption<T extends AbstractData> extends AbstractACOption {
 
-	private ConditionParameters[] conditions;
-	
-	public MinBASQOption() {
+	private final List<ConditionParameters<T>> conditions;
+
+	public MinBASQOption(final List<ConditionParameters<T>> conditions) {
 		opt = "q";
 		longOpt = "min-basq";
-		conditions = new ConditionParameters[] {new ConditionParameters()};
-	}
-	
-	public MinBASQOption(ConditionParameters[] conditions) {
-		this();
+		
 		this.conditions = conditions;
 	}
-	
+
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
 		return OptionBuilder.withLongOpt(longOpt)
 			.withArgName(longOpt.toUpperCase())
 			.hasArg(true)
-	        .withDescription("filter positions with base quality < " + longOpt.toUpperCase() + " \n default: " + conditions[0].getMinBASQ())
+	        .withDescription("filter positions with base quality < " + longOpt.toUpperCase() + " \n default: " + conditions.get(0).getMinBASQ())
 	        .create(opt);
 	}
 
@@ -39,7 +38,8 @@ public class MinBASQOption extends AbstractACOption {
 	    	if(minBASQ < 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minBASQ + " not valid.");
 	    	}
-	    	for (ConditionParameters condition : conditions) {
+	    	
+	    	for (final ConditionParameters<?> condition : conditions) {
 	    		condition.setMinBASQ(minBASQ);
 	    	}
 	    }

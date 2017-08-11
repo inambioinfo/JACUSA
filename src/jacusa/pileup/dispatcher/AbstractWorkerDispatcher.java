@@ -1,13 +1,9 @@
 package jacusa.pileup.dispatcher;
 
-
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.data.AbstractData;
 import jacusa.io.Output;
 import jacusa.io.OutputWriter;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.pileup.worker.AbstractWorker;
 import jacusa.util.Coordinate;
 import jacusa.util.coordinateprovider.CoordinateProvider;
@@ -21,7 +17,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.zip.GZIPInputStream;
 
-public abstract class AbstractWorkerDispatcher<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ * @param <T>
+ */
+public abstract class AbstractWorkerDispatcher<T extends AbstractData> {
 
 	private final CoordinateProvider coordinateProvider;
 	private final AbstractParameters<T> parameters;
@@ -58,7 +60,7 @@ public abstract class AbstractWorkerDispatcher<T extends Data<T> & hasBaseCount 
 		this.parameters 		= parameters;
 	}
 
-	protected abstract AbstractWorker<T> buildNextWorker();	
+	protected abstract AbstractWorker<T> buildNextWorker();
 
 	public synchronized Coordinate next() {
 		return coordinateProvider.next();

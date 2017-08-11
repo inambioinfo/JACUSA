@@ -1,13 +1,11 @@
 package jacusa.pileup.worker;
 
 import jacusa.JACUSA;
+
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
+import jacusa.data.AbstractData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Coordinate;
@@ -20,40 +18,46 @@ import java.util.zip.GZIPOutputStream;
 
 import net.sf.samtools.SAMFileReader;
 
-public abstract class AbstractWorker<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> extends Thread {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ * 
+ */
+public abstract class AbstractWorker<T extends AbstractData> 
+extends Thread {
 
 	public static enum STATUS {INIT, READY, FINISHED, BUSY};
 
 	private Coordinate coordinate;
-	protected WindowIterator<T> parallelDataIterator;
+	private WindowIterator<T> parallelDataIterator;
 
-	protected AbstractWorkerDispatcher<T> workerDispatcher;
+	private AbstractWorkerDispatcher<T> workerDispatcher;
 
 	private final int threadId;
 
 	private STATUS status;
-	protected int comparisons;
+	private int comparisons;
 
 	private GZIPOutputStream zip;
 	
-	protected SAMFileReader[][] readers;
+	private SAMFileReader[][] readers;
 	
 	private AbstractParameters<T> parameters;
 	
 	public AbstractWorker(final AbstractWorkerDispatcher<T> workerDispatcher,
 			final int threadId,
 			final AbstractParameters<T> parameters) {
-		this.workerDispatcher 		= workerDispatcher;
-		this.threadId				= threadId;
+		this.workerDispatcher 	= workerDispatcher;
+		this.threadId			= threadId;
 
 		readers = new SAMFileReader[parameters.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < readers.length; conditionIndex++) {
 			readers[conditionIndex] = initReaders(parameters.getConditionParameters(conditionIndex).getPathnames());
 		}
-		this.parameters				= parameters;
-		
-		status 						= STATUS.INIT;
-		comparisons 				= 0;
+		this.parameters			= parameters;
+		status 					= STATUS.INIT;
+		comparisons 			= 0;
 		
 		String filename = parameters.getOutput().getInfo() + "_" + threadId + "_tmp.gz";
 		try {
@@ -67,6 +71,7 @@ public abstract class AbstractWorker<T extends Data<T> & hasBaseCount & hasCoord
 		this.coordinate = coordinate;
 	}
 	
+	@Override
 	public final void run() {
 		while (status != STATUS.FINISHED) {
 			switch (status) {
@@ -160,7 +165,8 @@ public abstract class AbstractWorker<T extends Data<T> & hasBaseCount & hasCoord
 		return reader;
 	}
 
-	protected abstract Result<T> processParallelData(final ParallelData<T> parallelData, 
+	protected abstract Result<T> processParallelData(
+			final ParallelPileupData<T> parallelData, 
 			final Location location, 
 			final WindowIterator<T> parallelPileupIterator);
 	
@@ -180,7 +186,9 @@ public abstract class AbstractWorker<T extends Data<T> & hasBaseCount & hasCoord
 		// iterate over parallel pileups
 		while (parallelDataIterator.hasNext()) {
 			final Location location = parallelDataIterator.next();
-			final ParallelData<T> parallelPileup = parallelDataIterator.getParallelData().copy();
+			final ParallelPileupData<T> parallelPileup = 
+					parallelDataIterator.getParallelData().copy(
+							parameters.getMethodFactory().createDataContainer(parameters.getConditions(), -1));
 			final Result<T> result = processParallelData(parallelPileup, location, parallelDataIterator);
 
 			// considered comparisons
@@ -236,6 +244,10 @@ public abstract class AbstractWorker<T extends Data<T> & hasBaseCount & hasCoord
 
 	public AbstractParameters<T> getParameters() {
 		return parameters;
+	}
+	
+	public SAMFileReader[][] getReaders() {
+		return readers;
 	}
 	
 }

@@ -24,15 +24,17 @@ import jacusa.cli.parameters.CLI;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.OneConditionCallFactory;
 import jacusa.method.call.TwoConditionCallFactory;
+import jacusa.method.call.nConditionCallFactory;
 import jacusa.method.pileup.nConditionPileupFactory;
 import jacusa.method.rtarrest.RTArrestFactory;
-import jacusa.pileup.BaseReadPileup;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.util.SimpleTimer;
 import jacusa.util.coordinateprovider.BedCoordinateProvider;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 import jacusa.util.coordinateprovider.ThreadedCoordinateProvider;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -45,7 +47,7 @@ public class JACUSA {
 	private static SimpleTimer timer;
 	public static final String NAME = "jacusa";	
 	public static final String JAR = NAME + ".jar";
-	public static final String VERSION = "2.0.0-BETA2";
+	public static final String VERSION = "2.0.0-BETA3";
 
 	// command line interface
 	private CLI cli;
@@ -57,16 +59,20 @@ public class JACUSA {
 		cli = CLI.getSingleton();
 
 		// container for available methods (e.g.: call, pileup)
-		Map<String, AbstractMethodFactory<?>> methodFactories = new TreeMap<String, AbstractMethodFactory<?>>();
+		Map<String, AbstractMethodFactory<?>> methodFactories = 
+				new TreeMap<String, AbstractMethodFactory<?>>();
 
-		AbstractMethodFactory<?>[] factories = new AbstractMethodFactory[] {
-			new OneConditionCallFactory(), 
-			new TwoConditionCallFactory(),
-			
-			new nConditionPileupFactory(0),
+		List<AbstractMethodFactory<?>> factories = new ArrayList<AbstractMethodFactory<?>>(10);
+	
+		// calling variants
+		factories.add(new OneConditionCallFactory());
+		factories.add(new TwoConditionCallFactory());
+		factories.add(new nConditionCallFactory());
+		// pileup information
+		factories.add(new nConditionPileupFactory());
+		// Read info
+		factories.add(new RTArrestFactory());
 
-			new RTArrestFactory<BaseReadPileup>()
-		};
 		for (AbstractMethodFactory<?> factory : factories) {
 			methodFactories.put(factory.getName(), factory);
 		}
@@ -100,7 +106,7 @@ public class JACUSA {
 	 * @param size
 	 * @param args
 	 */
-	public void printProlog(String[] args) {
+	private void printProlog(String[] args) {
 		String lineSep = "--------------------------------------------------------------------------------";
 
 		System.err.println(lineSep);
@@ -135,7 +141,7 @@ public class JACUSA {
 	 * 
 	 * @param comparisons
 	 */
-	public void printEpilog(int comparisons) {
+	private void printEpilog(int comparisons) {
 		// print statistics to STDERR
 		printLog("Screening done using " + cli.getMethodFactory().getParameters().getMaxThreads() + " thread(s)");
 
@@ -154,18 +160,17 @@ public class JACUSA {
 	 * @param args
 	 * @throws Exception 
 	 */
-	public static void main(String[] args) throws Exception {
-		JACUSA jacusa = new JACUSA();
-		CLI cmd = jacusa.getCLI();
+	private void run(final String[] args) throws Exception {
+		CLI cmd = getCLI();
 		// parse CLI
 		if (! cmd.processArgs(args)) {
 			System.exit(1);
 		}
-
+	
 		// instantiate chosen method
 		AbstractMethodFactory<?> methodFactory = cmd.getMethodFactory();
 		AbstractParameters<?> parameters = methodFactory.getParameters();
-
+	
 		// process coordinate provider
 		CoordinateProvider coordinateProvider = null;
 		if (parameters.getBedPathname().isEmpty()) {
@@ -174,28 +179,39 @@ public class JACUSA {
 		} else {
 			coordinateProvider = new BedCoordinateProvider(parameters.getBedPathname());
 		}
-
+	
 		// prolog
-		jacusa.printProlog(args);
-		String[][] pathnames = new String[parameters.getConditionParameters().length][]; 
+		printProlog(args);
+		String[][] pathnames = new String[parameters.getConditionParameters().size()][]; 
 		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
 			pathnames[conditionIndex] = parameters.getConditionParameters(conditionIndex).getPathnames();
 		}
-
+	
 		// wrap chosen coordinate provider 
 		if (parameters.getMaxThreads() > 1) {
 			coordinateProvider = new ThreadedCoordinateProvider(coordinateProvider, pathnames, parameters.getThreadWindowSize());
 		}
-
+	
 		// main
 		AbstractWorkerDispatcher<?> workerDispatcher = methodFactory.getInstance(coordinateProvider);
 		int comparisons = workerDispatcher.run();
-
+	
 		// epilog
-		jacusa.printEpilog(comparisons);
-
+		printEpilog(comparisons);
+	
 		// cleaup
 		parameters.getOutput().close();
 	}
-
+	
+	/**
+	 * 
+	 * @param args
+	 * @throws Exception
+	 */
+	public static void main(String[] args) throws Exception {
+		JACUSA jacusa = new JACUSA();
+		jacusa.run(args);
+	}
+		
+	
 }

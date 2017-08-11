@@ -4,15 +4,11 @@ import jacusa.JACUSA;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
+import jacusa.data.ParallelPileupData;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.Data;
-import jacusa.pileup.DefaultParallelData;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.pileup.builder.AbstractPileupBuilder;
-import jacusa.pileup.builder.AbstractPileupBuilderFactory;
+import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.iterator.location.LocationAdvancer;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -20,54 +16,61 @@ import jacusa.util.Coordinate.STRAND;
 import jacusa.util.Location;
 import jacusa.util.WindowCoordinates;
 
+import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 
-public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements Iterator<Location> {
+public class WindowIterator<T extends AbstractData> 
+implements Iterator<Location> {
 
 	protected final Coordinate coordinate;
 	protected Variant<T> filter;
 	
-	protected ParallelData<T> parallelData;
+	protected ParallelPileupData<T> parallelData;
 	
 	protected final AbstractPileupBuilder<T>[][] pileupBuilders;
 	
 	protected LocationAdvancer locationAdvancer;
 	
-	@SuppressWarnings("unchecked")
+	protected AbstractParameters<T> parameters;
+	
 	public WindowIterator(
 			final Coordinate coordinate, 
 			final Variant<T> filter,
+			final AbstractPileupBuilder<T>[][] pileupBuilders,
 			final SAMFileReader[][] readers,
 			final AbstractParameters<T> parameters) {
 		this.coordinate = coordinate;
 
-		this.filter		= filter;
-		parallelData  = new DefaultParallelData<T>();
+		this.filter	= filter;
+		this.parallelData = new ParallelPileupData<T>();
 
 		final int conditions = parameters.getConditions();
 		
-		pileupBuilders = (AbstractPileupBuilder<T>[][]) new Object[conditions][];
+		this.pileupBuilders = parameters.getMethodFactory().
 		
 		final boolean[] isStranded = new boolean[conditions];
-		final Location[] locs = new Location[conditions];
+		final Location[] locactions = new Location[conditions];
 		
 		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-			ConditionParameters condition = parameters.getConditionParameters(conditionIndex);
+			ConditionParameters<T> condition = parameters.getConditionParameters(conditionIndex);
 			
 			pileupBuilders[conditionIndex] = createPileupBuilders(
-					(AbstractPileupBuilderFactory<T>) condition.getPileupBuilderFactory(), 
+					condition.getPileupBuilderFactory(), 
 					coordinate, readers[conditionIndex], parameters);
 			
 			isStranded[conditionIndex] = condition.getPileupBuilderFactory().isStranded();
-			locs[conditionIndex] = initLocation(coordinate, condition.getPileupBuilderFactory().isStranded(), pileupBuilders[conditionIndex]);
+			locactions[conditionIndex] = initLocation(coordinate, condition.getPileupBuilderFactory().isStranded(), pileupBuilders[conditionIndex]);
 		}
-		
-		locationAdvancer = new LocationAdvancer(isStranded, locs);
+
+		locationAdvancer = new LocationAdvancer(isStranded, locactions);
+
+		this.parameters = parameters;
 	}
 
 	protected Location initLocation(Coordinate coordinate, 
@@ -162,23 +165,22 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 				parallelData.setContig(coordinate.getSequenceName());
 				parallelData.setStart(location.genomicPosition);
 				parallelData.setEnd(parallelData.getStart());
-				parallelData.setStrand(location.strand);
+				// parallelData.setStrand(location.strand);
 
 				for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 					locs[conditionIndex].strand = STRAND.REVERSE;
-					// FIXME parallelData.setData(getData(location, pileupBuilders[conditionIndex]));
+					parallelData.setData(conditionIndex, getData(location, pileupBuilders[conditionIndex]));
 				}
 
 				if (filter.isValid(parallelData)) {
 					return true;
 				} else {
 					// reset
-					// FIXME
 					//parallelData.setPileups1(new Pileup[0]);
 					//parallelData.setPileups2(new Pileup[0]);
+					parallelData.reset();
 					for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 						locs[conditionIndex].strand = STRAND.REVERSE;
-						// FIXME parallelData.setData();
 					}
 
 					locationAdvancer.advance();
@@ -199,7 +201,7 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 		return current;
 	}
 	
-	public FilterContainer<T>[] getFilterContainers(int conditionIndex, Location location) {
+	public List<FilterContainer<T>> getFilterContainers(int conditionIndex, Location location) {
 		return getFilterCaches(location, pileupBuilders[conditionIndex]);
 	}
 	
@@ -212,13 +214,14 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 	 * @return
 	 */
 	protected AbstractPileupBuilder<T>[] createPileupBuilders(
-			final AbstractPileupBuilderFactory<T> pileupBuilderFactory, 
+			final AbstractDataBuilderFactory<T> pileupBuilderFactory,
 			final Coordinate coordinate, 
 			final SAMFileReader[] readers, 
 			final AbstractParameters<T> parameters) {
-		@SuppressWarnings("unchecked")
-		AbstractPileupBuilder<T>[] pileupBuilders = (AbstractPileupBuilder<T>[]) new Object[readers.length];
 
+		@SuppressWarnings("unchecked")
+		final AbstractPileupBuilder<T>[] dataBuilders = (AbstractPileupBuilder<T>[]) new Object[readers.length];
+		
 		for(int i = 0; i < readers.length; ++i) {
 			final int sequenceLength = readers[i].getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
 			if (coordinate.getEnd() > sequenceLength) {
@@ -231,16 +234,16 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 					parameters.getWindowSize(), 
 					coordinate.getEnd());
 			
-			pileupBuilders[i] = pileupBuilderFactory.newInstance(
-					pileupBuilderFactory.getDataContainer(),
+			dataBuilders[i] = pileupBuilderFactory.newInstance(
 					windowCoordinates, readers[i], 
 					parameters.getConditionParameters(i), parameters);
 		}
 
-		return pileupBuilders;
+		return dataBuilders;
 	}
 
-	protected SAMRecord getNextValidRecord(final int targetGenomicPosition, final AbstractPileupBuilder<T>[] pileupBuilders) {
+	protected SAMRecord getNextValidRecord(final int targetGenomicPosition, 
+			final AbstractPileupBuilder<T>[] pileupBuilders) {
 		return pileupBuilders[0].getNextValidRecord(targetGenomicPosition);
 	}
 
@@ -252,7 +255,7 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 		if (windowPosition < 0) {
 			return false;
 		}
-		
+
 		for (AbstractPileupBuilder<T> pileupBuilder : pileupBuilders) {
 			if (! pileupBuilder.isCovered(windowPosition, location.strand)) {
 				return false;
@@ -264,15 +267,14 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 	
 	protected T[] getData(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
 		int n = pileupBuilders.length;
-		@SuppressWarnings("unchecked")
-		T[] pileups = (T[]) new Object[n];
 
+		T[] data = parameters.getMethodFactory().createDataContainer(pileupBuilders.length);
 		int windowPosition = pileupBuilders[0].getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
 		for(int i = 0; i < n; ++i) {
-			pileups[i] = pileupBuilders[i].getData(windowPosition, location.strand);
+			data[i] = pileupBuilders[i].getData(windowPosition, location.strand);
 		}
 
-		return pileups;
+		return data;
 	}
 	
 	public int getAlleleCount(Location location) {
@@ -305,14 +307,13 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 		return alleles;
 	}
 
-	protected FilterContainer<T>[] getFilterCaches(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
+	protected List<FilterContainer<T>> getFilterCaches(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
 		int replicates = pileupBuilders.length;
-		@SuppressWarnings("unchecked")
-		FilterContainer<T>[] filterContainers = (FilterContainer<T>[]) new Object[replicates];
 
+		List<FilterContainer<T>> filterContainers = new ArrayList<FilterContainer<T>>(replicates);
 		int windowPosition = pileupBuilders[0].getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
 		for (int i = 0; i < replicates; ++i) {
-			filterContainers[i] = pileupBuilders[i].getFilterContainer(windowPosition, location.strand);
+			filterContainers.add(pileupBuilders[i].getFilterContainer(windowPosition, location.strand));
 		}
 
 		return filterContainers;
@@ -372,10 +373,10 @@ public class WindowIterator<T extends Data<T> & hasCoordinate & hasBaseCount & h
 		return coordinate;
 	}
 
-	public ParallelData<T> getParallelData() {
+	public ParallelPileupData<T> getParallelData() {
 		return parallelData;
 	}
-	
+		
 	@Override
 	public void remove() {
 		// not needed

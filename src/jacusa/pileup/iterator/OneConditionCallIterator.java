@@ -1,26 +1,29 @@
 package jacusa.pileup.iterator;
 
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.data.BaseQualData;
+import jacusa.pileup.builder.AbstractPileupBuilder;
 import jacusa.pileup.iterator.variant.Variant;
-import jacusa.pileup.BasePileup;
 import jacusa.util.Coordinate;
 import net.sf.samtools.SAMFileReader;
 
-public class OneConditionCallIterator extends WindowIterator<BasePileup> {
+public class OneConditionCallIterator<T extends BaseQualData> 
+extends WindowIterator<T> {
 
 	public OneConditionCallIterator(
 			final Coordinate coordinate,
-			final Variant<BasePileup> filter,
+			final Variant<T> filter,
+			final AbstractPileupBuilder<T>[][] dataBuilder,
 			final SAMFileReader[][] readers, 
-			final AbstractParameters<BasePileup> parameters) {
-		super(coordinate, filter, readers, parameters);
+			final AbstractParameters<T> parameters) {
+		super(coordinate, filter, dataBuilder, readers, parameters);
 	}
 
 	@Override
 	public boolean hasNext() {
 		while (super.hasNext()) {
-			BasePileup bp = parallelData.getPooledData(0);
-			int[] allelesIs = bp.getAlleles();
+			T bp = parallelData.getPooledData(0);
+			int[] allelesIs = bp.getBaseQualCount().getAlleles();
 
 			// pick reference base by MD or by majority.
 			// all other bases will be converted in pileup2 to refBaseI
@@ -34,7 +37,7 @@ public class OneConditionCallIterator extends WindowIterator<BasePileup> {
 				int maxBaseCount = 0;
 
 				for (int baseIndex : allelesIs) {
-					int count = bp.getBaseCount().getBaseCount(baseIndex);
+					int count = bp.getBaseQualCount().getBaseCount(baseIndex);
 					if (count > maxBaseCount) {
 						maxBaseCount = count;
 						refBaseIndex = baseIndex;

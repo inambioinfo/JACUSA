@@ -1,21 +1,18 @@
 package jacusa.filter.factory;
 
 import java.util.HashSet;
-import java.util.Set;
 
+import java.util.Set;
 
 import net.sf.samtools.CigarOperator;
 
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public abstract class AbstractFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
+public abstract class AbstractFilterFactory<T extends AbstractData> {
 
 	public final static char SEP = ':';
 
@@ -43,7 +40,7 @@ public abstract class AbstractFilterFactory<T extends Data<T> & hasCoordinate & 
 	}
 
 	public abstract AbstractFilterStorage createFilterStorage(
-			final WindowCoordinates windowCoordinates, final ConditionParameters condition);
+			final WindowCoordinates windowCoordinates, final ConditionParameters<T> condition);
 
 	public abstract AbstractStorageFilter<T> createStorageFilter();
 

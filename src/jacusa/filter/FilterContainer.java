@@ -1,6 +1,5 @@
 package jacusa.filter;
 
-
 import java.util.ArrayList;
 
 import java.util.HashMap;
@@ -11,16 +10,18 @@ import java.util.Set;
 
 import net.sf.samtools.CigarOperator;
 
+import jacusa.data.AbstractData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
-public class FilterContainer<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class FilterContainer<T extends AbstractData> {
 
 	private FilterConfig<T> filterConfig;
 	private AbstractFilterStorage[] filterStorage;
@@ -46,11 +47,11 @@ public class FilterContainer<T extends Data<T> & hasCoordinate & hasBaseCount & 
 		processRecordFilters = new ArrayList<AbstractFilterStorage>(filters.length);
 		cigar2cFilter = new HashMap<CigarOperator, Set<AbstractFilterStorage>>();
 
-		for (AbstractFilterStorage filter : filters) {
+		for (final AbstractFilterStorage filter : filters) {
 			// get filter factory
 			final char c = filter.getC();
 			final int i = filterConfig.c2i(c);
-			AbstractFilterFactory<?> filterFactory = filterConfig.getFactories().get(i);
+			final AbstractFilterFactory<T> filterFactory = filterConfig.getFactories().get(i);
 
 			if (filterFactory.hasFilterByRecord()) {
 				processRecordFilters.add(filter);
@@ -58,7 +59,7 @@ public class FilterContainer<T extends Data<T> & hasCoordinate & hasBaseCount & 
 			
 			if (filterFactory.hasFilterByCigar()) {
 				cigarFilters.add(filter);
-				for (CigarOperator cigarOperator : filterFactory.getCigarOperators()) {
+				for (final CigarOperator cigarOperator : filterFactory.getCigarOperators()) {
 					if (! cigar2cFilter.containsKey(cigarOperator)) {
 						cigar2cFilter.put(cigarOperator, new HashSet<AbstractFilterStorage>());
 					}

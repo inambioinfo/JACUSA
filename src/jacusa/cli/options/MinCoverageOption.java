@@ -1,27 +1,23 @@
 package jacusa.cli.options;
 
+import java.util.List;
+
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class MinCoverageOption extends AbstractACOption {
+public class MinCoverageOption<T extends AbstractData> extends AbstractACOption {
 
-	private ConditionParameters[] conditions;
+	final private List<ConditionParameters<T>> conditions;
 	
-	public MinCoverageOption() {
+	public MinCoverageOption(final List<ConditionParameters<T>> conditions) {
 		opt = "c";
 		longOpt = "min-coverage";
 		
-		conditions = new ConditionParameters[] {new ConditionParameters()};
-	}
-	
-	public MinCoverageOption(ConditionParameters[] conditions) {
 		this.conditions = conditions;
-
-		opt = "c";
-		longOpt = "min-coverage";
 	}
 
 	@SuppressWarnings("static-access")
@@ -30,7 +26,7 @@ public class MinCoverageOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 					.withArgName(longOpt.toUpperCase())
 					.hasArg(true)
-			        .withDescription("filter positions with coverage < " + longOpt.toUpperCase() + " \n default: " + conditions[0].getMinCoverage())
+			        .withDescription("filter positions with coverage < " + longOpt.toUpperCase() + " \n default: " + conditions.get(0).getMinCoverage())
 			        .create(opt);
 	}
 
@@ -41,8 +37,8 @@ public class MinCoverageOption extends AbstractACOption {
 	    	if (minCoverage < 1) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " must be > 0!");
 	    	}
-	    	
-	    	for (ConditionParameters condition : conditions) {
+
+	    	for (ConditionParameters<?> condition : conditions) {
 	    		condition.setMinCoverage(minCoverage);
 	    	}
 	    }

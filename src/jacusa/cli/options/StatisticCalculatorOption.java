@@ -1,9 +1,9 @@
 package jacusa.cli.options;
 
 import jacusa.cli.parameters.StatisticParameters;
+import jacusa.data.AbstractData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
-import jacusa.pileup.Data;
 
 import java.util.Map;
 
@@ -11,12 +11,14 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class StatisticCalculatorOption<T extends Data<T>> extends AbstractACOption {
+public class StatisticCalculatorOption<T extends AbstractData> 
+extends AbstractACOption {
 
 	private StatisticParameters<T> parameters;
 	private Map<String,StatisticCalculator<T>> statistics;
 
-	public StatisticCalculatorOption(StatisticParameters<T> parameters, Map<String, StatisticCalculator<T>> pileup2Statistic) {
+	public StatisticCalculatorOption(final StatisticParameters<T> parameters, 
+			final Map<String, StatisticCalculator<T>> pileup2Statistic) {
 		this.parameters = parameters;
 
 		opt = "u";

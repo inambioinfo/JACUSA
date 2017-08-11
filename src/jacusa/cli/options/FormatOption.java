@@ -1,6 +1,7 @@
 package jacusa.cli.options;
 
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.data.AbstractData;
 import jacusa.io.format.AbstractOutputFormat;
 
 import java.util.Map;
@@ -9,12 +10,12 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FormatOption<T extends AbstractOutputFormat> extends AbstractACOption {
+public class FormatOption<T extends AbstractData, F extends AbstractOutputFormat<T>> extends AbstractACOption {
 
-	private AbstractParameters parameters;
-	private Map<Character, T> formats;
+	private AbstractParameters<T> parameters;
+	private Map<Character, F> formats;
 
-	public FormatOption(AbstractParameters parameters, Map<Character, T> formats) {
+	public FormatOption(AbstractParameters<T> parameters, Map<Character, F> formats) {
 		this.parameters = parameters;
 
 		opt = "f";
@@ -29,7 +30,7 @@ public class FormatOption<T extends AbstractOutputFormat> extends AbstractACOpti
 		StringBuffer sb = new StringBuffer();
 
 		for (char c : formats.keySet()) {
-			T format = formats.get(c);
+			F format = formats.get(c);
 			if (format.getC() == parameters.getFormat().getC()) {
 				sb.append("<*>");
 			} else {

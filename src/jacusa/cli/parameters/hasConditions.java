@@ -1,9 +1,13 @@
 package jacusa.cli.parameters;
 
-public interface hasConditions {
+import java.util.List;
 
-	ConditionParameters[] getConditionParameters();
-	ConditionParameters getConditionParameters(int conditionIndex);
+import jacusa.data.AbstractData;
+
+public interface hasConditions<T extends AbstractData> {
+
+	List<ConditionParameters<T>> getConditionParameters();
+	ConditionParameters<T> getConditionParameters(int conditionIndex);
 	int getConditions();
 	int getReplicates(int conditionIndex);
 

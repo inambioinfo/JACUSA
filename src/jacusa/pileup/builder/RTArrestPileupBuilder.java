@@ -2,12 +2,8 @@ package jacusa.pileup.builder;
 
 import java.util.Arrays;
 
+import jacusa.data.BaseQualReadInfoData;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasReadInfoCount;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.Coordinate.STRAND;
 import net.sf.samtools.SAMRecord;
 
@@ -15,16 +11,15 @@ import net.sf.samtools.SAMRecord;
  * @author Michael Piechotta
  *
  */
-public class RTArrestPileupBuilder<T extends Data<T> & hasReadInfoCount & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractPileupBuilder<T> {
+public class RTArrestPileupBuilder<T extends BaseQualReadInfoData>
+extends AbstractPileupBuilder<T> {
 	
-	final private int[] readStartCount;
-	final private int[] readEndCount;
-
-	final private AbstractPileupBuilder<T> pileupBuilder;
+	private final int[] readStartCount;
+	private final int[] readEndCount;
+	private final AbstractPileupBuilder<T> pileupBuilder;
 	
-	public RTArrestPileupBuilder(final T dataContainer, final AbstractPileupBuilder<T> pileupBuilder) {
-		super(dataContainer,
-				pileupBuilder.windowCoordinates,
+	public RTArrestPileupBuilder(final AbstractPileupBuilder<T> pileupBuilder) {
+		super(pileupBuilder.windowCoordinates,
 				pileupBuilder.strand,
 				pileupBuilder.reader,
 				pileupBuilder.condition, 
@@ -38,11 +33,36 @@ public class RTArrestPileupBuilder<T extends Data<T> & hasReadInfoCount & hasCoo
 	
 	@Override
 	public T getData(int windowPosition, STRAND strand) {
-		dataContainer = pileupBuilder.getData(windowPosition, strand);
+		T dataContainer = pileupBuilder.getData(windowPosition, strand);
 
 		dataContainer.getReadInfoCount().setStart(readStartCount[windowPosition]);
 		dataContainer.getReadInfoCount().setEnd(readEndCount[windowPosition]);
 
+		int arrest = 0;
+		int through = 0;
+
+		switch (libraryType) {
+		
+		case UNSTRANDED:
+			arrest 	+= dataContainer.getReadInfoCount().getStart();
+			arrest 	+= dataContainer.getReadInfoCount().getEnd();
+			through += dataContainer.getReadInfoCount().getInner();
+			break;
+
+		case FR_FIRSTSTRAND:
+			arrest 	+= dataContainer.getReadInfoCount().getEnd();
+			through += dataContainer.getReadInfoCount().getInner();
+			break;
+
+		case FR_SECONDSTRAND:
+			arrest 	+= dataContainer.getReadInfoCount().getStart();
+			through += dataContainer.getReadInfoCount().getInner();
+			break;				
+		}
+
+		dataContainer.getReadInfoCount().setArrest(arrest);
+		dataContainer.getReadInfoCount().setThrough(through);
+		
 		return dataContainer;
 	}
 

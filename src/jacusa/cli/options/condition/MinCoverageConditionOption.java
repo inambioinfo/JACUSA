@@ -10,9 +10,9 @@ import org.apache.commons.cli.OptionBuilder;
 public class MinCoverageConditionOption extends AbstractACOption {
 
 	private int conditionIndex;
-	private ConditionParameters condition;
+	private ConditionParameters<?> condition;
 	
-	public MinCoverageConditionOption(final int conditionIndex, final ConditionParameters condition) {
+	public MinCoverageConditionOption(final int conditionIndex, final ConditionParameters<?> condition) {
 		this.conditionIndex = conditionIndex;
 		this.condition = condition;
 		

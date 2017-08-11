@@ -6,15 +6,13 @@ import java.util.Set;
 import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
 import jacusa.filter.DistanceStorageFilter;
 import jacusa.filter.storage.DistanceFilterStorage;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 
-public class ReadPositionDistanceFilterFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractFilterFactory<T> {
+public class ReadPositionDistanceFilterFactory<T extends BaseQualData> 
+extends AbstractFilterFactory<T> {
 
 	private static int DISTANCE = 6;
 	private static double MIN_RATIO = 0.5;
@@ -32,8 +30,7 @@ public class ReadPositionDistanceFilterFactory<T extends Data<T> & hasCoordinate
 	}
 
 	public ReadPositionDistanceFilterFactory(AbstractParameters<T> parameters) {
-		super(
-				'B', 
+		super('B', 
 				//"Filter distance to Read Start/End. Default: " + DISTANCE + ":" + MIN_RATIO + ":" + MIN_COUNT +" (F:distance:min_ratio:min_count)",
 				"Filter distance to Read Start/End. Default: " + DISTANCE + ":" + MIN_RATIO + " (F:distance:min_ratio)",
 				true,
@@ -87,11 +84,11 @@ public class ReadPositionDistanceFilterFactory<T extends Data<T> & hasCoordinate
 	}
 
 	public DistanceStorageFilter<T> createStorageFilter() {
-		return new DistanceStorageFilter<T>(getC(), minRatio, minCount, parameters.getBaseConfig());
+		return new DistanceStorageFilter<T>(getC(), minRatio, minCount, parameters);
 	}
 
 	@Override
-	public DistanceFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters condition) {
-		return new DistanceFilterStorage(getC(), distance, windowCoordinates, condition, parameters);
+	public DistanceFilterStorage createFilterStorage(final WindowCoordinates windowCoordinates, final ConditionParameters<T> condition) {
+		return new DistanceFilterStorage(getC(), distance, windowCoordinates, condition, parameters.getWindowSize(), parameters.getBaseConfig());
 	}
 }

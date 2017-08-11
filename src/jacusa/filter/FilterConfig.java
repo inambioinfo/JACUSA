@@ -1,12 +1,10 @@
 package jacusa.filter;
 
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
+
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
@@ -15,16 +13,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class FilterConfig<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements Cloneable {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class FilterConfig<T extends AbstractData> implements Cloneable {
 
-	private final Map<Character, AbstractFilterFactory<?>> c2Factory;
+	private final Map<Character, AbstractFilterFactory<T>> c2Factory;
 	private final List<AbstractFilterFactory<T>> i2Factory;
 	private final Map<Character, Integer> c2i;
 	
 	public FilterConfig() {
 		int initialCapacity = 6;
 
-		c2Factory = new HashMap<Character, AbstractFilterFactory<?>>(initialCapacity);
+		c2Factory = new HashMap<Character, AbstractFilterFactory<T>>(initialCapacity);
 		i2Factory = new ArrayList<AbstractFilterFactory<T>>(initialCapacity);
 		c2i = new HashMap<Character, Integer>(initialCapacity);
 	}
@@ -52,10 +55,11 @@ public class FilterConfig<T extends Data<T> & hasCoordinate & hasBaseCount & has
 	 * 
 	 * @return
 	 */
-	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, final STRAND strand, final ConditionParameters condition) {
+	public FilterContainer<T> createFilterContainer(
+			final WindowCoordinates windowCoordinates, final STRAND strand, final ConditionParameters<T> condition) {
 		AbstractFilterStorage[] filters = new AbstractFilterStorage[i2Factory.size()];
-		for (int filterI = 0; filterI < i2Factory.size(); ++filterI) {
-			filters[filterI] = i2Factory.get(filterI).createFilterStorage(windowCoordinates, condition);
+		for (int filterIndex = 0; filterIndex < i2Factory.size(); ++filterIndex) {
+			filters[filterIndex] = i2Factory.get(filterIndex).createFilterStorage(windowCoordinates, condition);
 			
 		}
 		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filters, windowCoordinates, strand);

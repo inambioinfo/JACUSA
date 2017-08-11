@@ -8,11 +8,16 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
 public class ResultFileOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 	
-	public ResultFileOption(AbstractParameters parameters) {
+	public ResultFileOption(AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "r";

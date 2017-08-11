@@ -2,10 +2,9 @@ package jacusa.filter.storage;
 
 import java.util.Arrays;
 
-import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseConfig;
 
-import jacusa.pileup.BaseConfig;
 import jacusa.pileup.builder.WindowCache;
 import jacusa.util.WindowCoordinates;
 
@@ -21,26 +20,26 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 	protected int windowSize;
 	protected WindowCache windowCache;
 
-	private ConditionParameters condition;
+	private ConditionParameters<?> condition;
 	
 	// container for current SAMrecord
 	protected SAMRecord record;
 
 	public AbstractWindowFilterStorage(final char c, 
 			final WindowCoordinates windowCoordinates, 
-			final ConditionParameters condition, 
-			final AbstractParameters parameters) {
+			final ConditionParameters<?> condition,
+			final int windowSize,
+			final BaseConfig baseConfig) {
 		super(c);
 
-		windowSize = parameters.getWindowSize();
-		visited = new boolean[windowSize];
-		
-		final int baseLength = parameters.getBaseConfig().getBaseLength();
-		setContainer(new WindowCache(windowCoordinates, baseLength));
-		windowCache = getContainer();
-		
+		final int bases = baseConfig.getBases().length;
+		setContainer(new WindowCache(windowCoordinates, bases));
 		this.condition = condition;
-		baseConfig = parameters.getBaseConfig();
+		this.windowSize = windowSize;
+		this.baseConfig = baseConfig;
+		
+		visited = new boolean[windowSize];
+		windowCache = getContainer();
 	}
 	
 	protected void addRegion(int windowPosition, int length, int readPosition, SAMRecord record) {
@@ -75,11 +74,11 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 				switch (condition.getPileupBuilderFactory().getLibraryType()) {
 				case UNSTRANDED:
 				case FR_SECONDSTRAND:
-					baseI = baseConfig.getBaseI(record.getReadBases()[readPosition + i]);
+					baseI = baseConfig.getBaseIndex(record.getReadBases()[readPosition + i]);
 					break;
 					
 				case FR_FIRSTSTRAND:
-					baseI = baseConfig.getComplementBaseI(record.getReadBases()[readPosition + i]);
+					baseI = baseConfig.getComplementBaseIndex(record.getReadBases()[readPosition + i]);
 					
 					
 				default:

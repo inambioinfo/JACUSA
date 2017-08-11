@@ -7,7 +7,7 @@ import jacusa.util.MathUtil;
 
 import org.apache.commons.math3.special.Gamma;
 
-public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T> {
+public class MinkaEstimateDirMultParameters extends MinkaEstimateParameters {
 
 	private final static double EPSILON = 0.001;
 	
@@ -19,15 +19,15 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 	
 	// estimate alpha and returns loglik
 	public double maximizeLogLikelihood(
-			final int[] baseIs, 
-			final double[] alphaOld, 
-			final double[][] pileupMatrix,
 			final String condition,
+			final double[] alphaOld, 
+			final int[] baseIndexs, 
+			final double[][] dataMatrix,
 			final Info estimateInfo,
 			final boolean backtrack) {
 		iterations = 0;
 
-		final double localCoverages[] = getCoverages(baseIs, pileupMatrix);
+		final double localCoverages[] = getCoverages(baseIndexs, dataMatrix);
 		
 		boolean converged = false;
 
@@ -51,7 +51,7 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 		double loglikOld = Double.NEGATIVE_INFINITY;
 		double loglikNew = Double.NEGATIVE_INFINITY;
 
-		int pileupN = pileupMatrix.length;
+		int pileupN = dataMatrix.length;
 
 		reset = false;
 		
@@ -65,7 +65,7 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 			// reset
 			b = 0.0;
 			double b_DenominatorSum = 0.0;
-			for (int baseI : baseIs) {
+			for (int baseI : baseIndexs) {
 				// reset
 				gradient[baseI] = 0.0;
 				Q[baseI] = 0.0;
@@ -76,11 +76,11 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 					gradient[baseI] += digammaSummedAlphaOld;
 					gradient[baseI] -= digamma(localCoverages[pileupI] + summedAlphaOld);
 					// 
-					gradient[baseI] += digamma(pileupMatrix[pileupI][baseI] + alphaOld[baseI]);
+					gradient[baseI] += digamma(dataMatrix[pileupI][baseI] + alphaOld[baseI]);
 					gradient[baseI] -= digamma(alphaOld[baseI]);
 
 					// calculate Q
-					Q[baseI] += trigamma(pileupMatrix[pileupI][baseI] + alphaOld[baseI]);
+					Q[baseI] += trigamma(dataMatrix[pileupI][baseI] + alphaOld[baseI]);
 					Q[baseI] -= trigamma(alphaOld[baseI]);
 				}
 
@@ -98,11 +98,11 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 			// calculate b cont.
 			b = b / (1.0 / z + b_DenominatorSum);
 
-			loglikOld = getLogLikelihood(alphaOld, baseIs, pileupMatrix);
+			loglikOld = getLogLikelihood(alphaOld, baseIndexs, dataMatrix);
 			
 			// try update alphaNew
 			boolean admissible = true; 		
-			for (int baseI : baseIs) {
+			for (int baseI : baseIndexs) {
 				alphaNew[baseI] = alphaOld[baseI] - (gradient[baseI] - b) / Q[baseI];
 
 				if (alphaNew[baseI] < 0.0) {
@@ -113,7 +113,7 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 			if (! admissible) {
 				if (backtrack) {
 					estimateInfo.add("backtrack" + condition, Integer.toString(iterations));
-					alphaNew = backtracking(alphaOld, baseIs, gradient, b_DenominatorSum, Q);
+					alphaNew = backtracking(alphaOld, baseIndexs, gradient, b_DenominatorSum, Q);
 					if (alphaNew == null) {
 						reset = true;
 						this.tmpCoverages = null;
@@ -127,7 +127,7 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 				}
 			} else {
 				// calculate log-likelihood for new alpha(s)
-				loglikNew = getLogLikelihood(alphaNew, baseIs, pileupMatrix);
+				loglikNew = getLogLikelihood(alphaNew, baseIndexs, dataMatrix);
 	
 				// check if converged
 				double delta = Math.abs(loglikNew - loglikOld);
@@ -165,19 +165,19 @@ public class MinkaEstimateDirMultParameters<T> extends MinkaEstimateParameters<T
 	// calculate likelihood
 	protected double getLogLikelihood(
 			final double[] alpha, 
-			final int[] baseIs, 
-			final double[][] pileupMatrix) {
+			final int[] baseIndexs, 
+			final double[][] dataMatrix) {
 		double logLikelihood = 0.0;
 		final double alphaSum = MathUtil.sum(alpha);
-		final double[] coverages = getCoverages(baseIs, pileupMatrix);
+		final double[] coverages = getCoverages(baseIndexs, dataMatrix);
 
-		for (int pileupI = 0; pileupI < coverages.length; pileupI++) {
+		for (int dataIndex = 0; dataIndex < coverages.length; dataIndex++) {
 			logLikelihood += Gamma.logGamma(alphaSum);
-			logLikelihood -= Gamma.logGamma(coverages[pileupI] + alphaSum);
+			logLikelihood -= Gamma.logGamma(coverages[dataIndex] + alphaSum);
 
-			for (int baseI : baseIs) {
-				logLikelihood += Gamma.logGamma(pileupMatrix[pileupI][baseI] + alpha[baseI]);
-				logLikelihood -= Gamma.logGamma(alpha[baseI]);
+			for (int baseIndex : baseIndexs) {
+				logLikelihood += Gamma.logGamma(dataMatrix[dataIndex][baseIndex] + alpha[baseIndex]);
+				logLikelihood -= Gamma.logGamma(alpha[baseIndex]);
 			}
 		}
 		return logLikelihood;

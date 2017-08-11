@@ -1,20 +1,25 @@
 package jacusa.cli.options.pileupbuilder;
 
-import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
+import jacusa.pileup.builder.AbstractDataBuilderFactory;
+import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
+import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
+import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class TwoConditionPileupBuilderOption extends AbstractPileupBuilderOption {
+public class TwoConditionBaseQualDataBuilderOption<T extends BaseQualData> 
+extends AbstractDataBuilderOption<T> {
 
-	private ConditionParameters condition1;
-	private ConditionParameters condition2;
+	private ConditionParameters<T> condition1;
+	private ConditionParameters<T> condition2;
 	
-	public TwoConditionPileupBuilderOption(AbstractParameters parameters, ConditionParameters condition1, ConditionParameters condition2) {
-		super(parameters);
+	public TwoConditionBaseQualDataBuilderOption(final ConditionParameters<T> condition1, 
+			final ConditionParameters<T> condition2) {
 		this.condition1 = condition1;
 		this.condition2 = condition2;
 	}
@@ -58,4 +63,21 @@ public class TwoConditionPileupBuilderOption extends AbstractPileupBuilderOption
 	    }
 	}
 
+	@Override
+	protected AbstractDataBuilderFactory<T> buildPileupBuilderFactory(
+			final LibraryType libraryType) {
+		switch(libraryType) {
+		
+		case UNSTRANDED:
+			return new UnstrandedPileupBuilderFactory<T>();
+		
+		case FR_FIRSTSTRAND:
+			return new FRPairedEnd1PileupBuilderFactory<T>();
+		
+		case FR_SECONDSTRAND:
+			return new FRPairedEnd2PileupBuilderFactory<T>();
+		}
+		
+		return null;
+	}
 }

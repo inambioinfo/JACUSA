@@ -1,15 +1,13 @@
 package jacusa.pileup.builder;
 
 import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
+
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
+import jacusa.data.BaseConfig;
 import jacusa.filter.FilterContainer;
 import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.WindowCoordinates;
 import jacusa.util.Coordinate.STRAND;
 
@@ -23,7 +21,13 @@ import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
 import net.sf.samtools.SAMValidationError;
 
-public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements hasLibraryType {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public abstract class AbstractPileupBuilder<T extends AbstractData> 
+implements hasLibraryType {
 
 	// in genomic coordinates
 	protected WindowCoordinates windowCoordinates;
@@ -34,7 +38,7 @@ public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & 
 	protected int filteredSAMRecords;
 
 	protected BaseConfig baseConfig;
-	protected ConditionParameters condition;
+	protected ConditionParameters<T> condition;
 	protected AbstractParameters<T> parameters;
 	
 	protected boolean isCached;
@@ -49,17 +53,13 @@ public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & 
 	
 	protected LibraryType libraryType;
 	
-	protected T dataContainer;
-	
 	public AbstractPileupBuilder (
-			final T dataContainer,
 			final WindowCoordinates windowCoordinates,
 			final STRAND strand, 
 			final SAMFileReader SAMFileReader, 
-			final ConditionParameters condition,
+			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters,
 			final LibraryType libraryType) {
-		this.dataContainer		= dataContainer.copy();
 		this.windowCoordinates	= windowCoordinates;
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
@@ -68,14 +68,14 @@ public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & 
 		filteredSAMRecords		= 0;
 
 		baseConfig				= parameters.getBaseConfig();
-		this.condition	= condition;
+		this.condition			= condition;
 		this.parameters			= parameters;
 
 		isCached				= false;
 
-		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBaseLength());
+		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBases().length);
 		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, condition);
-		byte2int 				= parameters.getBaseConfig().getByte2Int();
+		byte2int 				= parameters.getBaseConfig().getbyte2int();
 		this.strand				= strand;
 
 		this.libraryType		= libraryType;
@@ -247,6 +247,7 @@ public abstract class AbstractPileupBuilder<T extends Data<T> & hasCoordinate & 
 	// strand dependent methods
 	public abstract boolean isCovered(int windowPosition, STRAND strand);
 	public abstract int getCoverage(int windowPosition, STRAND strand);
+
 	public abstract T getData(int windowPosition, STRAND strand);
 	public abstract WindowCache getWindowCache(STRAND strand);
 

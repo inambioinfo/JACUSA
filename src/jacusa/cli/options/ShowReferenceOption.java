@@ -6,11 +6,16 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
 public class ShowReferenceOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 
-	public ShowReferenceOption(AbstractParameters parameters) {
+	public ShowReferenceOption(final AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "R";

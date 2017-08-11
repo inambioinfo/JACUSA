@@ -1,16 +1,14 @@
 package jacusa.method.call.statistic;
 
-import jacusa.cli.parameters.StatisticParameters;
+import jacusa.cli.parameters.CallParameters;
+import jacusa.data.BaseQualData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.estimate.MinkaEstimateParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.dirmult.initalpha.AbstractAlphaInit;
 import jacusa.method.call.statistic.dirmult.initalpha.MinAlphaInit;
 import jacusa.phred2prob.Phred2Prob;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
 import jacusa.util.Info;
 
 import java.text.DecimalFormat;
@@ -20,30 +18,23 @@ import java.text.DecimalFormatSymbols;
 
 import umontreal.iro.lecuyer.probdist.ChiSquareDist;
 
-public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCount> implements StatisticCalculator<T> {
+public abstract class AbstractDirichletStatistic<T extends BaseQualData>
+implements StatisticCalculator<T> {
 
-	protected final StatisticParameters<T> parameters;
-	protected final BaseConfig baseConfig;
+	protected final CallParameters<T> parameters;
+	
 	protected Phred2Prob phred2Prob;
 
 	protected boolean onlyObservedBases;
 	protected boolean showAlpha;
 	protected boolean calcPValue;
 	
-	protected double[] alpha1;
-	protected double[] alpha2;
-	protected double[] alphaP;
-
-	protected double[] initAlpha1;
-	protected double[] initAlpha2;
-	protected double[] initAlphaP;
+	protected double[][] alpha;
+	protected double[][] initAlpha;
 	
-	protected int iterations1;
-	protected int iterations2;
-	protected int iterationsP;
-	protected double logLikelihood1;
-	protected double logLikelihood2;
-	protected double logLikelihoodP;
+	protected int[] iterations;
+
+	protected double[] logLikelihood;
 	
 	protected boolean numericallyStable;
 	protected Info estimateInfo;
@@ -55,11 +46,10 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 	protected DecimalFormat decimalFormat;
 	
 	public AbstractDirichletStatistic(final MinkaEstimateParameters estimateAlpha, 
-			final BaseConfig baseConfig, 
-			final StatisticParameters<T> parameters) {
+			final CallParameters<T> parameters) {
 		this.parameters 	= parameters;
-		final int n 		= baseConfig.getBaseLength();
-		this.baseConfig 	= baseConfig;
+		final int n 		= parameters.getBaseConfig().getBases().length;
+
 		phred2Prob 			= Phred2Prob.getInstance(n);
 		onlyObservedBases 	= false;
 		showAlpha			= false;
@@ -77,32 +67,32 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 	
 	/**
 	 * 
-	 * @param pileups
-	 * @param baseIs
+	 * @param data
+	 * @param baseIndexs
 	 * @param pileupMatrix
 	 */
 	protected void populate(
-			final T[] pileups, 
-			final int[] baseIs, 
+			final int[] baseIndexs,
+			final T[] data, 
 			double[][] pileupMatrix) {
-		for (int pileupIndex = 0; pileupIndex < pileups.length; ++pileupIndex) {
-			T pileup = pileups[pileupIndex];
+		for (int i = 0; i < data.length; ++i) {
+			T d = data[i];
 	
-			populate(pileup, baseIs, pileupMatrix[pileupIndex]);
+			populate(d, baseIndexs, pileupMatrix[i]);
 		}
 	}
 
 	/**
 	 * 
-	 * @param pileup
-	 * @param baseIs
+	 * @param data
+	 * @param baseIndexs
 	 * @param pileupErrorVector
-	 * @param pileupVector
+	 * @param dataVector
 	 */
 	protected abstract void populate(
-			final T pileup, 
-			final int[] baseIs,
-			double[] pileupVector);
+			final T data, 
+			final int[] baseIndexs,
+			double[] dataVector);
 
 	@Override
 	public synchronized void addStatistic(Result<T> result) {
@@ -120,33 +110,24 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 			resultInfo.addAll(estimateInfo);
 		}
 	}
-	
-	public double[] getAlpha1() {
-		return alpha1;
+
+	public double[] getAlpha(final int condition) {
+		return alpha[condition];
 	}
-	public double[] getAlpha2() {
-		return alpha2;
+	public double[] getAlphaPooled() {
+		return alpha[alpha.length - 1];
 	}
-	public double[] getAlphaP() {
-		return alphaP;
+	public double[] getInitAlpha(final int condition) {
+		return initAlpha[condition];
 	}
-	public double[] getInitAlpha1() {
-		return initAlpha1;
+	public double[] getInitAlphaPooled() {
+		return initAlpha[initAlpha.length - 1];
 	}
-	public double[] getInitAlpha2() {
-		return initAlpha2;
+	public double getLogLikelihood(final int condition) {
+		return logLikelihood[condition];
 	}
-	public double[] getInitAlphaP() {
-		return initAlphaP;
-	}
-	public double getLogLikelihood1() {
-		return logLikelihood1;
-	}
-	public double getLogLikelihood2() {
-		return logLikelihood2;
-	}
-	public double getLogLikelihoodP() {
-		return logLikelihoodP;
+	public double getLogLikelihoodPooled() {
+		return logLikelihood[logLikelihood.length - 1];
 	}
 	public boolean isNumericallyStable() {
 		return numericallyStable;
@@ -154,76 +135,74 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 	
 	public double estimate(
 			final String condition, 
-			final int[] baseIs,
 			double[] alpha, 
 			double[] initAlphaValues, 
-			final AbstractAlphaInit alphaInit, 
-			final T[] pileups,
+			final AbstractAlphaInit alphaInit,
+			final int[] baseIndexs,
+			final T[] dataMatrix,
 			final boolean backtrack ) {
 		// populate pileupMatrix with values to be modeled
-		final double[][] matrix  = new double[pileups.length][alpha.length];
+		final double[][] datamatrix  = new double[dataMatrix.length][alpha.length];
 
-		// populate pileupMatrix with values to be modeled
-		populate(pileups, baseIs, matrix);
+		// populate dataMatrix with values to be modeled
+		populate(baseIndexs, dataMatrix, datamatrix);
 		// perform an initial guess of alpha
-		System.arraycopy(alphaInit.init(baseIs, pileups, matrix), 0, initAlphaValues, 0, alpha.length);
+		System.arraycopy(alphaInit.init(baseIndexs, datamatrix), 0, initAlphaValues, 0, alpha.length);
 
 		// store initial alpha guess
 		System.arraycopy(initAlphaValues, 0, alpha, 0, alpha.length);
 
 		// estimate alpha(s), capture and info(s), and store log-likelihood
-		return estimateAlpha.maximizeLogLikelihood(baseIs, alpha, matrix, condition, estimateInfo, backtrack);
+		// return estimateAlpha.maximizeLogLikelihood(alpha, baseIndexs, datamatrix, condition, estimateInfo, backtrack);
+		return estimateAlpha.maximizeLogLikelihood(condition, alpha, baseIndexs, datamatrix, estimateInfo, backtrack);
 	}
 	
 	@Override
-	public double getStatistic(final ParallelData<T> parallelData) {
+	public double getStatistic(final ParallelPileupData<T> parallelData) {
 		// base index mask; can be ACGT or only observed bases in parallelPileup
 		final int baseIndexs[] = getBaseIndex(parallelData);
 		// number of globally considered bases, normally 4 : ACGT
-		int baseN = baseConfig.getBaseLength();
+		int baseN = parameters.getBaseConfig().getBases().length;
 
 		// flag to indicated numerical stability of parameter estimation
 		numericallyStable = true;
 		estimateInfo = new Info();
 
+		int conditions = parallelData.getConditions();
+		
 		// parameters for distribution
-		alpha1 = new double[baseN];
-		initAlpha1 = new double[baseN];
-		// the same for condition 2
-		alpha2 = new double[baseN];
-		initAlpha2 = new double[baseN];
-		// the same for pooled condition 1, 2
-		alphaP = new double[baseN];
-		initAlphaP = new double[baseN];
+		alpha = new double[conditions + 1][baseN];
+		initAlpha = new double[conditions + 1][baseN];
 
 		// estimate alpha(s), capture and info(s), and store log-likelihood
 		boolean isReset = false;
-		logLikelihood1 = estimate("1", baseIndexs, 
-				alpha1, initAlpha1, estimateAlpha.getAlphaInit(), 
-				parallelData.getData(0), false);
-		iterations1 = estimateAlpha.getIterations();
-		isReset |= estimateAlpha.isReset();
-		logLikelihood2 = estimate("2", baseIndexs, 
-				alpha2, initAlpha2, estimateAlpha.getAlphaInit(), 
-				parallelData.getData(1), false);
-		iterations2 = estimateAlpha.getIterations();
-		isReset |= estimateAlpha.isReset();
-		logLikelihoodP = estimate("P", baseIndexs, 
-				alphaP, initAlphaP, estimateAlpha.getAlphaInit(), 
-				parallelData.getCombinedData(), false);
-		iterationsP = estimateAlpha.getIterations();
+		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+			logLikelihood[conditionIndex] = estimate(Integer.toString(conditionIndex + 1),  
+					alpha[conditionIndex], initAlpha[conditionIndex], estimateAlpha.getAlphaInit(), 
+					baseIndexs, parallelData.getData(conditionIndex), false);
+			iterations[conditionIndex] = estimateAlpha.getIterations();
+			isReset |= estimateAlpha.isReset();
+		}
+		// pooled data
+		int pooledIndex = conditions;
+		T[] pooledData = parameters.getMethodFactory().createDataContainer(parallelData.getTotalReplicates());
+		logLikelihood[pooledIndex] = estimate("P", alpha[pooledIndex], 
+				initAlpha[pooledIndex], estimateAlpha.getAlphaInit(), 
+				baseIndexs, parallelData.getCombinedData(pooledData), false);
+		iterations[pooledIndex] = estimateAlpha.getIterations();
 		isReset |= estimateAlpha.isReset();
 
 		if (isReset) {
-			logLikelihood1 = estimate("1", baseIndexs, 
-					alpha1, initAlpha1, fallbackAlphaInit, parallelData.getData(0), true);
-			iterations1 = estimateAlpha.getIterations();
-			logLikelihood2 = estimate("2", baseIndexs, 
-					alpha2, initAlpha2, fallbackAlphaInit, parallelData.getData(1), true);
-			iterations2 = estimateAlpha.getIterations();
-			logLikelihoodP = estimate("P", baseIndexs, 
-					alphaP, initAlphaP, fallbackAlphaInit, parallelData.getCombinedData(), true);
-			iterationsP = estimateAlpha.getIterations();
+			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+				logLikelihood[conditionIndex] = estimate(Integer.toString(conditionIndex + 1), 
+						alpha[conditionIndex], initAlpha[conditionIndex], fallbackAlphaInit, baseIndexs, parallelData.getData(conditionIndex), true);
+				iterations[conditionIndex] = estimateAlpha.getIterations();
+			}
+			
+			logLikelihood[pooledIndex] = estimate("P", 
+					alpha[pooledIndex], initAlpha[pooledIndex], fallbackAlphaInit, baseIndexs, parallelData.getCombinedData(pooledData), true);
+			iterations[pooledIndex] = estimateAlpha.getIterations();
+
 		}
 
 		// container for test-statistic
@@ -232,54 +211,52 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 
 			// append alpha/iterations/log-likelihood to info info field
 			if (showAlpha) {
-				estimateInfo.add("alpha1", decimalFormat.format(alpha1[0]));			
-				for (int i = 1; i < alpha1.length; ++i) {
-					estimateInfo.add("alpha1", ":");
-					estimateInfo.add("alpha1", decimalFormat.format(alpha1[i]));
-				}
-				estimateInfo.add("alpha2", decimalFormat.format(alpha2[0]));			
-				for (int i = 1; i < alpha2.length; ++i) {
-					estimateInfo.add("alpha2", ":");
-					estimateInfo.add("alpha2", decimalFormat.format(alpha2[i]));
-				}
-				estimateInfo.add("alphaP", decimalFormat.format(alphaP[0]));			
-				for (int i = 1; i < alphaP.length; ++i) {
-					estimateInfo.add("alphaP", ":");
-					estimateInfo.add("alphaP", decimalFormat.format(alphaP[i]));
-				}
+				for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 				
-				estimateInfo.add("initAlpha1", decimalFormat.format(initAlpha1[0]));			
-				for (int i = 1; i < initAlpha1.length; ++i) {
-					estimateInfo.add("initAlpha1", ":");
-					estimateInfo.add("initAlpha1", decimalFormat.format(initAlpha1[i]));
-				}
-				estimateInfo.add("initAlpha2", decimalFormat.format(initAlpha2[0]));			
-				for (int i = 1; i < initAlpha2.length; ++i) {
-					estimateInfo.add("initAlpha2", ":");
-					estimateInfo.add("initAlpha2", decimalFormat.format(initAlpha2[i]));
-				}
-				estimateInfo.add("initAlphaP", decimalFormat.format(initAlphaP[0]));			
-				for (int i = 1; i < initAlphaP.length; ++i) {
-					estimateInfo.add("initAlphaP", ":");
-					estimateInfo.add("initAlphaP", decimalFormat.format(initAlphaP[i]));
-				}
+					estimateInfo.add("alpha" + (conditionIndex + 1), decimalFormat.format(alpha[conditionIndex][0]));			
+					for (int i = 1; i < alpha[conditionIndex].length; ++i) {
+						estimateInfo.add("alpha" + (conditionIndex + 1), ":");
+						estimateInfo.add("alpha" + (conditionIndex + 1), decimalFormat.format(alpha[conditionIndex][i]));
+					}
+									
+					for (int i = 1; i < alpha[pooledIndex].length; ++i) {
+						estimateInfo.add("alphaP", ":");
+						estimateInfo.add("alphaP", decimalFormat.format(alpha[pooledIndex][i]));
+					}
 				
-				estimateInfo.add("iterations1", Integer.toString(iterations1));
-				estimateInfo.add("iterations2", Integer.toString(iterations2));
-				estimateInfo.add("iterationsP", Integer.toString(iterationsP));
+					estimateInfo.add("initAlpha" + (conditionIndex + 1), decimalFormat.format(initAlpha[conditionIndex][0]));			
+					for (int i = 1; i < initAlpha[conditionIndex].length; ++i) {
+						estimateInfo.add("initAlpha" + (conditionIndex + 1), ":");
+						estimateInfo.add("initAlpha" + (conditionIndex + 1), decimalFormat.format(initAlpha[conditionIndex][i]));
+					}
 				
-				estimateInfo.add("logLikelihood1", Double.toString(logLikelihood1));
-				estimateInfo.add("logLikelihood2", Double.toString(logLikelihood2));
-				estimateInfo.add("logLikelihoodP", Double.toString(logLikelihoodP));
+					estimateInfo.add("initAlphaP", decimalFormat.format(initAlpha[pooledIndex][0]));			
+					for (int i = 1; i < initAlpha[pooledIndex].length; ++i) {
+						estimateInfo.add("initAlphaP", ":");
+						estimateInfo.add("initAlphaP", decimalFormat.format(initAlpha[pooledIndex][i]));
+					}
+				
+					estimateInfo.add("iterations" + (conditionIndex + 1), Integer.toString(iterations[conditionIndex]));
+					estimateInfo.add("iterationsP", Integer.toString(iterations[pooledIndex]));
+				
+					estimateInfo.add("logLikelihood" + (conditionIndex + 1), Double.toString(logLikelihood[conditionIndex]));
+					estimateInfo.add("logLikelihoodP", Double.toString(logLikelihood[pooledIndex]));
+				}
+			}
+			
+			double tmpLogLikelihood = 0.0;
+			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+				tmpLogLikelihood += logLikelihood[conditionIndex];
 			}
 			
 			// we want a p-value?
 			if (calcPValue) {
-				stat = -2 * (logLikelihoodP - (logLikelihood1 + logLikelihood2));
+				// FIXME HOW MANY DEGREES OF FREEDOM
+				stat = -2 * (logLikelihood[pooledIndex] - tmpLogLikelihood);
 				ChiSquareDist dist = new ChiSquareDist(baseIndexs.length - 1);
 				stat = 1 - dist.cdf(stat);
 			} else { // just the log-likelihood ratio
-				stat = (logLikelihood1 + logLikelihood2) - logLikelihoodP;
+				stat = tmpLogLikelihood - logLikelihood[pooledIndex];
 			}
 		} catch (StackOverflowError e) {
 			// catch numerical instabilities and report
@@ -311,16 +288,16 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 	public boolean filter(double value) {
 		// if p-value interpret threshold as upper bound
 		if (calcPValue) {
-			return parameters.getThreshold() < value;
+			return parameters.getStatisticParameters().getThreshold() < value;
 		}
 		
 		// if log-likelihood ratio and value not set give all results
-		if (parameters.getThreshold() == Double.NaN) {
+		if (parameters.getStatisticParameters().getThreshold() == Double.NaN) {
 			return false;
 		}
 		
 		// if log-likelihood ratio interpret threshold as lower bound 
-		return value < parameters.getThreshold();
+		return value < parameters.getStatisticParameters().getThreshold();
 	}
 
 	
@@ -375,12 +352,12 @@ public abstract class AbstractDirichletStatistic<T extends Data<T> & hasBaseCoun
 	 * @param parallelData
 	 * @return
 	 */
-	public int[] getBaseIndex(ParallelData<T> parallelData) {
+	protected int[] getBaseIndex(final ParallelPileupData<T> parallelData) {
 		if (onlyObservedBases) {
-			return parallelData.getCombinedPooledData().getBaseCount().getAlleles();
+			return parallelData.getCombinedPooledData().getBaseQualCount().getAlleles();
 		}
 
-		return baseConfig.getBasesIndex();
+		return parameters.getBaseConfig().getBaseIndex();
 	}
 	
 	public MinkaEstimateParameters getEstimateAlpha() {

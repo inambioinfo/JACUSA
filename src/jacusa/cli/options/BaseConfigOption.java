@@ -1,7 +1,7 @@
 package jacusa.cli.options;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.pileup.BaseConfig;
+import jacusa.data.BaseConfig;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -9,9 +9,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class BaseConfigOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 
-	public BaseConfigOption(AbstractParameters parameters) {
+	public BaseConfigOption(final AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "C";
@@ -37,7 +37,7 @@ public class BaseConfigOption extends AbstractACOption {
 	public void process(CommandLine line) throws Exception {
 		if(line.hasOption(opt)) {
 	    	char[] values = line.getOptionValue(opt).toCharArray();
-	    	if(values.length < 2 || values.length > BaseConfig.VALID.length) {
+	    	if(values.length < 2 || values.length > BaseConfig.BASES.length) {
 	    		throw new IllegalArgumentException("Possible values for " + longOpt.toUpperCase() + ": TC, AG, ACGT, AT...");
 	    	}
 	    	parameters.getBaseConfig().setBases(values);

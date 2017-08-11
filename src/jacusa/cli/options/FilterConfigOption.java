@@ -1,6 +1,7 @@
 package jacusa.cli.options;
 
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.data.AbstractData;
 import jacusa.filter.factory.AbstractFilterFactory;
 
 import java.util.Map;
@@ -9,16 +10,17 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FilterConfigOption extends AbstractACOption {
+public class FilterConfigOption<T extends AbstractData> extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<T> parameters;
 
-	private static char OR = ',';
+	private static final char OR = ',';
 	//private static char AND = '&'; // Future Feature add logic
 
-	private Map<Character, AbstractFilterFactory<?>> pileupFilterFactories;
+	final private Map<Character, AbstractFilterFactory<T>> pileupFilterFactories;
 
-	public FilterConfigOption(AbstractParameters parameters, Map<Character, AbstractFilterFactory<?>> pileupFilterFactories) {
+	public FilterConfigOption(final AbstractParameters<T> parameters, 
+			final Map<Character, AbstractFilterFactory<T>> pileupFilterFactories) {
 		this.parameters = parameters;
 
 		opt = "a";
@@ -32,8 +34,8 @@ public class FilterConfigOption extends AbstractACOption {
 	public Option getOption() {
 		StringBuffer sb = new StringBuffer();
 
-		for (char c : pileupFilterFactories.keySet()) {
-			AbstractFilterFactory<?> pileupFilterFactory = pileupFilterFactories.get(c);
+		for (final char c : pileupFilterFactories.keySet()) {
+			final AbstractFilterFactory<T> pileupFilterFactory = pileupFilterFactories.get(c);
 			sb.append(pileupFilterFactory.getC());
 			sb.append(" | ");
 			sb.append(pileupFilterFactory.getDesc());
@@ -50,17 +52,17 @@ public class FilterConfigOption extends AbstractACOption {
 	}
 
 	@Override
-	public void process(CommandLine line) throws Exception {
+	public void process(final CommandLine line) throws Exception {
 		if (line.hasOption(opt)) {
-			String s = line.getOptionValue(opt);
-			String[] t = s.split(Character.toString(OR));
+			final String s = line.getOptionValue(opt);
+			final String[] t = s.split(Character.toString(OR));
 
-			for (String a : t) {
+			for (final String a : t) {
 				char c = a.charAt(0);
 				if (! pileupFilterFactories.containsKey(c)) {
 					throw new IllegalArgumentException("Unknown SAM processing: " + c);
 				}
-				AbstractFilterFactory<?> filterFactory = pileupFilterFactories.get(c);
+				AbstractFilterFactory<T> filterFactory = pileupFilterFactories.get(c);
 				if (a.length() > 1) {
 					filterFactory.processCLI(a);
 				}

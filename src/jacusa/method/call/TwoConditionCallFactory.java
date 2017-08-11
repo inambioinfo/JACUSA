@@ -1,7 +1,5 @@
 package jacusa.method.call;
 
-import jacusa.JACUSA;
-import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
 import jacusa.cli.options.FilterConfigOption;
@@ -20,67 +18,68 @@ import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
 import jacusa.cli.options.WindowSizeOption;
 import jacusa.cli.options.condition.filter.FilterFlagOption;
-import jacusa.cli.options.pileupbuilder.TwoConditionPileupBuilderOption;
+import jacusa.cli.options.pileupbuilder.TwoConditionBaseQualDataBuilderOption;
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.cli.parameters.CallParameters;
+import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.factory.DistanceFilterFactory;
 import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.HomozygousFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
-import jacusa.filter.factory.MaxAlleleCountFilterFactors;
+import jacusa.filter.factory.MaxAlleleCountFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
-import jacusa.io.format.BED6callFormat;
-import jacusa.io.format.VCF_ResultFormat;
+import jacusa.io.format.BED6call;
+import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
-import jacusa.pileup.BasePileup;
 import jacusa.pileup.dispatcher.call.TwoConditionCallWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Map;
 
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
+public class TwoConditionCallFactory 
+extends AbstractMethodFactory<BaseQualData> {
 
-	private static TwoConditionCallWorkerDispatcher instance;
+	private static TwoConditionCallWorkerDispatcher<BaseQualData> instance;
 
 	public TwoConditionCallFactory() {
-		super("call-2", "Call variants - two conditions", new CallParameters<BasePileup>(2));
+		super("call-2", "Call variants - two conditions", new CallParameters<BaseQualData>(2));
 	}
 	
 	public void initACOptions() {
 		// condition specific setting
-		ConditionParameters condition1 = getParameters().getConditionParameters(0);
-		ConditionParameters condition2 = getParameters().getConditionParameters(1);
+		ConditionParameters<BaseQualData> condition1 = getParameters().getConditionParameters(0);
+		ConditionParameters<BaseQualData> condition2 = getParameters().getConditionParameters(1);
 
 		for (int conditionIndex = 1; conditionIndex <= 2; ++conditionIndex) {
 			initConditionACOptions(conditionIndex, condition1);
 			initConditionACOptions(conditionIndex, condition2);
 		}
-		ConditionParameters[] conditions = new ConditionParameters[] {
-			condition1, condition2
-		};
+		List<ConditionParameters<BaseQualData>> conditions = new ArrayList<ConditionParameters<BaseQualData>>(2);
+		conditions.add(condition1);
+		conditions.add(condition2);
+		
 		
 		// global settings
-		acOptions.add(new MinMAPQOption(conditions));
-		acOptions.add(new MinBASQOption(conditions));
-		acOptions.add(new MinCoverageOption(conditions));
+		acOptions.add(new MinMAPQOption<BaseQualData>(conditions));
+		acOptions.add(new MinBASQOption<BaseQualData>(conditions));
+		acOptions.add(new MinCoverageOption<BaseQualData>(conditions));
 		acOptions.add(new MaxDepthOption(getParameters()));
-		acOptions.add(new FilterFlagOption(conditions));
+		acOptions.add(new FilterFlagOption<BaseQualData>(conditions));
 
-		acOptions.add(new TwoConditionPileupBuilderOption(getParameters(), condition1, condition2));
+		acOptions.add(new TwoConditionBaseQualDataBuilderOption<BaseQualData>(condition1, condition2));
 
 		acOptions.add(new BedCoordinatesOption(getParameters()));
 		acOptions.add(new ResultFileOption(getParameters()));
@@ -88,8 +87,8 @@ public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 			Character[] a = getResultFormats().keySet().toArray(new Character[1]);
 			getParameters().setFormat(getResultFormats().get(a[0]));
 		} else {
-			getParameters().setFormat(getResultFormats().get(BED6callFormat.CHAR));
-			acOptions.add(new FormatOption<AbstractOutputFormat<BasePileup>>(getParameters(), getResultFormats()));
+			getParameters().setFormat(getResultFormats().get(BED6call.CHAR));
+			acOptions.add(new FormatOption<BaseQualData, AbstractOutputFormat<BaseQualData>>(getParameters(), getResultFormats()));
 		}
 
 		acOptions.add(new MaxThreadOption(getParameters()));
@@ -100,12 +99,13 @@ public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 			String[] a = getStatistics().keySet().toArray(new String[1]);
 			getParameters().getStatisticParameters().setStatisticCalculator(getStatistics().get(a[0]));
 		} else {
-			acOptions.add(new StatisticCalculatorOption(getParameters().getStatisticParameters(), getStatistics()));
+			acOptions.add(new StatisticCalculatorOption<BaseQualData>(
+					getParameters().getStatisticParameters(), getStatistics()));
 		}
 
 		acOptions.add(new FilterModusOption(getParameters()));
 		acOptions.add(new BaseConfigOption(getParameters()));
-		acOptions.add(new FilterConfigOption(getParameters(), getFilterFactories()));
+		acOptions.add(new FilterConfigOption<BaseQualData>(getParameters(), getFilterFactories()));
 		
 		acOptions.add(new StatisticFilterOption(getParameters().getStatisticParameters()));
 
@@ -114,21 +114,21 @@ public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 	}
 
 	@Override
-	public TwoConditionCallWorkerDispatcher getInstance(
+	public TwoConditionCallWorkerDispatcher<BaseQualData> getInstance(
 			CoordinateProvider coordinateProvider) throws IOException {
 		if(instance == null) {
-			instance = new TwoConditionCallWorkerDispatcher(coordinateProvider, getParameters());
+			instance = new TwoConditionCallWorkerDispatcher<BaseQualData>(coordinateProvider, getParameters());
 		}
 		return instance;
 	}
-	
-	public Map<String, StatisticCalculator<BasePileup>> getStatistics() {
-		Map<String, StatisticCalculator<BasePileup>> statistics = new TreeMap<String, StatisticCalculator<BasePileup>>();
 
-		StatisticCalculator<BasePileup> statistic = null;
+	public Map<String, StatisticCalculator<BaseQualData>> getStatistics() {
+		Map<String, StatisticCalculator<BaseQualData>> statistics = 
+				new TreeMap<String, StatisticCalculator<BaseQualData>>();
 
-		statistic = new DirichletMultinomialRobustCompoundError<BasePileup>(getParameters().getBaseConfig(), 
-				getParameters().getStatisticParameters());
+		StatisticCalculator<BaseQualData> statistic = null;
+
+		statistic = new DirichletMultinomialRobustCompoundError<BaseQualData>(getParameters());
 		statistics.put("DirMult", statistic);
 		
 		//statistic = new ACCUSA2Statistic(parameters.getBaseConfig(), parameters.getStatisticParameters());
@@ -137,48 +137,48 @@ public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 		return statistics;
 	}
 
-	// FIXME ?
-	public Map<Character, AbstractFilterFactory<?>> getFilterFactories() {
-		Map<Character, AbstractFilterFactory<?>> abstractPileupFilters = new HashMap<Character, AbstractFilterFactory<?>>();
+	public Map<Character, AbstractFilterFactory<BaseQualData>> getFilterFactories() {
+		final Map<Character, AbstractFilterFactory<BaseQualData>> abstractPileupFilters = 
+				new HashMap<Character, AbstractFilterFactory<BaseQualData>>();
 
-		AbstractFilterFactory<?>[] filterFactories = new AbstractFilterFactory[] {
-				new DistanceFilterFactory(getParameters()),
-				new INDEL_DistanceFilterFactory(getParameters()),
-				new ReadPositionDistanceFilterFactory(getParameters()),
-				new SpliceSiteDistanceFilterFactory(getParameters()),
-				new HomozygousFilterFactory(getParameters()),
-				new MaxAlleleCountFilterFactors(getParameters()),
-				new HomopolymerFilterFactory(getParameters()),
-		};
-		for (AbstractFilterFactory<?> filterFactory : filterFactories) {
+		final List<AbstractFilterFactory<BaseQualData>> filterFactories = 
+				new ArrayList<AbstractFilterFactory<BaseQualData>>(10);
+		
+		filterFactories.add(new DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new INDEL_DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new ReadPositionDistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new SpliceSiteDistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new HomozygousFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new MaxAlleleCountFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new HomopolymerFilterFactory<BaseQualData>(getParameters()));
+
+		for (final AbstractFilterFactory<BaseQualData> filterFactory : filterFactories) {
 			abstractPileupFilters.put(filterFactory.getC(), filterFactory);
 		}
 
 		return abstractPileupFilters;
 	}
 
-	public Map<Character, AbstractOutputFormat<BasePileup>> getResultFormats() {
-		Map<Character, AbstractOutputFormat<BasePileup>> resultFormats = 
-				new HashMap<Character, AbstractOutputFormat<BasePileup>>();
+	public Map<Character, AbstractOutputFormat<BaseQualData>> getResultFormats() {
+		Map<Character, AbstractOutputFormat<BaseQualData>> resultFormats = 
+				new HashMap<Character, AbstractOutputFormat<BaseQualData>>();
 
-		AbstractOutputFormat<BasePileup> resultFormat = null;
+		AbstractOutputFormat<BaseQualData> resultFormat = null;
 
 		// BED like output
-		resultFormat = new BED6callFormat<BasePileup>(getParameters().getBaseConfig(), getParameters().getFilterConfig(), getParameters().showReferenceBase());
+		resultFormat = new BED6call(getParameters().getBaseConfig(), getParameters().getFilterConfig(), getParameters().showReferenceBase());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		// VCF output
-		resultFormat = new VCF_ResultFormat<BasePileup>(getParameters().getBaseConfig(), getParameters().getFilterConfig());
+		resultFormat = new VCFcall(getParameters().getBaseConfig(), getParameters().getFilterConfig());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		return resultFormats;
 	}
 
-
-
 	@Override
-	public CallParameters<BasePileup> getParameters() {
-		return (CallParameters<BasePileup>) super.getParameters();
+	public CallParameters<BaseQualData> getParameters() {
+		return (CallParameters<BaseQualData>) super.getParameters();
 	}
 
 	@Override
@@ -191,17 +191,47 @@ public class TwoConditionCallFactory extends AbstractMethodFactory<BasePileup> {
 	}
 
 	@Override
-	public void printUsage() {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.setWidth(160);
-
-		Set<AbstractACOption> acOptions = getACOptions();
-		Options options = new Options();
-		for (AbstractACOption acoption : acOptions) {
-			options.addOption(acoption.getOption());
-		}
-		
-		formatter.printHelp(JACUSA.JAR + " [OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]", options);
+	public BaseQualData createDataContainer() {
+		return new BaseQualData();
 	}
 	
+	@Override
+	public BaseQualData[] createDataContainer(final int n) {
+		return new BaseQualData[n];
+	}
+	
+	@Override
+	public BaseQualData[][] createDataContainer(final int n, final int m) {
+		if (m < 0) {
+			return new BaseQualData[n][];
+		}
+
+		return new BaseQualData[n][m];
+	}
+	
+	@Override
+	public BaseQualData copyDataContainer(final BaseQualData dataContainer) {
+		return new BaseQualData(dataContainer);
+	}
+	
+	@Override
+	public BaseQualData[] copyDataContainer(final BaseQualData[] dataContainer) {
+		BaseQualData[] ret = createDataContainer(dataContainer.length);
+		for (int i = 0; i < dataContainer.length; ++i) {
+			ret[i] = new BaseQualData(dataContainer[i]);
+		}
+		return ret;
+	}
+	
+	@Override
+	public BaseQualData[][] copyDataContainer(final BaseQualData[][] dataContainer) {
+		BaseQualData[][] ret = createDataContainer(dataContainer.length, -1);
+		for (int i = 0; i < dataContainer.length; ++i) {
+			for (int j = 0; j < dataContainer[i].length; ++j) {
+				ret[i][j] = new BaseQualData(dataContainer[i][j]);
+			}	
+		}
+		
+		return ret;
+	}
 }

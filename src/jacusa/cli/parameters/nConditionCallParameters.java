@@ -1,34 +1,40 @@
 package jacusa.cli.parameters;
 
-import jacusa.io.format.AbstractOutputFormat;
+
+import jacusa.data.BaseQualData;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
 
-public class nConditionCallParameters extends AbstractParameters implements hasStatisticCalculator {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class nConditionCallParameters<T extends BaseQualData>
+extends AbstractParameters<T> 
+implements hasStatisticCalculator<T> {
 
-	private StatisticParameters statisticParameters;
+	private final StatisticParameters<T> statisticParameters;
 
 	public nConditionCallParameters() {
 		super();
-		statisticParameters = new StatisticParameters();
-		statisticParameters.setStatisticCalculator(new DirichletMultinomialRobustCompoundError(getBaseConfig(), statisticParameters));
+		statisticParameters = new StatisticParameters<T>();
+		/* TODO
+		statisticParameters.setStatisticCalculator(
+				new DirichletMultinomialRobustCompoundError<T>(this));
+				*/
 	}
 	
-	public nConditionCallParameters(int n) {
+	public nConditionCallParameters(final int n) {
 		this();
 
 		for (int i = 0; i < n; i++) {
-			conditionParameters.add(new ConditionParameters());
+			conditionParameters.add(new ConditionParameters<T>());
 		}
 	}
 
 	@Override
-	public StatisticParameters getStatisticParameters() {
+	public StatisticParameters<T> getStatisticParameters() {
 		return statisticParameters;
-	}
-
-	@Override
-	public AbstractOutputFormat<?> getFormat() {
-		return super.getFormat();
 	}
 
 }

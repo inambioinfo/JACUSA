@@ -1,15 +1,14 @@
 package jacusa.io.format;
 
-import jacusa.filter.FilterConfig;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasReadInfoCount;
-import jacusa.pileup.hasRefBase;
+import jacusa.data.BaseConfig;
 
-public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfoCount & hasRefBase> extends AbstractOutputFormat<T> {
+import jacusa.data.BaseQualReadInfoData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
+import jacusa.filter.FilterConfig;
+
+public class RTArrestResultFormat 
+extends AbstractOutputFormat<BaseQualReadInfoData> {
 
 	public static final char CHAR = 'B';
 	
@@ -21,7 +20,7 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 	// read start, trough, and end	
 	private static final String RTinfo = "reads";
 	
-	protected FilterConfig filterConfig;
+	protected FilterConfig<BaseQualReadInfoData> filterConfig;
 	protected BaseConfig baseConfig;
 	private boolean showReferenceBase;
 
@@ -29,7 +28,7 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 			final char c,
 			final String desc,
 			final BaseConfig baseConfig, 
-			final FilterConfig filterConfig,
+			final FilterConfig<BaseQualReadInfoData> filterConfig,
 			final boolean showReferenceBase) {
 		super(c, desc);
 		
@@ -41,7 +40,7 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 
 	public RTArrestResultFormat(
 			final BaseConfig baseConfig, 
-			final FilterConfig filterConfig,
+			final FilterConfig<BaseQualReadInfoData> filterConfig,
 			final boolean showReferenceBase) {
 		this(CHAR, "Default", baseConfig, filterConfig, showReferenceBase);
 	}
@@ -122,8 +121,8 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 	}
 	
 	@Override
-	public String convert2String(Result<T> result) {
-		final ParallelData<T> parallelData = result.getParellelData();
+	public String convert2String(Result<BaseQualReadInfoData> result) {
+		final ParallelPileupData<BaseQualReadInfoData> parallelData = result.getParellelData();
 		final double statistic = result.getStatistic();
 		final StringBuilder sb = new StringBuilder();
 
@@ -145,7 +144,7 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 		}
 
 		sb.append(SEP);
-		sb.append(parallelData.getStrand().character());
+		sb.append(parallelData.getCombinedPooledData().getStrand().character());
 
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); conditionIndex++) {
 			addPileups(sb, parallelData.getData(conditionIndex));
@@ -162,7 +161,7 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 		
 		if (showReferenceBase) {
 			sb.append(getSEP());
-			sb.append(parallelData.getCombinedPooledData().getRefBase());
+			sb.append(parallelData.getCombinedPooledData().getReferenceBase());
 		}
 
 		return sb.toString();		
@@ -171,36 +170,36 @@ public class RTArrestResultFormat<T extends Data<T> & hasBaseCount & hasReadInfo
 	/*
 	 * Helper function
 	 */
-	protected void addPileups(StringBuilder sb, T[] pileups) {
+	protected void addPileups(StringBuilder sb, BaseQualReadInfoData[] data) {
 		// output condition: Ax,Cx,Gx,Tx
-		for (T pileup : pileups) {
+		for (BaseQualReadInfoData d : data) {
 			sb.append(SEP);
 
 			int i = 0;
-			char b = BaseConfig.VALID[i];
-			int baseIndex = baseConfig.getBaseI((byte)b);
+			char b = BaseConfig.BASES[i];
+			int baseIndex = baseConfig.getBaseIndex((byte)b);
 			int count = 0;
 			if (baseIndex >= 0) {
-				count = pileup.getBaseCount().getBaseCount(baseIndex);
+				count = d.getBaseQualCount().getBaseCount(baseIndex);
 			}
 			sb.append(count);
 			++i;
-			for (; i < BaseConfig.VALID.length; ++i) {
-				b = BaseConfig.VALID[i];
-				baseIndex = baseConfig.getBaseI((byte)b);
+			for (; i < BaseConfig.BASES.length; ++i) {
+				b = BaseConfig.BASES[i];
+				baseIndex = baseConfig.getBaseIndex((byte)b);
 				count = 0;
 				if (baseIndex >= 0) {
-					count = pileup.getBaseCount().getBaseCount(baseIndex);
+					count = d.getBaseQualCount().getBaseCount(baseIndex);
 				}
 				sb.append(SEP2);
 				sb.append(count);
 			}
 			sb.append(SEP);
-			sb.append(pileup.getReadInfoCount().getStart());
+			sb.append(d.getReadInfoCount().getStart());
 			sb.append(SEP2);
-			sb.append(pileup.getReadInfoCount().getInner());
+			sb.append(d.getReadInfoCount().getInner());
 			sb.append(SEP2);
-			sb.append(pileup.getReadInfoCount().getEnd());
+			sb.append(d.getReadInfoCount().getEnd());
 		}
 	}
 

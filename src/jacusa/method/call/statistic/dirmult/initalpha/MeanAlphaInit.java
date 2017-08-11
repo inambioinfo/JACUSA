@@ -1,35 +1,34 @@
 package jacusa.method.call.statistic.dirmult.initalpha;
 
-import jacusa.pileup.BaseConfig;
+import jacusa.data.BaseConfig;
 
-public class MeanAlphaInit<T> extends AbstractAlphaInit<T> {
+public class MeanAlphaInit extends AbstractAlphaInit {
 
 	public MeanAlphaInit() {
 		super("mean", "alpha = mean * n * p * q");
 	}
 
 	@Override
-	public AbstractAlphaInit<T> newInstance(String line) {
-		return new MeanAlphaInit<T>();
+	public AbstractAlphaInit newInstance(String line) {
+		return new MeanAlphaInit();
 	}
 	
 	@Override
 	public double[] init(
-			final int[] baseIs,
-			final T[] pileups,
-			final double[][] pileupMatrix) {
-		final double[] alpha = new double[BaseConfig.VALID.length];
-		final double[] mean = new double[BaseConfig.VALID.length];
+			final int[] baseIndexs,
+			final double[][] dataMatrix) {
+		final double[] alpha = new double[BaseConfig.BASES.length];
+		final double[] mean = new double[BaseConfig.BASES.length];
 
 		double total = 0.0;
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			for (int baseI : baseIs) {
-				mean[baseI] += pileupMatrix[pileupI][baseI];
-				total += pileupMatrix[pileupI][baseI];
+		for (int pileupI = 0; pileupI < dataMatrix.length; ++pileupI) {
+			for (int baseI : baseIndexs) {
+				mean[baseI] += dataMatrix[pileupI][baseI];
+				total += dataMatrix[pileupI][baseI];
 			}
 		}
 
-		for (int baseI : baseIs) {
+		for (int baseI : baseIndexs) {
 			mean[baseI] /= total;
 			alpha[baseI] = mean[baseI];
 		}

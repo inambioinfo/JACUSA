@@ -10,9 +10,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class MaxDepthOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	private final AbstractParameters<?> parameters;
 	
-	public MaxDepthOption(final AbstractParameters parameters) {
+	public MaxDepthOption(final AbstractParameters<?> parameters) {
 		opt = "d";
 		longOpt = "max-depth";
 		this.parameters = parameters;
@@ -36,17 +36,9 @@ public class MaxDepthOption extends AbstractACOption {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " must be > 0 or -1 (coverage restricted by memory)!");
 	    	}
 
-	    	for (final ConditionParameters cp : parameters.getConditionParameters()) {
+	    	for (final ConditionParameters<?> cp : parameters.getConditionParameters()) {
 	    		cp.setMaxDepth(maxDepth);
 	    	}
-	    	
-	    	
-	    	// FIXME
-	    	/*
-	    	if (! parameters.getFilterConfig().hasFilter(MaxDepthFilterFactory.C)) {
-	    		parameters.getFilterConfig().addFactory(new MaxDepthFilterFactory(parameters));
-	    	}
-	    	*/
 	    }
 	}
 

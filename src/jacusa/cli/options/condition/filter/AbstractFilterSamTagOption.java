@@ -11,10 +11,10 @@ import org.apache.commons.cli.OptionBuilder;
 public abstract class AbstractFilterSamTagOption extends AbstractACOption {
 
 	// private int condition;
-	private ConditionParameters parameters;
+	private ConditionParameters<?> parameters;
 	private String tag;
 
-	public AbstractFilterSamTagOption(int conditionIndex, ConditionParameters condition, String tag) {
+	public AbstractFilterSamTagOption(int conditionIndex, ConditionParameters<?> condition, String tag) {
 		this.parameters = condition;
 		this.tag = tag;
 		longOpt = "filter" + tag + "_" + conditionIndex;

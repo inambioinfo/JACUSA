@@ -8,16 +8,17 @@ public class Location {
 	public int genomicPosition;
 	public STRAND strand;
 
-	public Location(String contig, int genomicPosition, STRAND strand) {
-		this.contig = contig;
-		this.genomicPosition = genomicPosition;
-		this.strand = strand;
+	public Location(final String contig, final int genomicPosition, final STRAND strand) {
+		this.contig 			= contig;
+		this.genomicPosition 	= genomicPosition;
+		this.strand 			= strand;
 	}
 
-	public Location(Location location) {
+	public Location(final Location location) {
 		this(location.contig, location.genomicPosition, location.strand);
 	}
 
+	@Override
 	public String toString() {
 		return contig + "_" + genomicPosition + "-" + (genomicPosition + 1);
 	}

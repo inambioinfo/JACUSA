@@ -11,9 +11,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class BedCoordinatesOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 	
-	public BedCoordinatesOption(AbstractParameters parameters) {
+	public BedCoordinatesOption(AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "b";

@@ -1,8 +1,6 @@
 package jacusa.cli.options.condition;
 
-
 import jacusa.cli.options.AbstractACOption;
-import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 // import jacusa.filter.factory.MaxDepthFilterFactory;
 
@@ -13,16 +11,13 @@ import org.apache.commons.cli.OptionBuilder;
 public class MaxDepthConditionOption extends AbstractACOption {
 
 	private int conditionIndex;
-	private ConditionParameters condition;
-	private AbstractParameters parameters;
+	private ConditionParameters<?> condition;
 	
 	public MaxDepthConditionOption(
 			final int conditionIndex, 
-			final ConditionParameters condition,
-			final AbstractParameters parameters) {
+			final ConditionParameters<?> condition) {
 		this.conditionIndex = conditionIndex;
 		this.condition = condition;
-		this.parameters = parameters;
 
 		opt = "d" + conditionIndex;
 		longOpt = "max-depth" + conditionIndex;
@@ -46,14 +41,6 @@ public class MaxDepthConditionOption extends AbstractACOption {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " must be > 0 or -1 (limited by memory)!");
 	    	}
 	    	condition.setMaxDepth(maxDepth);
-
-	    	/*
-	    	 * FIXME
-	    	if (! parameters.getFilterConfig().hasFilter(MaxDepthFilterFactory.C)) {
-	    		parameters.getFilterConfig().getFactories().add(new MaxDepthFilterFactory(parameters));
-	    	}
-	    	*/
-
 	    }
 	}
 

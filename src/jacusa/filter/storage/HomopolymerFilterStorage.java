@@ -3,8 +3,8 @@ package jacusa.filter.storage;
 import java.util.ArrayList;
 import java.util.List;
 
-import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseConfig;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMRecord;
@@ -28,9 +28,10 @@ public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
 			final char c, 
 			final int length, 
 			final WindowCoordinates windowCoordinates,
-			final ConditionParameters condition,
-			final AbstractParameters parameters) {
-		super(c, windowCoordinates, condition, parameters);
+			final ConditionParameters<?> condition,
+			final int windowSize,
+			final BaseConfig baseConfig) {
+		super(c, windowCoordinates, condition, windowSize, baseConfig);
 
 		this.minLength = length;
 

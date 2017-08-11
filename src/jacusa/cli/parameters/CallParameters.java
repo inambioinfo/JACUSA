@@ -1,20 +1,23 @@
 package jacusa.cli.parameters;
 
+import jacusa.data.BaseQualData;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 
-public class CallParameters<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractParameters<T> implements hasStatisticCalculator {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class CallParameters<T extends BaseQualData> 
+extends AbstractParameters<T> 
+implements hasStatisticCalculator<T> {
 
 	private StatisticParameters<T> statisticParameters;
 
 	public CallParameters() {
 		statisticParameters = new StatisticParameters<T>();
 		statisticParameters.setStatisticCalculator(
-				new DirichletMultinomialRobustCompoundError<T>(getBaseConfig(), 
-						statisticParameters));
+				new DirichletMultinomialRobustCompoundError<T>(this));
 	}
 	
 	public CallParameters(int conditions) {
@@ -22,8 +25,7 @@ public class CallParameters<T extends Data<T> & hasCoordinate & hasBaseCount & h
 		
 		statisticParameters = new StatisticParameters<T>();
 		statisticParameters.setStatisticCalculator(
-				new DirichletMultinomialRobustCompoundError<T>(getBaseConfig(), 
-						statisticParameters));
+				new DirichletMultinomialRobustCompoundError<T>(this));
 	}
 
 	@Override

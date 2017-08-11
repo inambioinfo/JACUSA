@@ -1,8 +1,14 @@
 package jacusa.cli.parameters;
 
-import jacusa.pileup.BasePileup;
+import jacusa.data.BaseQualData;
 
-public class PileupParameters extends AbstractParameters<BasePileup> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class PileupParameters<T extends BaseQualData>
+extends AbstractParameters<T> {
 
 	public PileupParameters(int conditions) {
 		super(conditions);

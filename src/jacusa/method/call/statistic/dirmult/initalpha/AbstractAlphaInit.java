@@ -1,11 +1,10 @@
 package jacusa.method.call.statistic.dirmult.initalpha;
 
-
 /**
  * 
  * @author Michael Piechotta
  */
-public abstract class AbstractAlphaInit<T> {
+public abstract class AbstractAlphaInit {
 
 	private String name;
 	private String desc;
@@ -37,30 +36,15 @@ public abstract class AbstractAlphaInit<T> {
 	 * Calculate initial estimates for alpha when > 1 replicates are available.
 	 * 
 	 * @param baseIs
-	 * @param pileups
-	 * @param pileupMatrix
-	 * @return
-	 */
-	public abstract double[] init(
-			final int[] baseIs,
-			final T[] pileups,
-			final double[][] pileupMatrix);
+	 * @param data
+	 * @param dataMatrix
 
-	/**
-	 * Calculate initial estimates for alpha when NO replicates are available.
-	 * 
-	 * @param baseIs
-	 * @param pileup
-	 * @param pileupVector
-	 * @param pileupErrorVector
+	 * 			final T[] data,
 	 * @return
-	@Deprecated
-	public abstract double[] init(
-			final int[] baseIs, 
-			final Pileup pileup,
-			final double[] pileupVector,
-			final double[] pileupErrorVector);
 	 */
+	public abstract double[] init(
+			final int[] baseIndexs,
+			final double[][] dataMatrix);
 
 	/**
 	 * Create a new instance.
@@ -68,26 +52,26 @@ public abstract class AbstractAlphaInit<T> {
 	 * @param line
 	 * @return
 	 */
-	public abstract AbstractAlphaInit<T> newInstance(final String line);
+	public abstract AbstractAlphaInit newInstance(final String line);
 
 	/**
 	 * Calculate the coverage per pileup/replicate taking pseudocounts into account
 	 * 
 	 * Helper method.
 	 * 
-	 * @param baseIs
-	 * @param pileupMatrix
+	 * @param dataMatrix
 	 * @return
 	 */
-	protected double[] getCoverages(final int[] baseIs, final double[][] pileupMatrix) {
-		int pileupN = pileupMatrix.length;
-		double[] coverages = new double[pileupN];
-		for (int pileupI = 0; pileupI < pileupN; pileupI++) {
+	protected double[] getCoverages(final int[] baseIndexs, final double[][] dataMatrix) {
+		int replicates = dataMatrix.length;
+		double[] coverages = new double[replicates];
+
+		for (int replicateIndex = 0; replicateIndex < replicates; ++replicateIndex) {
 			double rowSum = 0.0;
-			for (int baseI : baseIs) {
-				rowSum += pileupMatrix[pileupI][baseI];
+			for (int baseIndex : baseIndexs) {
+				rowSum += dataMatrix[replicateIndex][baseIndex];
 			}
-			coverages[pileupI] = rowSum;
+			coverages[replicateIndex] = rowSum;
 		}
 
 		return coverages;

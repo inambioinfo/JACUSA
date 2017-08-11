@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class WindowSizeOption extends AbstractACOption {
 
-	private AbstractParameters parameters; 
+	final private AbstractParameters<?> parameters; 
 	
-	public WindowSizeOption(AbstractParameters parameters) {
+	public WindowSizeOption(AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "w";

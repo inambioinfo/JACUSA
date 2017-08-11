@@ -1,9 +1,16 @@
 package jacusa.util;
 
-import jacusa.pileup.BaseConfig;
-
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
 public class Coordinate {
 
+	public static final char STRAND_FORWARD_CHAR = '+';
+	public static final char STRAND_REVERSE_CHAR = '-';
+	public static final char STRAND_UNKNOWN_CHAR = '.';
+	
 	private String sequenceName;
 	private int start;
 	private int end;
@@ -14,13 +21,13 @@ public class Coordinate {
 		end = -1;
 	}
 
-	public Coordinate(Coordinate coordinate) {
+	public Coordinate(final Coordinate coordinate) {
 		sequenceName = new String(coordinate.sequenceName);
 		start 		= coordinate.start;
 		end 		= coordinate.end;
 	}
 	
-	public Coordinate(String sequenceName, int start, int end) {
+	public Coordinate(final String sequenceName, final int start, final int end) {
 		this.sequenceName = sequenceName;
 		this.start = start;
 		this.end = end;
@@ -55,7 +62,7 @@ public class Coordinate {
 	}
 	
 	public enum STRAND {
-		FORWARD(BaseConfig.STRAND_FORWARD_CHAR),REVERSE(BaseConfig.STRAND_REVERSE_CHAR),UNKNOWN(BaseConfig.STRAND_UNKNOWN_CHAR);
+		FORWARD(STRAND_FORWARD_CHAR),REVERSE(STRAND_REVERSE_CHAR),UNKNOWN(STRAND_UNKNOWN_CHAR);
 		
 		final char c;
 		final int i;
@@ -65,11 +72,11 @@ public class Coordinate {
 			
 			switch(c) {
 
-			case BaseConfig.STRAND_FORWARD_CHAR:
+			case STRAND_FORWARD_CHAR:
 				i = 2;
 				break;
 
-			case BaseConfig.STRAND_REVERSE_CHAR:
+			case STRAND_REVERSE_CHAR:
 				i = 1;
 				break;
 

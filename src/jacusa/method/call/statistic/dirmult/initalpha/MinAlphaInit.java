@@ -2,34 +2,32 @@ package jacusa.method.call.statistic.dirmult.initalpha;
 
 import java.util.Arrays;
 
-import jacusa.pileup.BaseConfig;
-
-public class MinAlphaInit<T> extends AbstractAlphaInit<T> {
+public class MinAlphaInit extends AbstractAlphaInit {
 
 	public MinAlphaInit() {
 		super("min", "alpha = min_k mean(p)");
 	}
 
 	@Override
-	public AbstractAlphaInit<T> newInstance(String line) {
-		return new MinAlphaInit<T>();
+	public AbstractAlphaInit newInstance(String line) {
+		return new MinAlphaInit();
 	}
 
 	@Override
 	public double[] init(
-			final int[] baseIs,
-			final T[] pileups,
-			final double[][] pileupMatrix) {
-		final double[] alpha = new double[BaseConfig.VALID.length];
+			final int[] baseIndexs,
+			final double[][] dataMatrix) {
+		final double[] alpha = new double[dataMatrix[0].length];
 		Arrays.fill(alpha, Double.MAX_VALUE);
 
-		double[] pileupCoverages = getCoverages(baseIs, pileupMatrix);
+		double[] dataCoverages = getCoverages(baseIndexs, dataMatrix);
 
-		double[][] pileupProportionMatrix = new double[pileups.length][baseIs.length];
-		for (int pileupI = 0; pileupI < pileups.length; ++pileupI) {
-			for (int baseI : baseIs) {
-				pileupProportionMatrix[pileupI][baseI] = pileupMatrix[pileupI][baseI] / pileupCoverages[pileupI];
-				alpha[baseI] = Math.min(alpha[baseI], pileupProportionMatrix[pileupI][baseI]);
+		double[][] dataProportionMatrix = new double[dataMatrix.length][alpha.length];
+		for (int replicateIndex = 0; replicateIndex < dataMatrix.length; ++replicateIndex) {
+			for (int baseIndex : baseIndexs) {
+				dataProportionMatrix[replicateIndex][baseIndex] = 
+						dataMatrix[replicateIndex][baseIndex] / dataCoverages[replicateIndex];
+				alpha[baseIndex] = Math.min(alpha[baseIndex], dataProportionMatrix[replicateIndex][baseIndex]);
 			}
 		}
 

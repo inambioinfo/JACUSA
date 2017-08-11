@@ -2,30 +2,36 @@ package jacusa.filter.factory;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.DummyFilterFillCache;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Location;
 import jacusa.util.WindowCoordinates;
 
-public class MaxAlleleCountFilterFactors<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractFilterFactory<T> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public class MaxAlleleCountFilterFactory<T extends BaseQualData> 
+extends AbstractFilterFactory<T> {
 
-	private static int ALLELE_COUNT = 2;
-	private int alleleCount;
+	//
+	private static final int MAX_ALLELES = 2;
+	//
+	private int alleles;
+	//
 	private AbstractParameters<T> parameters;
+	//
 	private boolean strict;
 	
-	public MaxAlleleCountFilterFactors(AbstractParameters<T> parameters) {
-		super(
-				'M', 
-				"Max allowed alleles per parallel pileup. Default: "+ ALLELE_COUNT);
-		alleleCount = ALLELE_COUNT;
+	public MaxAlleleCountFilterFactory(AbstractParameters<T> parameters) {
+		super('M', 
+				"Max allowed alleles per parallel pileup. Default: "+ MAX_ALLELES);
+		alleles = MAX_ALLELES;
 		this.parameters = parameters;
 		strict = parameters.collectLowQualityBaseCalls();
 	}
@@ -33,7 +39,7 @@ public class MaxAlleleCountFilterFactors<T extends Data<T> & hasCoordinate & has
 	@Override
 	public DummyFilterFillCache createFilterStorage(
 			WindowCoordinates windowCoordinates,
-			ConditionParameters condition) {
+			ConditionParameters<T> condition) {
 		return new DummyFilterFillCache(getC());
 	}
 
@@ -60,7 +66,7 @@ public class MaxAlleleCountFilterFactors<T extends Data<T> & hasCoordinate & has
 				if (alleleCount < 0) {
 					throw new IllegalArgumentException("Invalid allele count " + line);
 				}
-				this.alleleCount = alleleCount;
+				this.alleles = alleleCount;
 				break;
 		
 			case 2:
@@ -82,10 +88,11 @@ public class MaxAlleleCountFilterFactors<T extends Data<T> & hasCoordinate & has
 		}
 		
 		@Override
-		public boolean filter(final Result<T> result, final Location location, final WindowIterator<T> windowIterator) {
-			final ParallelData<T> parallelData = result.getParellelData();
+		public boolean filter(final Result<T> result, final Location location, 
+				final WindowIterator<T> windowIterator) {
+			final ParallelPileupData<T> parallelData = result.getParellelData();
 			return parallelData.getCombinedPooledData()
-					.getBaseCount().getAlleles().length > alleleCount;
+					.getBaseQualCount().getAlleles().length > alleles;
 		}
 	}
 	
@@ -96,8 +103,9 @@ public class MaxAlleleCountFilterFactors<T extends Data<T> & hasCoordinate & has
 		}
 		
 		@Override
-		public boolean filter(final Result<T> result, final Location location, final WindowIterator<T> windowIterator) {
-			return windowIterator.getAlleleCount(location) > alleleCount;
+		public boolean filter(final Result<T> result, final Location location, 
+				final WindowIterator<T> windowIterator) {
+			return windowIterator.getAlleleCount(location) > alleles;
 		}
 	}
 	

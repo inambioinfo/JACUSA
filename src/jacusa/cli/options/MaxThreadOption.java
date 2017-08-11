@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class MaxThreadOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 	
-	public MaxThreadOption(AbstractParameters parameters) {
+	public MaxThreadOption(AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "p";

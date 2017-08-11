@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class FilterModusOption extends AbstractACOption {
 
-	private AbstractParameters parameters;
+	final private AbstractParameters<?> parameters;
 	
-	public FilterModusOption(AbstractParameters parameters) {
+	public FilterModusOption(final AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "s";

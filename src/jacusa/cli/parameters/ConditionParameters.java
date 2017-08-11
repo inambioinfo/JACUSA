@@ -1,19 +1,17 @@
 package jacusa.cli.parameters;
 
 import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
-import jacusa.pileup.builder.AbstractPileupBuilderFactory;
-import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
+
+import jacusa.data.AbstractData;
+import jacusa.data.BaseConfig;
+import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.builder.hasLibraryType;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class ConditionParameters implements hasLibraryType {
+public class ConditionParameters<T extends AbstractData>
+implements hasLibraryType {
 
 	// cache related
 	private int maxDepth;
@@ -36,7 +34,7 @@ public class ConditionParameters implements hasLibraryType {
 	private String[] pathnames;
 	// properties for BAM files
 	private BaseConfig baseConfig;
-	private AbstractPileupBuilderFactory<?> pileupBuilderFactory;
+	private AbstractDataBuilderFactory<T> dataBuilderFactory;
 	
 	public ConditionParameters() {
 		maxDepth 		= -1;
@@ -48,11 +46,16 @@ public class ConditionParameters implements hasLibraryType {
 		filterFlags 	= 0;
 		retainFlags	 	= 0;
 
-		samTagFilters 	= new ArrayList<SamTagFilter>();
-		pathnames 		= new String[0];
-		pileupBuilderFactory = new UnstrandedPileupBuilderFactory();
+		samTagFilters 		= new ArrayList<SamTagFilter>();
+		pathnames 			= new String[0];
 	}
 
+	public ConditionParameters(
+			final AbstractDataBuilderFactory<T> dataBuilderFactory) {
+		this();
+		this.dataBuilderFactory = dataBuilderFactory;
+	}
+	
 	/**
 	 * @return the maxDepth
 	 */
@@ -168,15 +171,15 @@ public class ConditionParameters implements hasLibraryType {
 	/**
 	 * @return the pileupBuilderFactory
 	 */
-	public AbstractPileupBuilderFactory<?> getPileupBuilderFactory() {
-		return pileupBuilderFactory;
+	public AbstractDataBuilderFactory<T> getPileupBuilderFactory() {
+		return dataBuilderFactory;
 	}
 
 	/**
 	 * @param pileupBuilderFactory the pileupBuilderFactory to set
 	 */
-	public void setPileupBuilderFactory(AbstractPileupBuilderFactory<?> pileupBuilderFactory) {
-		this.pileupBuilderFactory = pileupBuilderFactory;
+	public void setPileupBuilderFactory(AbstractDataBuilderFactory<T> pileupBuilderFactory) {
+		this.dataBuilderFactory = pileupBuilderFactory;
 	}
 
 	public BaseConfig getBaseConfig() {

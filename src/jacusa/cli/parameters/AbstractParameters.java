@@ -1,20 +1,19 @@
 package jacusa.cli.parameters;
 
 import java.util.ArrayList;
+
 import java.util.List;
 
+import jacusa.data.AbstractData;
+import jacusa.data.BaseConfig;
 import jacusa.filter.FilterConfig;
 import jacusa.io.Output;
 import jacusa.io.OutputPrinter;
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.method.AbstractMethodFactory;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 
-public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> implements hasConditions {
+public abstract class AbstractParameters<T extends AbstractData>
+implements hasConditions<T> {
 	
 	// cache related
 	private int windowSize;
@@ -29,9 +28,9 @@ public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & has
 	private String bedPathname;
 
 	// chosen method
-	private AbstractMethodFactory<?> methodFactory;
+	private AbstractMethodFactory<T> methodFactory;
 
-	protected List<ConditionParameters> conditionParameters;
+	protected List<ConditionParameters<T>> conditionParameters;
 
 	private Output output;
 	private AbstractOutputFormat<T> format;
@@ -47,13 +46,13 @@ public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & has
 	public AbstractParameters() {
 		windowSize 			= 10000;
 		threadWindowSize	= 10 * windowSize;
-		baseConfig		= new BaseConfig(BaseConfig.VALID);
+		baseConfig			= new BaseConfig();
 		showReferenceBase = false;
 
 		maxThreads		= 1;
 		
 		bedPathname		= new String();
-		conditionParameters	= new ArrayList<ConditionParameters>(2);
+		conditionParameters	= new ArrayList<ConditionParameters<T>>(2);
 
 		output			= new OutputPrinter();
 		filterConfig	= new FilterConfig<T>();
@@ -68,7 +67,7 @@ public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & has
 		this();
 		
 		for (int i = 0; i < conditions; i++) {
-			conditionParameters.add(new ConditionParameters());
+			conditionParameters.add(new ConditionParameters<T>());
 		}
 	}
 	
@@ -102,12 +101,12 @@ public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & has
 	}
 
 	@Override
-	public ConditionParameters[] getConditionParameters() {
-		return (ConditionParameters[])conditionParameters.toArray();
+	public List<ConditionParameters<T>> getConditionParameters() {
+		return conditionParameters;
 	}
 	
 	@Override
-	public ConditionParameters getConditionParameters(int conditionIndex) {
+	public ConditionParameters<T> getConditionParameters(int conditionIndex) {
 		return conditionParameters.get(conditionIndex);
 	}
 	
@@ -187,14 +186,14 @@ public abstract class AbstractParameters<T extends Data<T> & hasCoordinate & has
 	/**
 	 * @return the methodFactory
 	 */
-	public AbstractMethodFactory<?> getMethodFactory() {
+	public AbstractMethodFactory<T> getMethodFactory() {
 		return methodFactory;
 	}
 
 	/**
 	 * @param methodFactory the methodFactory to set
 	 */
-	public void setMethodFactory(AbstractMethodFactory<?> methodFactory) {
+	public void setMethodFactory(AbstractMethodFactory<T> methodFactory) {
 		this.methodFactory = methodFactory;
 	}
 

@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class ThreadWindowSizeOption extends AbstractACOption {
 
-	private AbstractParameters parameters; 
+	final private AbstractParameters<?> parameters; 
 	
-	public ThreadWindowSizeOption(AbstractParameters parameters) {
+	public ThreadWindowSizeOption(AbstractParameters<?> parameters) {
 		this.parameters = parameters;
 
 		opt = "W";

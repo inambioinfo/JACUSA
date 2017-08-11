@@ -1,31 +1,31 @@
 package jacusa.pileup.dispatcher.pileup;
 
 import jacusa.cli.parameters.PileupParameters;
+import jacusa.data.BaseQualData;
 
-import jacusa.pileup.BasePileup;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.MpileupWorker;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
-public class MpileupWorkerDispatcher extends AbstractWorkerDispatcher<BasePileup> {
+public class MpileupWorkerDispatcher<T extends BaseQualData> 
+extends AbstractWorkerDispatcher<T> {
 	
 	public MpileupWorkerDispatcher(
 			final CoordinateProvider coordinateProvider, 
-			final PileupParameters parameters) {
-		super(coordinateProvider, 
-				parameters);
+			final PileupParameters<T> parameters) {
+		super(coordinateProvider, parameters);
 	}
 
 	@Override
-	protected MpileupWorker buildNextWorker() {
-		return new MpileupWorker(
-				this, 
+	protected MpileupWorker<T> buildNextWorker() {
+		return new MpileupWorker<T>(this, 
 				this.getWorkerContainer().size(), 
 				getParameters());
 	}
 
-	public PileupParameters getParameters() {
-		return (PileupParameters) getParameters();
+	@Override
+	public PileupParameters<T> getParameters() {
+		return (PileupParameters<T>) getParameters();
 	}
 	
 }

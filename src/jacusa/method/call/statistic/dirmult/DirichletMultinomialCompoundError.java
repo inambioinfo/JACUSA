@@ -1,21 +1,20 @@
 package jacusa.method.call.statistic.dirmult;
 
-import jacusa.cli.parameters.StatisticParameters;
+import jacusa.cli.parameters.CallParameters;
+import jacusa.data.BaseQualData;
 import jacusa.estimate.MinkaEstimateDirMultParameters;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.AbstractDirichletStatistic;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
 
-public class DirichletMultinomialCompoundError<T extends Data<T> & hasBaseCount> extends AbstractDirichletStatistic<T> {
+public class DirichletMultinomialCompoundError<T extends BaseQualData>
+extends AbstractDirichletStatistic<T> {
 
 	protected double estimatedError = 0.01;
 	protected double priorError = 0d;
 
-	public DirichletMultinomialCompoundError(final BaseConfig baseConfig, final StatisticParameters<T> parameters) {
+	public DirichletMultinomialCompoundError(final CallParameters<T> parameters) {
 		// sorry for ugly, code call to super constructor must be first call
-		super(new MinkaEstimateDirMultParameters(), baseConfig, parameters);
+		super(new MinkaEstimateDirMultParameters(), parameters);
 	}
 
 	@Override
@@ -54,9 +53,8 @@ public class DirichletMultinomialCompoundError<T extends Data<T> & hasBaseCount>
 
 	@Override
 	public DirichletMultinomialCompoundError<T> newInstance() {
-		return new DirichletMultinomialCompoundError<T>(baseConfig, parameters);
+		return new DirichletMultinomialCompoundError<T>(parameters);
 	}
-
 	
 	@Override
 	public boolean processCLI(String line) {

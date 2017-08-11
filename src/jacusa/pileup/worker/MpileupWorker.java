@@ -1,11 +1,11 @@
 package jacusa.pileup.worker;
 
 import jacusa.cli.parameters.PileupParameters;
+import jacusa.data.BaseQualData;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
-import jacusa.pileup.BasePileup;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.pileup.iterator.variant.AllParallelPileup;
@@ -13,32 +13,32 @@ import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import jacusa.util.Location;
 
-public class MpileupWorker extends AbstractWorker<BasePileup> {
+public class MpileupWorker<T extends BaseQualData> 
+extends AbstractWorker<T> {
 
-	private final Variant<BasePileup> variant;
+	private final Variant<T> variant;
 	
-	public MpileupWorker(
-			MpileupWorkerDispatcher workerDispatcher,
+	public MpileupWorker(MpileupWorkerDispatcher<T> workerDispatcher,
 			int threadId,
-			PileupParameters parameters) {
+			PileupParameters<T> parameters) {
 		super(workerDispatcher, 
 				threadId,
 				parameters);
-		variant = new AllParallelPileup();
+		variant = new AllParallelPileup<T>();
 	}
 
 	@Override
-	protected Result<BasePileup> processParallelData(
-			final ParallelData<BasePileup> parallelPileup, 
+	protected Result<T> processParallelData(
+			final ParallelPileupData<T> parallelPileup, 
 			final Location location, 
-			final WindowIterator<BasePileup> parallelDataIterator) {
-		Result<BasePileup> result = new Result<BasePileup>();
+			final WindowIterator<T> parallelDataIterator) {
+		Result<T> result = new Result<T>();
 		result.setParallelData(parallelPileup);
 
 		if (getParameters().getFilterConfig().hasFiters()) {
 			// apply each filter
-			for (AbstractFilterFactory<BasePileup> filterFactory : getParameters().getFilterConfig().getFactories()) {
-				AbstractStorageFilter<BasePileup> storageFilter = filterFactory.createStorageFilter();
+			for (final AbstractFilterFactory<T> filterFactory : getParameters().getFilterConfig().getFactories()) {
+				AbstractStorageFilter<T> storageFilter = filterFactory.createStorageFilter();
 				storageFilter.applyFilter(result, location, parallelDataIterator);
 			}
 		}
@@ -47,12 +47,12 @@ public class MpileupWorker extends AbstractWorker<BasePileup> {
 	}
 
 	@Override
-	protected WindowIterator<BasePileup> buildIterator(Coordinate coordinate) {
-		return new WindowIterator<BasePileup>(coordinate, variant, readers, getParameters());
+	protected WindowIterator<T> buildIterator(Coordinate coordinate) {
+		return new WindowIterator<T>(coordinate, variant, getReaders(), getParameters());
 	}
 
-	public PileupParameters getParameters() {
-		return (PileupParameters) super.getParameters(); 
+	public PileupParameters<T> getParameters() {
+		return (PileupParameters<T>) super.getParameters(); 
 	}
 	
 }

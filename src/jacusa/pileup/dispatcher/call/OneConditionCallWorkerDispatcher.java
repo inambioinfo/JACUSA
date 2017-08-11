@@ -1,30 +1,30 @@
 package jacusa.pileup.dispatcher.call;
 
 import jacusa.cli.parameters.CallParameters;
-import jacusa.pileup.BasePileup;
+import jacusa.data.BaseQualData;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.worker.OneConditionCallWorker;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
 import java.io.IOException;
 
-public class OneConditionCallWorkerDispatcher extends AbstractWorkerDispatcher<BasePileup> {
+public class OneConditionCallWorkerDispatcher<T extends BaseQualData>
+extends AbstractWorkerDispatcher<T> {
 
 	public OneConditionCallWorkerDispatcher(CoordinateProvider coordinateProvider, 
-			CallParameters parameters) throws IOException {
-		super(coordinateProvider,
-				parameters);
+			CallParameters<T> parameters) throws IOException {
+		super(coordinateProvider, parameters);
 	}
 
 	@Override
-	protected OneConditionCallWorker buildNextWorker() {
-		return new OneConditionCallWorker(this, 
+	protected OneConditionCallWorker<T> buildNextWorker() {
+		return new OneConditionCallWorker<T>(this, 
 				this.getWorkerContainer().size(),
 				getParameters());
 	}
 
-	public CallParameters getParameters() {
-		return (CallParameters) super.getParameters();
+	public CallParameters<T> getParameters() {
+		return (CallParameters<T>) super.getParameters();
 	}
 	
 }

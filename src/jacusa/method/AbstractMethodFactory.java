@@ -1,6 +1,7 @@
 package jacusa.method;
 
 import jacusa.JACUSA;
+
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.SAMPathnameArg;
 import jacusa.cli.options.condition.InvertStrandOption;
@@ -12,10 +13,7 @@ import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
+import jacusa.data.AbstractData;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.util.Coordinate;
 import jacusa.util.coordinateprovider.CoordinateProvider;
@@ -34,7 +32,12 @@ import org.apache.commons.cli.Options;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMSequenceRecord;
 
-public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & hasBaseCount & hasRefBase> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public abstract class AbstractMethodFactory<T extends AbstractData> {
 
 	final private String name;
 	final private String desc;
@@ -66,11 +69,16 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 	 */
 	public abstract void initACOptions();
 
-	protected void initConditionACOptions(int conditionIndex, ConditionParameters condition) {
+	/**
+	 * 
+	 * @param conditionIndex
+	 * @param condition
+	 */
+	protected void initConditionACOptions(int conditionIndex, ConditionParameters<T> condition) {
 		acOptions.add(new MinMAPQConditionOption(conditionIndex, condition));
 		acOptions.add(new MinBASQConditionOption(conditionIndex, condition));
 		acOptions.add(new MinCoverageConditionOption(conditionIndex, condition));
-		acOptions.add(new MaxDepthConditionOption(conditionIndex, condition, parameters));
+		acOptions.add(new MaxDepthConditionOption(conditionIndex, condition));
 		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition));
 		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition));
 		acOptions.add(new InvertStrandOption(conditionIndex, condition));
@@ -83,7 +91,8 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 	 * @return
 	 * @throws IOException
 	 */
-	public abstract AbstractWorkerDispatcher<?> getInstance(CoordinateProvider coordinateProvider) throws IOException; 
+	public abstract AbstractWorkerDispatcher<T> getInstance(
+			final CoordinateProvider coordinateProvider) throws IOException; 
 
 	/**
 	 * 
@@ -123,11 +132,30 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 			options.addOption(acoption.getOption());
 		}
 		
+		int conditions = getParameters().getConditions();
+		String files = new String();
+
+		switch (conditions) {
+		case 1:
+			files = "[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...]";
+			break;
+
+		case 2:
+			files = "[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...]";
+			break;
+
+		default:
+			files = "[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...] ...";
+			
+			break;
+		}
+		
 		formatter.printHelp(
 				JACUSA.JAR + 
 				" " + 
-				getName() + 
-				"[OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,BAM2_2,BAM2_3,...] ...", 
+				getName() +
+				" " +
+				files, 
 				options);
 	}
 	
@@ -214,7 +242,6 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 		return records;		
 	}
 
-
 	/**
 	 * 
 	 * @param targetSequenceNames
@@ -231,7 +258,7 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 			}	
 			reader.close();
 		}
-		
+
 		if(!sequenceNames.containsAll(targetSequenceNames) || !targetSequenceNames.containsAll(sequenceNames)) {
 			return false;
 		}
@@ -239,4 +266,12 @@ public abstract class AbstractMethodFactory<T extends Data<T> & hasCoordinate & 
 		return true;
 	}
 
+	public abstract T createDataContainer();
+	public abstract T[] createDataContainer(final int n);
+	public abstract T[][] createDataContainer(final int n, final int m);
+
+	public abstract T copyDataContainer(final T dataContainer);
+	public abstract T[] copyDataContainer(final T[] dataContainer);
+	public abstract T[][] copyDataContainer(final T[][] dataContainer);
+	
 }

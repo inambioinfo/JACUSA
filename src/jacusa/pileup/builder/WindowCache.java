@@ -2,14 +2,14 @@ package jacusa.pileup.builder;
 
 import java.util.Arrays;
 
+import jacusa.data.BaseQualCount;
 import jacusa.phred2prob.Phred2Prob;
-import jacusa.pileup.BaseCount;
 import jacusa.util.WindowCoordinates;
 
 public class WindowCache {
 
 	private WindowCoordinates windowCoordinates;
-	private int baseLength;
+	private final int bases;
 
 	private int[] coverage;
 	private int[][] baseCount;
@@ -24,18 +24,18 @@ public class WindowCache {
 
 	private int windowSize;
 
-	public WindowCache(final WindowCoordinates windowCoordinates, final int baseLength) {
+	public WindowCache(final WindowCoordinates windowCoordinates, final int bases) {
 		this.windowCoordinates 	= windowCoordinates;
-		this.baseLength 		= baseLength;
+		this.bases 				= bases;
 
 		windowSize	= windowCoordinates.getWindowSize();
 		coverage = new int[windowSize];
-		baseCount = new int[windowSize][baseLength];
-		qualCount = new int[windowSize][baseLength][Phred2Prob.MAX_Q];
+		baseCount = new int[windowSize][bases];
+		qualCount = new int[windowSize][bases][Phred2Prob.MAX_Q];
 
 		reference = new byte[windowSize]; 
 		
-		minQual	= new int[windowSize][baseLength];;
+		minQual	= new int[windowSize][bases];;
 		
 		alleleCount = new int[windowSize];
 		alleleMask = new int[windowSize];
@@ -46,7 +46,7 @@ public class WindowCache {
 		Arrays.fill(reference, (byte)'N');
 		for (int windowPositionI = 0; windowPositionI < windowSize; ++windowPositionI) {
 			Arrays.fill(baseCount[windowPositionI], 0);
-			for (int baseI = 0; baseI < baseLength; ++baseI) {
+			for (int baseI = 0; baseI < bases; ++baseI) {
 				Arrays.fill(qualCount[windowPositionI][baseI], 0);
 			}
 			Arrays.fill(minQual[windowPositionI], 20);
@@ -107,7 +107,7 @@ public class WindowCache {
 		int mask = getAlleleMask(windowPosition);
 
 		int i = 0;
-		for (int baseI = 0; baseI < baseLength; ++baseI) {
+		for (int baseI = 0; baseI < bases; ++baseI) {
 			if ((mask & 2 << baseI) > 0) {
 				alleles[i] = baseI;
 				++i;
@@ -118,11 +118,11 @@ public class WindowCache {
 	}
 	
 	public int getBaseLength() {
-		return baseLength;
+		return bases;
 	}
 
-	public BaseCount getBaseCount(final int windowPosition) {
-		return new BaseCount(baseCount[windowPosition], qualCount[windowPosition], minQual[windowPosition]);
+	public BaseQualCount getBaseCount(final int windowPosition) {
+		return new BaseQualCount(baseCount[windowPosition], qualCount[windowPosition], minQual[windowPosition]);
 	}
 	
 	public WindowCoordinates getWindowCoordinates() {

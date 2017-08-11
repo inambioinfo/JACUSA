@@ -10,11 +10,11 @@ import org.apache.commons.cli.OptionBuilder;
 public class MinBASQConditionOption extends AbstractACOption {
 
 	private int conditionIndex;
-	private ConditionParameters parameters;
+	private final ConditionParameters<?> condition;
 	
-	public MinBASQConditionOption(final int conditionIndex, final ConditionParameters parameters) {
+	public MinBASQConditionOption(final int conditionIndex, final ConditionParameters<?> condition) {
 		this.conditionIndex = conditionIndex;
-		this.parameters = parameters;
+		this.condition = condition;
 		
 		opt = "q" + conditionIndex;
 		longOpt = "min-basq" + conditionIndex;
@@ -26,7 +26,7 @@ public class MinBASQConditionOption extends AbstractACOption {
 		return OptionBuilder.withLongOpt(longOpt)
 			.withArgName(longOpt.toUpperCase())
 			.hasArg(true)
-	        .withDescription("filter " + conditionIndex + " positions with base quality < " + longOpt.toUpperCase() + " \n default: " + parameters.getMinBASQ())
+	        .withDescription("filter " + conditionIndex + " positions with base quality < " + longOpt.toUpperCase() + " \n default: " + condition.getMinBASQ())
 	        .create(opt);
 	}
 
@@ -38,7 +38,7 @@ public class MinBASQConditionOption extends AbstractACOption {
 	    	if(minBASQ < 0) {
 	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minBASQ + " not valid.");
 	    	}
-	    	parameters.setMinBASQ(minBASQ);
+	    	condition.setMinBASQ(minBASQ);
 	    }
 	}
 

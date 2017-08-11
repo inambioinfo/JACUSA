@@ -1,17 +1,14 @@
 package jacusa.cli.parameters;
 
-import jacusa.pileup.BaseReadPileup;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasReadInfoCount;
-import jacusa.pileup.hasRefBase;
+import jacusa.data.BaseQualReadInfoData;
 import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 
-public class RTArrestParameters<T extends Data<T> & hasReadInfoCount & hasCoordinate & hasBaseCount & hasRefBase> extends AbstractParameters<T> implements hasStatisticCalculator {
+public class RTArrestParameters<T extends BaseQualReadInfoData>
+extends AbstractParameters<T> 
+implements hasStatisticCalculator<T> {
 
-	private StatisticParameters<BaseReadPileup> statisticParameters;
+	private StatisticParameters<T> statisticParameters;
 
 	public RTArrestParameters(int conditions) {
 		super(conditions);
@@ -21,17 +18,17 @@ public class RTArrestParameters<T extends Data<T> & hasReadInfoCount & hasCoordi
 					new RTArrestPileupBuilderFactory<T>(new UnstrandedPileupBuilderFactory<T>()));
 		}
 		
-		statisticParameters = new StatisticParameters<BaseReadPileup>();
+		statisticParameters = new StatisticParameters<T>();
 	}
 	
 	public RTArrestParameters() {
 		super();
 
-		statisticParameters = new StatisticParameters<BaseReadPileup>();
+		statisticParameters = new StatisticParameters<T>();
 	}
 
 	@Override
-	public StatisticParameters<BaseReadPileup> getStatisticParameters() {
+	public StatisticParameters<T> getStatisticParameters() {
 		return statisticParameters;
 	}
 

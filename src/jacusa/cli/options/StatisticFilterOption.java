@@ -8,9 +8,9 @@ import org.apache.commons.cli.OptionBuilder;
 
 public class StatisticFilterOption  extends AbstractACOption {
 
-	private StatisticParameters parameters;
+	private StatisticParameters<?> parameters;
 
-	public StatisticFilterOption(StatisticParameters parameters) {
+	public StatisticFilterOption(StatisticParameters<?> parameters) {
 		this.parameters = parameters;
 		opt = "T";
 		longOpt = "threshold";

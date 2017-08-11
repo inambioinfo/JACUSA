@@ -12,9 +12,9 @@ public class SAMPathnameArg {
 	public static final char SEP = ',';
 
 	private int conditionIndex;
-	private ConditionParameters condition;
+	private ConditionParameters<?> condition;
 	
-	public SAMPathnameArg(final int conditionIndex, ConditionParameters paramteres) {
+	public SAMPathnameArg(final int conditionIndex, ConditionParameters<?> paramteres) {
 		this.conditionIndex = conditionIndex;
 		this.condition = paramteres;
 	}

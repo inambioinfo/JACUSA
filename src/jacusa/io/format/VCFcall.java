@@ -1,25 +1,23 @@
 package jacusa.io.format;
 
 import jacusa.JACUSA;
+import jacusa.data.BaseQualData;
+import jacusa.data.BaseConfig;
+import jacusa.data.ParallelPileupData;
+import jacusa.data.Result;
 import jacusa.filter.FilterConfig;
 import jacusa.filter.factory.AbstractFilterFactory;
-import jacusa.pileup.BaseConfig;
-import jacusa.pileup.Data;
-import jacusa.pileup.ParallelData;
-import jacusa.pileup.Result;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 
 import java.util.Calendar;
 
-public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & hasCoordinate> extends AbstractOutputFormat<T> {
+public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 
-	private BaseConfig baseConfig;
-	private FilterConfig<T> filterConfig;
 	public static final char CHAR = 'V';
-
-	public VCF_ResultFormat(final BaseConfig baseConfig, final FilterConfig<T> filterConfig) {
+	
+	private BaseConfig baseConfig;
+	private FilterConfig<BaseQualData> filterConfig;
+	
+	public VCFcall(final BaseConfig baseConfig, final FilterConfig<BaseQualData> filterConfig) {
 		super(CHAR, "VCF Output format. Option -P will be ignored (VCF is unstranded)");
 		this.baseConfig = baseConfig;
 		this.filterConfig = filterConfig;
@@ -51,7 +49,7 @@ public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & ha
 		sb.append('\n');
 
 		// add filter descriptions to header
-		for (final AbstractFilterFactory<?> filter : filterConfig.getFactories()) {
+		for (final AbstractFilterFactory<BaseQualData> filter : filterConfig.getFactories()) {
 			sb.append("##FILTER=<ID=");
 			sb.append(filter.getC());
 			sb.append(",Description=");
@@ -92,9 +90,9 @@ public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & ha
 	}
 
 	@Override
-	public String convert2String(Result<T> result) {
+	public String convert2String(Result<BaseQualData> result) {
 		final StringBuilder sb = new StringBuilder();
-		final ParallelData<T> parallelData = result.getParellelData();
+		final ParallelPileupData<BaseQualData> parallelData = result.getParellelData();
 		String filterInfo = result.getFilterInfo().combine();
 		if (filterInfo == null || filterInfo.length() == 0) {
 			filterInfo = "PASS";
@@ -102,14 +100,14 @@ public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & ha
 
 		StringBuilder sb2 = new StringBuilder();
 		boolean first = true;
-		for (int allelI : parallelData.getCombinedPooledData().getBaseCount().getAlleles()) {
-			if (parallelData.getCombinedPooledData().getRefBase() != baseConfig.getBases()[allelI]) {
+		for (int allelIndex : parallelData.getCombinedPooledData().getBaseQualCount().getAlleles()) {
+			if (parallelData.getCombinedPooledData().getReferenceBase() != baseConfig.getBases()[allelIndex]) {
 				if (! first) {
 					sb2.append(',');
 				} else {
 					first = false;
 				}
-				sb2.append(baseConfig.getBases()[allelI]);
+				sb2.append(baseConfig.getBases()[allelIndex]);
 			}
 		}
 
@@ -121,7 +119,7 @@ public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & ha
 				// ID
 				Character.toString(getEMPTY()),
 				// REF
-				Character.toString(parallelData.getCombinedPooledData().getRefBase()),
+				Character.toString(parallelData.getCombinedPooledData().getReferenceBase()),
 				// ALT
 				sb2.toString(),
 				// QUAL
@@ -147,30 +145,30 @@ public class VCF_ResultFormat<T extends Data<T> & hasBaseCount & hasRefBase & ha
 		return sb.toString();
 	}
 
-	private void addParallelPileup(final StringBuilder sb, final T pileups[]) {
-		for (int i = 0; i < pileups.length; ++i) {
+	private void addParallelPileup(final StringBuilder sb, final BaseQualData data[]) {
+		for (int i = 0; i < data.length; ++i) {
 			// add DP
 			sb.append(getSEP());
-			sb.append(pileups[i].getCoverage());
+			sb.append(data[i].getBaseQualCount().getCoverage());
 			
 			sb.append(getSEP3());
 			
 			// add BC - base counts
 			int j = 0;
-			char b = BaseConfig.VALID[j];
-			int baseIndex = baseConfig.getBaseI((byte)b);
+			char b = BaseConfig.BASES[j];
+			int baseIndex = baseConfig.getBaseIndex((byte)b);
 			int count = 0;
 			if (baseIndex >= 0) {
-				count = pileups[i].getBaseCount().getBaseCount(baseIndex);
+				count = data[i].getBaseQualCount().getBaseCount(baseIndex);
 			}
 			sb.append(count);
 			++j;
-			for (; j < BaseConfig.VALID.length; ++j) {
-				b = BaseConfig.VALID[j];
-				baseIndex = baseConfig.getBaseI((byte)b);
+			for (; j < BaseConfig.BASES.length; ++j) {
+				b = BaseConfig.BASES[j];
+				baseIndex = baseConfig.getBaseIndex((byte)b);
 				count = 0;
 				if (baseIndex >= 0) {
-					count = pileups[i].getBaseCount().getBaseCount(baseIndex);
+					count = data[i].getBaseQualCount().getBaseCount(baseIndex);
 				}
 				sb.append(',');
 				sb.append(count);

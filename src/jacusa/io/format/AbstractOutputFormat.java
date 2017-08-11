@@ -1,14 +1,19 @@
 package jacusa.io.format;
 
-import jacusa.pileup.Data;
-import jacusa.pileup.Result;
+import jacusa.data.AbstractData;
+import jacusa.data.Result;
 
-public abstract class AbstractOutputFormat<T extends Data<T>> {
+/**
+ * 
+ * @author Michael Piechotta
+ *
+ */
+public abstract class AbstractOutputFormat<T extends AbstractData> {
 
 	private char c;
 	private String desc;
 	
-	public AbstractOutputFormat(char c, String desc) {
+	public AbstractOutputFormat(final char c, final String desc) {
 		this.c = c;
 		this.desc = desc;
 	}
@@ -22,10 +27,11 @@ public abstract class AbstractOutputFormat<T extends Data<T>> {
 	}
 
 	// Header is empty by default
-	public String getHeader(String[][] pathnames) {
+	// override to change
+	public String getHeader(final String[][] pathnames) {
 		return null;
 	}
 
-	public abstract String convert2String(Result<T> result);
+	public abstract String convert2String(final Result<T> result);
 
 }

@@ -1,9 +1,8 @@
 package jacusa.cli.parameters;
 
-
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
-import jacusa.io.format.VCF_ResultFormat;
+import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
@@ -93,9 +92,9 @@ public class CLI {
 		}
 
 		// check stranded and VCF chosen
-		if (methodFactory.getParameters().getFormat().getC() == VCF_ResultFormat.CHAR) {
+		if (methodFactory.getParameters().getFormat().getC() == VCFcall.CHAR) {
 			boolean error = false;
-			for (final ConditionParameters cp : methodFactory.getParameters().getConditionParameters()) {
+			for (final ConditionParameters<?> cp : methodFactory.getParameters().getConditionParameters()) {
 				if (cp.getLibraryType() != LibraryType.UNSTRANDED) {
 					error = true;
 				}
@@ -115,9 +114,9 @@ public class CLI {
 	 * 
 	 */
 	public void printUsage() {
-		StringBuilder sb = new StringBuilder();
+		final StringBuilder sb = new StringBuilder();
 		
-		for (AbstractMethodFactory<?> methodFactory : methodFactories.values()) {
+		for (final AbstractMethodFactory<?> methodFactory : methodFactories.values()) {
 			sb.append("  ");
 			sb.append(methodFactory.getName());
 			sb.append("\t\t");

@@ -1,7 +1,5 @@
 package jacusa.method.call;
 
-import jacusa.JACUSA;
-import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
 import jacusa.cli.options.FilterConfigOption;
@@ -22,60 +20,66 @@ import jacusa.cli.options.WindowSizeOption;
 import jacusa.cli.options.condition.filter.FilterFlagOption;
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.CallParameters;
+import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.factory.DistanceFilterFactory;
 import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.HomozygousFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
-import jacusa.filter.factory.MaxAlleleCountFilterFactors;
+import jacusa.filter.factory.MaxAlleleCountFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
 import jacusa.filter.factory.SpliceSiteDistanceFilterFactory;
 import jacusa.io.format.AbstractOutputFormat;
-import jacusa.io.format.BED6callFormat;
-import jacusa.io.format.VCF_ResultFormat;
+import jacusa.io.format.BED6call;
+import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.method.call.statistic.dirmult.DirichletMultinomialRobustCompoundError;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.dispatcher.call.TwoConditionCallWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Set;
+import java.util.List;
 import java.util.TreeMap;
 import java.util.Map;
 
-import org.apache.commons.cli.HelpFormatter;
-import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 
-public class nConditionCallFactory extends AbstractMethodFactory {
+public class nConditionCallFactory
+extends AbstractMethodFactory<BaseQualData> {
 
-	private static TwoConditionCallWorkerDispatcher instance;
-
-	public nConditionCallFactory(int conditions) {
-		super("call-n", "Call variants - n conditions", new CallParameters(conditions));
-	}
+	private static Object instance;
 	
-	public void initACOptions() {
+	public nConditionCallFactory() {
+		super("call-n", "Call variants - n conditions", new CallParameters<BaseQualData>());
+	}
 
+	protected void initGlobalACOptions() {
+		List<ConditionParameters<BaseQualData>> conditions = new ArrayList<ConditionParameters<BaseQualData>>(4);
+		
+		// FIXME
 		// global settings
-		acOptions.add(new MinMAPQOption());
-		acOptions.add(new MinBASQOption());
-		acOptions.add(new MinCoverageOption());
+		acOptions.add(new MinMAPQOption<BaseQualData>(conditions));
+		acOptions.add(new MinBASQOption<BaseQualData>(conditions));
+		acOptions.add(new MinCoverageOption<BaseQualData>(conditions));
 		
 		acOptions.add(new MaxDepthOption(getParameters()));
-		acOptions.add(new FilterFlagOption());
+		acOptions.add(new FilterFlagOption<BaseQualData>(conditions));
 
 		acOptions.add(new BedCoordinatesOption(getParameters()));
+		
 		acOptions.add(new ResultFileOption(getParameters()));
 		if (getResultFormats().size() == 1 ) {
 			Character[] a = getResultFormats().keySet().toArray(new Character[1]);
 			getParameters().setFormat(getResultFormats().get(a[0]));
 		} else {
-			getParameters().setFormat(getResultFormats().get(BED6callFormat.CHAR));
-			acOptions.add(new FormatOption<AbstractOutputFormat<?>>(getParameters(), getResultFormats()));
+			getParameters().setFormat(getResultFormats().get(BED6call.CHAR));
+			// FIXME
+			acOptions.add(new FormatOption<BaseQualData, AbstractOutputFormat<BaseQualData>>(
+					getParameters(), getResultFormats()));
 		}
 
 		acOptions.add(new MaxThreadOption(getParameters()));
@@ -84,14 +88,16 @@ public class nConditionCallFactory extends AbstractMethodFactory {
 
 		if (getStatistics().size() == 1 ) {
 			String[] a = getStatistics().keySet().toArray(new String[1]);
-			getParameters().getStatisticParameters().setStatisticCalculator(getStatistics().get(a[0]));
+			getParameters().getStatisticParameters().setStatisticCalculator(
+					getStatistics().get(a[0]));
 		} else {
-			acOptions.add(new StatisticCalculatorOption(getParameters().getStatisticParameters(), getStatistics()));
+			acOptions.add(new StatisticCalculatorOption<BaseQualData>(
+					getParameters().getStatisticParameters(), getStatistics()));
 		}
 
 		acOptions.add(new FilterModusOption(getParameters()));
 		acOptions.add(new BaseConfigOption(getParameters()));
-		acOptions.add(new FilterConfigOption(getParameters(), getFilterFactories()));
+		acOptions.add(new FilterConfigOption<BaseQualData>(getParameters(), getFilterFactories()));
 		
 		acOptions.add(new StatisticFilterOption(getParameters().getStatisticParameters()));
 
@@ -99,72 +105,77 @@ public class nConditionCallFactory extends AbstractMethodFactory {
 		acOptions.add(new HelpOption(CLI.getSingleton()));
 	}
 
-	// FIXME
+	public void initACOptions() {
+		initGlobalACOptions();
+	}
+
 	@Override
-	public AbstractWorkerDispatcher<?> getInstance(CoordinateProvider coordinateProvider) throws IOException {
+	public AbstractWorkerDispatcher<BaseQualData> getInstance(
+			final CoordinateProvider coordinateProvider) throws IOException {
 		if(instance == null) {
-			// FIXME instance = new nCallWorkerDispatcher(pathnames, coordinateProvider, parameters);
+			//instance = new nCallWorkerDispatcher(pathnames, coordinateProvider, parameters);
 		}
-		return instance;
+		// FIXME
+		return null;
+		// return instance;
 	}
 	
-	public Map<String, StatisticCalculator> getStatistics() {
-		Map<String, StatisticCalculator> statistics = new TreeMap<String, StatisticCalculator>();
+	public Map<String, StatisticCalculator<BaseQualData>> getStatistics() {
+		final Map<String, StatisticCalculator<BaseQualData>> statistics = 
+				new TreeMap<String, StatisticCalculator<BaseQualData>>();
 
-		StatisticCalculator statistic = null;
+		StatisticCalculator<BaseQualData> statistic = null;
 
-		statistic = new DirichletMultinomialRobustCompoundError(getParameters().getBaseConfig(), 
-				getParameters().getStatisticParameters());
+		statistic = new DirichletMultinomialRobustCompoundError<BaseQualData>(getParameters());
 		statistics.put("DirMult", statistic);
-		
-		//statistic = new ACCUSA2Statistic(parameters.getBaseConfig(), parameters.getStatisticParameters());
-		//statistics.put(statistic.getName(), statistic);
-		
+
 		return statistics;
 	}
 
-	// FIXME ?
-	public Map<Character, AbstractFilterFactory<?>> getFilterFactories() {
-		Map<Character, AbstractFilterFactory<?>> abstractPileupFilters = new HashMap<Character, AbstractFilterFactory<?>>();
+	public Map<Character, AbstractFilterFactory<BaseQualData>> getFilterFactories() {
+		final Map<Character, AbstractFilterFactory<BaseQualData>> abstractPileupFilters = 
+				new HashMap<Character, AbstractFilterFactory<BaseQualData>>();
 
-		AbstractFilterFactory<?>[] filterFactories = new AbstractFilterFactory[] {
-				new DistanceFilterFactory(getParameters()),
-				new INDEL_DistanceFilterFactory(getParameters()),
-				new ReadPositionDistanceFilterFactory(getParameters()),
-				new SpliceSiteDistanceFilterFactory(getParameters()),
-				new HomozygousFilterFactory(getParameters()),
-				new MaxAlleleCountFilterFactors(getParameters()),
-				new HomopolymerFilterFactory(getParameters()),
-		};
-		for (AbstractFilterFactory<?> filterFactory : filterFactories) {
+		final List<AbstractFilterFactory<BaseQualData>> filterFactories = 
+				new ArrayList<AbstractFilterFactory<BaseQualData>>(10);
+		
+		filterFactories.add(new DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new INDEL_DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new ReadPositionDistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new SpliceSiteDistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new HomozygousFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new MaxAlleleCountFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new HomopolymerFilterFactory<BaseQualData>(getParameters()));
+
+		for (final AbstractFilterFactory<BaseQualData> filterFactory : filterFactories) {
 			abstractPileupFilters.put(filterFactory.getC(), filterFactory);
 		}
 
 		return abstractPileupFilters;
 	}
 
-	public Map<Character, AbstractOutputFormat<?>> getResultFormats() {
-		Map<Character, AbstractOutputFormat<?>> resultFormats = 
-				new HashMap<Character, AbstractOutputFormat<?>>();
+	public Map<Character, AbstractOutputFormat<BaseQualData>> getResultFormats() {
+		final Map<Character, AbstractOutputFormat<BaseQualData>> resultFormats = 
+				new HashMap<Character, AbstractOutputFormat<BaseQualData>>();
 
-		AbstractOutputFormat<?> resultFormat = null;
+		AbstractOutputFormat<BaseQualData> resultFormat = null;
 
 		// BED like output
-		resultFormat = new BED6callFormat(getParameters().getBaseConfig(), getParameters().getFilterConfig(), getParameters().showReferenceBase());
+		resultFormat = new BED6call(getParameters().getBaseConfig(), 
+				getParameters().getFilterConfig(), getParameters().showReferenceBase());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		// VCF output
-		resultFormat = new VCF_ResultFormat(getParameters().getBaseConfig(), getParameters().getFilterConfig());
+		resultFormat = new VCFcall(getParameters().getBaseConfig(), 
+				getParameters().getFilterConfig());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		return resultFormats;
 	}
 
-
-
 	@Override
-	public CallParameters getParameters() {
-		return (CallParameters) super.getParameters();
+	public CallParameters<BaseQualData> getParameters() {
+		return (CallParameters<BaseQualData>) super.getParameters();
 	}
 
 	@Override
@@ -173,21 +184,53 @@ public class nConditionCallFactory extends AbstractMethodFactory {
 			throw new ParseException("BAM File is not provided!");
 		}
 
+		// TODO set conditions
+		
 		return super.parseArgs(args);
 	}
 
 	@Override
-	public void printUsage() {
-		HelpFormatter formatter = new HelpFormatter();
-		formatter.setWidth(160);
+	public BaseQualData createDataContainer() {
+		return new BaseQualData();
+	}
 
-		Set<AbstractACOption> acOptions = getACOptions();
-		Options options = new Options();
-		for (AbstractACOption acoption : acOptions) {
-			options.addOption(acoption.getOption());
+	@Override
+	public BaseQualData[] createDataContainer(final int n) {
+		return new BaseQualData[n];
+	}
+
+	@Override
+	public BaseQualData[][] createDataContainer(final int n, final int m) {
+		if (m < 0) {
+			return new BaseQualData[n][];
+		}
+		return new BaseQualData[n][m];
+	}
+
+	@Override
+	public BaseQualData copyDataContainer(final BaseQualData dataContainer) {
+		return new BaseQualData(dataContainer);
+	}
+	
+	@Override
+	public BaseQualData[] copyDataContainer(final BaseQualData[] dataContainer) {
+		BaseQualData[] ret = createDataContainer(dataContainer.length);
+		for (int i = 0; i < dataContainer.length; ++i) {
+			ret[i] = new BaseQualData(dataContainer[i]);
+		}
+		return ret;
+	}
+	
+	@Override
+	public BaseQualData[][] copyDataContainer(final BaseQualData[][] dataContainer) {
+		BaseQualData[][] ret = createDataContainer(dataContainer.length, -1);
+		for (int i = 0; i < dataContainer.length; ++i) {
+			for (int j = 0; j < dataContainer[i].length; ++j) {
+				ret[i][j] = new BaseQualData(dataContainer[i][j]);
+			}	
 		}
 		
-		formatter.printHelp(JACUSA.JAR + " [OPTIONS] BAM1_1[,BAM1_2,BAM1_3,...] BAM2_1[,...] ... BAMn_1[,...]", options);
+		return ret;
 	}
 	
 }

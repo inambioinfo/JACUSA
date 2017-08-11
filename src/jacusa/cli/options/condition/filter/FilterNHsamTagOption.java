@@ -6,7 +6,7 @@ import jacusa.cli.parameters.ConditionParameters;
 
 public class FilterNHsamTagOption extends AbstractFilterSamTagOption {
 
-	public FilterNHsamTagOption(final int conditionIndex, final ConditionParameters parameters) {
+	public FilterNHsamTagOption(final int conditionIndex, final ConditionParameters<?> parameters) {
 		super(conditionIndex, parameters, "NH");
 	}
 

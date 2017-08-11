@@ -6,9 +6,9 @@ import jacusa.util.Info;
 
 import org.apache.commons.math3.special.Gamma;
 
-public abstract class MinkaEstimateParameters<T> {
+public abstract class MinkaEstimateParameters {
 
-	protected AbstractAlphaInit<T> alphaInit;
+	protected AbstractAlphaInit alphaInit;
 	
 	// options for paremeters estimation
 	protected int maxIterations;
@@ -17,7 +17,7 @@ public abstract class MinkaEstimateParameters<T> {
 	protected boolean reset;
 	
 	public MinkaEstimateParameters() {
-		alphaInit = new MeanAlphaInit<T>();
+		alphaInit = new MeanAlphaInit();
 		maxIterations = 100;
 		epsilon = 0.001;
 		reset = false;
@@ -33,16 +33,16 @@ public abstract class MinkaEstimateParameters<T> {
 	
 	// estimate alpha and returns loglik
 	public abstract double maximizeLogLikelihood(
-			final int[] baseIs, 
-			final double[] alphaOld, 
-			final double[][] matrix,
 			final String condition,
+			final double[] alphaOld, 
+			final int[] baseIndexs,
+			final double[][] dataMatrix,
 			final Info resultInfo,
 			final boolean backtrack);
 
 	protected double[] backtracking(
 			final double[] alpha, 
-			final int[] baseIs, 
+			final int[] baseIndexs, 
 			final double[] gradient, 
 			final double b, 
 			final double[] Q) {
@@ -58,7 +58,7 @@ public abstract class MinkaEstimateParameters<T> {
 
 			boolean admissible = true;
 			// adjust alpha with smaller newton step
-			for (int baseI : baseIs) {
+			for (int baseI : baseIndexs) {
 				alphaNew[baseI] = alpha[baseI] - lamba * (gradient[baseI] - b) / Q[baseI];
 				// check if admissible
 				if (alphaNew[baseI] < 0.0) {
@@ -79,7 +79,7 @@ public abstract class MinkaEstimateParameters<T> {
 	// calculate likelihood
 	protected abstract double getLogLikelihood(
 			final double[] alpha, 
-			final int[] baseIs, 
+			final int[] baseIndexs, 
 			final double[][] pileupMatrix);
 
 	protected double digamma(double x) {
@@ -106,11 +106,11 @@ public abstract class MinkaEstimateParameters<T> {
 		this.epsilon = epsilon;
 	}
 
-	public AbstractAlphaInit<T> getAlphaInit() {
+	public AbstractAlphaInit getAlphaInit() {
 		return alphaInit;
 	}
 	
-	public void setAlphaInit(AbstractAlphaInit<T> alphaInit) {
+	public void setAlphaInit(AbstractAlphaInit alphaInit) {
 		this.alphaInit = alphaInit;
 	}
 

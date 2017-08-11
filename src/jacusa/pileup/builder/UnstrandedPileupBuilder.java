@@ -1,15 +1,9 @@
-/**
- * 
- */
 package jacusa.pileup.builder;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.BaseQualData;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.Data;
-import jacusa.pileup.hasBaseCount;
-import jacusa.pileup.hasCoordinate;
-import jacusa.pileup.hasRefBase;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMFileReader;
@@ -18,15 +12,14 @@ import net.sf.samtools.SAMFileReader;
  * @author Michael Piechotta
  *
  */
-public class UnstrandedPileupBuilder<T extends Data<T> & hasBaseCount & hasCoordinate & hasRefBase> extends AbstractPileupBuilder<T> {
+public class UnstrandedPileupBuilder<T extends BaseQualData> 
+extends AbstractPileupBuilder<T> {
 	
-	public UnstrandedPileupBuilder(final T dataContainer,
-			final WindowCoordinates windowCoordinates,
+	public UnstrandedPileupBuilder(final WindowCoordinates windowCoordinates,
 			final SAMFileReader SAMFileReader,
-			final ConditionParameters condition,
+			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters) {
-		super(dataContainer, 
-				windowCoordinates, 
+		super(windowCoordinates, 
 				STRAND.UNKNOWN, 
 				SAMFileReader, 
 				condition, 
@@ -34,42 +27,45 @@ public class UnstrandedPileupBuilder<T extends Data<T> & hasBaseCount & hasCoord
 				LibraryType.UNSTRANDED);
 	}
 
-	public FilterContainer getFilterContainer(int windowPosition, STRAND strand) {
+	@Override
+	public FilterContainer<T> getFilterContainer(int windowPosition, STRAND strand) {
 		return filterContainer;
 	}
 	
 	@Override
 	public T getData(int windowPosition, STRAND strand) {
-		dataContainer = dataContainer.copy();
+		T dataContainer = parameters.getMethodFactory().createDataContainer();
 
 		dataContainer.setContig(windowCoordinates.getContig()); 
 		dataContainer.setPosition(windowCoordinates.getGenomicPosition(windowPosition));
 		dataContainer.setStrand(strand);
 
 		// copy base and qual info from cache
-		dataContainer.setBaseCount(windowCache.getBaseCount(windowPosition));
+		dataContainer.setBaseQualCount(windowCache.getBaseCount(windowPosition));
 
-		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
-		if (refBaseByte != (byte)'N') {
-			dataContainer.setRefBase((char)refBaseByte);
+		byte referenceBaseByte = windowCache.getReferenceBase(windowPosition);
+		if (referenceBaseByte != (byte)'N') {
+			dataContainer.setReferenceBase((char)referenceBaseByte);
 		}
 		
 		// and complement if needed
 		if (strand == STRAND.REVERSE) {
-			dataContainer.getBaseCount().invert();
+			dataContainer.getBaseQualCount().invert();
 		}
 
 		return dataContainer;
 	}
 
 	@Override
-	protected void addHighQualityBaseCall(int windowPosition, int baseI, int qualI, STRAND strand) {
-		windowCache.addHighQualityBaseCall(windowPosition, baseI, qualI);
+	protected void addHighQualityBaseCall(int windowPosition, int baseIndex, 
+			int qualIndex, STRAND strand) {
+		windowCache.addHighQualityBaseCall(windowPosition, baseIndex, qualIndex);
 	}
 	
 	@Override
-	protected void addLowQualityBaseCall(int windowPosition, int baseI, int qualI, STRAND strand) {
-		windowCache.addLowQualityBaseCall(windowPosition, baseI, qualI);
+	protected void addLowQualityBaseCall(int windowPosition, int baseIndex, 
+			int qualIndex, STRAND strand) {
+		windowCache.addLowQualityBaseCall(windowPosition, baseIndex, qualIndex);
 	}
 
 	@Override

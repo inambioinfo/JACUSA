@@ -6,7 +6,7 @@ import jacusa.cli.parameters.ConditionParameters;
 
 public class FilterNMsamTagOption extends AbstractFilterSamTagOption {
 	
-	public FilterNMsamTagOption(final int conditionIndex, final ConditionParameters paramters) {
+	public FilterNMsamTagOption(final int conditionIndex, final ConditionParameters<?> paramters) {
 		super(conditionIndex, paramters, "NM");
 	}
 

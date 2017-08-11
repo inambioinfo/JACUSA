@@ -1,29 +1,30 @@
-package jacusa.pileup;
+package jacusa.data;
 
 import jacusa.util.Info;
 
 /**
  * 
  * @author Michael Piechotta
+ *
  */
-public class Result<T extends Data<T>> {
+public class Result<T extends AbstractData> {
 
-	private ParallelData<T> parallelData;
+	private ParallelPileupData<T> parallelData;
 	private double statistic;
 	private Info filterInfo;
 	private Info resultInfo;
 	
 	public Result() {
-		statistic = Double.NaN;
-		filterInfo 		= new Info();
-		resultInfo 		= new Info();
+		statistic 	= Double.NaN;
+		filterInfo	= new Info();
+		resultInfo	= new Info();
 	}
 	
 	/**
 	 * 
 	 * @param parallelData
 	 */
-	public void setParallelData(ParallelData<T> parallelData) {
+	public void setParallelData(ParallelPileupData<T> parallelData) {
 		this.parallelData = parallelData;
 	}
 	
@@ -31,7 +32,7 @@ public class Result<T extends Data<T>> {
 	 * 
 	 * @return
 	 */
-	public ParallelData<T> getParellelData() {
+	public ParallelPileupData<T> getParellelData() {
 		return parallelData;
 	}
 
