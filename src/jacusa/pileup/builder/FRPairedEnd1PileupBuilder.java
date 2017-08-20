@@ -3,7 +3,7 @@ package jacusa.pileup.builder;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
-import jacusa.util.Coordinate.STRAND;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -23,35 +23,31 @@ extends AbstractStrandedPileupBuilder<T> {
 		super(windowCoordinates, reader, condition, parameters, LibraryType.FR_FIRSTSTRAND);
 	}
 	
-	protected void processRecord(SAMRecord record) {
+	public void processRecord(SAMRecord record) {
 		/*
 		 * 
 		 * Taken from: https://www.biostars.org/p/64250/
 	     * fr-firststrand:dUTP, NSR, NNSR Same as above except we enforce the rule that the right-most end of the fragment (in transcript coordinates) is the first sequenced (or only sequenced for single-end reads). Equivalently, it is assumed that only the strand generated during first strand synthesis is sequenced.
 	     *  
 		 */
+		AbstractDataBuilder<T> dataBuilder = null;
+		
 		if (record.getReadPairedFlag()) { // paired end
 			if (record.getFirstOfPairFlag() && record.getReadNegativeStrandFlag() || 
 					record.getSecondOfPairFlag() && ! record.getReadNegativeStrandFlag()) {
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			} else {
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			}
 		} else { // single end
 			if (record.getReadNegativeStrandFlag()) {
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			} else {
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			}
 		}
 
-		int i = strand.integer() - 1;
-		// makes sure that for reads on the reverse strand the complement is stored in pileup and filters
-		byte2int = byte2intAr[i]; 
-		filterContainer = i == 0 ? filterContainersReverse : filterContainersForward;
-		windowCache = windowCaches[i];
-
-		super.processRecord(record);
+		dataBuilder.processRecord(record);
 	}
 
 }

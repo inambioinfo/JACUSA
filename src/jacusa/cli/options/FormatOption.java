@@ -10,17 +10,15 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FormatOption<T extends AbstractData, F extends AbstractOutputFormat<T>> extends AbstractACOption {
+public class FormatOption<T extends AbstractData, F extends AbstractOutputFormat<T>> 
+extends AbstractACOption {
 
 	private AbstractParameters<T> parameters;
 	private Map<Character, F> formats;
 
-	public FormatOption(AbstractParameters<T> parameters, Map<Character, F> formats) {
+	public FormatOption(final AbstractParameters<T> parameters, final Map<Character, F> formats) {
+		super("f", "output-format");
 		this.parameters = parameters;
-
-		opt = "f";
-		longOpt = "output-format";
-
 		this.formats = formats;
 	}
 
@@ -42,17 +40,17 @@ public class FormatOption<T extends AbstractData, F extends AbstractOutputFormat
 			sb.append("\n");
 		}
 		
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 			.withDescription("Choose output format:\n" + sb.toString())
-			.create(opt); 
+			.create(getOpt()); 
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-			String s = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+			String s = line.getOptionValue(getOpt());
 			for (int i = 0; i < s.length(); ++i) {
 				char c = s.charAt(i);
 				if ( !formats.containsKey(c)) {

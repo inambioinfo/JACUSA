@@ -1,6 +1,6 @@
 package jacusa.data;
 
-import jacusa.util.Coordinate.STRAND;
+import jacusa.util.Coordinate;
 
 /**
  * 
@@ -11,93 +11,24 @@ import jacusa.util.Coordinate.STRAND;
 public abstract class AbstractData
 implements hasCoordinate, hasReferenceBase {
 
-	private String contig;
-	private int start;
-	private int end;
-	private STRAND strand;
-	
+	private Coordinate coordinate;
 	private char referenceBase;
 	
 	public AbstractData() {
-		contig 	= new String();
-		start 	= -1;
-		end 	= -1;
-		strand 	= STRAND.UNKNOWN;
-		
+		coordinate = new Coordinate();
 		referenceBase	= 'N';
 	}
 
 	public AbstractData(final AbstractData pileupData) {
-		this.contig = pileupData.contig;
-		this.start	= pileupData.start;
-		this.end	= pileupData.end;
-		this.strand = pileupData.strand;
-		
+		coordinate = new Coordinate(pileupData.getCoordinate());
 		this.referenceBase = pileupData.referenceBase; 
 	}
 	
-	public AbstractData(final String contig, 
-			final int start, final int end, 
-			final STRAND strand, final char referenceBase) {
-		this.contig 		= contig;
-		this.start 			= start;
-		this.end			= end;
-		this.strand			= strand;
-
+	public AbstractData(final Coordinate coordinate, final char referenceBase) {
+		this.coordinate = new Coordinate(coordinate);
 		this.referenceBase 	= referenceBase;
 	}
-	
-	@Override
-	public String getContig() {
-		return contig;
-	}
-
-	@Override
-	public int getStart() {
-		return start;
-	}
-
-	@Override
-	public int getEnd() {
-		return end;
-	}
-
-	@Override
-	public int getPosition() {
-		return start;
-	}
-	
-	@Override
-	public STRAND getStrand() {
-		return strand;
-	}
-
-	@Override
-	public void setContig(final String contig) {
-		this.contig = contig;
-	}
-
-	@Override
-	public void setStart(final int start) {
-		this.start = start;
-	}
-
-	@Override
-	public void setEnd(final int end) {
-		this.end = end;
-	}
-
-	@Override
-	public void setPosition(final int position) {
-		start = position;
-		end = position + 1;
-	}
-
-	@Override
-	public void setStrand(final STRAND strand) {
-		this.strand = strand;
-	}
-	
+		
 	@Override
 	public void setReferenceBase(final char referenceBase) {
 		this.referenceBase = referenceBase;
@@ -110,6 +41,14 @@ implements hasCoordinate, hasReferenceBase {
 
 	public void add(final AbstractData pileupData) {
 		referenceBase = pileupData.referenceBase;
+	}
+
+	public Coordinate getCoordinate() {
+		return coordinate;
+	}
+	
+	public void setCoordinate(final Coordinate coordinate) {
+		this.coordinate = coordinate;
 	}
 	
 	public abstract Object copy();

@@ -11,26 +11,24 @@ public class ThreadWindowSizeOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters; 
 	
 	public ThreadWindowSizeOption(AbstractParameters<?> parameters) {
+		super("W", "thread-window-size");
 		this.parameters = parameters;
-
-		opt = "W";
-		longOpt = "thread-window-size";
 	}
 
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
+		return OptionBuilder.withLongOpt(getLongOpt())
 			.withArgName("THREAD-WINDOW-SIZE")
 			.hasArg(true)
 	        .withDescription("size of the window used per thread.\n default: " + parameters.getThreadWindowSize())
-	        .create(opt);
+	        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String value = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String value = line.getOptionValue(getOpt());
 	    	int windowSize = Integer.parseInt(value);
 	    	if (windowSize < 1) {
 	    		throw new IllegalArgumentException("THREAD-WINDOW-SIZE too small: " + windowSize);

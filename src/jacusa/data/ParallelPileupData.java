@@ -1,15 +1,16 @@
 package jacusa.data;
 
+import jacusa.util.Coordinate;
+
 /**
  * 
  * @author Michael Piechotta
  *
  */
-public class ParallelPileupData<T extends AbstractData> {
-
-	private String contig;
-	private int start;
-	private int end;
+public class ParallelPileupData<T extends AbstractData> 
+implements hasCoordinate {
+	
+	private Coordinate coordinate;
 
 	private T[][] data;
 	private T[] cachedCombinedData;
@@ -20,23 +21,15 @@ public class ParallelPileupData<T extends AbstractData> {
 	private int cachedTotalReplicates;
 	
 	public ParallelPileupData() {
-		contig 	= new String();
-		start 	= -1;
-		end 	= -1;
-		
-		cachedTotalReplicates = -1;
+		coordinate 				= new Coordinate();		
+		cachedTotalReplicates 	= -1;
 	}
 
-	public ParallelPileupData(final String contig,
-			final int start,
-			final int end,
+	public ParallelPileupData(final Coordinate coordinate,
 			final T[][] data) {
-		this.contig = contig;
-		this.start 	= start;
-		this.end 	= end;
-
+		this.coordinate = new Coordinate(coordinate);
+		
 		int conditions = data.length;
-
 		// copy data
 		this.data = data;
 		cachedTotalReplicates = 0;
@@ -52,9 +45,7 @@ public class ParallelPileupData<T extends AbstractData> {
 	 */
 	@SuppressWarnings("unchecked")
 	public ParallelPileupData(final ParallelPileupData<T> parallelPileupData, T[][] data) {
-		contig 	= parallelPileupData.getContig();
-		start 	= parallelPileupData.getStart();
-		end 	= parallelPileupData.getEnd();
+		this.coordinate = new Coordinate(parallelPileupData.getCoordinate());
 
 		int conditions = parallelPileupData.data.length;
 
@@ -69,30 +60,14 @@ public class ParallelPileupData<T extends AbstractData> {
 		cachedTotalReplicates = parallelPileupData.cachedTotalReplicates;
 	}
 	
-	public String getContig() {
-		return contig;
+	public Coordinate getCoordinate() {
+		return coordinate;
 	}
 
-	public int getStart() {
-		return start;
-	}
-
-	public int getEnd() {
-		return end;
+	public void setCoordinate(final Coordinate coordinate) {
+		this.coordinate = coordinate;
 	}
 	
-	public void setContig(String contig) {
-		this.contig = contig;
-	}
-
-	public void setStart(int start) {
-		this.start = start;
-	}
-
-	public void setEnd(int end) {
-		this.end = end;
-	}
-
 	// make this faster remove data and add new
 	public void setData(int conditionIndex, T[] data) {
 		System.arraycopy(data, 0, this.data[conditionIndex], 0, data.length);
@@ -104,11 +79,8 @@ public class ParallelPileupData<T extends AbstractData> {
 	}
 
 	public void reset() {
-		contig 	= new String();
-		start	= -1;
-		end 	= -1;
-
-		data 	= null;
+		coordinate 	= new Coordinate();
+		data 		= null;
 		resetCache();
 	}
 	

@@ -1,27 +1,26 @@
 package jacusa.method.rtarrest;
 
+import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
-import jacusa.cli.options.FilterConfigOption;
 import jacusa.cli.options.FilterModusOption;
 import jacusa.cli.options.FormatOption;
 import jacusa.cli.options.HelpOption;
-import jacusa.cli.options.MaxDepthOption;
 import jacusa.cli.options.MaxThreadOption;
-import jacusa.cli.options.MinBASQOption;
-import jacusa.cli.options.MinCoverageOption;
-import jacusa.cli.options.MinMAPQOption;
 import jacusa.cli.options.ResultFileOption;
 import jacusa.cli.options.ShowReferenceOption;
-import jacusa.cli.options.StatisticCalculatorOption;
 import jacusa.cli.options.StatisticFilterOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
 import jacusa.cli.options.WindowSizeOption;
-import jacusa.cli.options.condition.filter.FilterFlagOption;
-import jacusa.cli.options.pileupbuilder.TwoConditionBaseQualDataBuilderOption;
+import jacusa.cli.options.condition.MaxDepthConditionOption;
+import jacusa.cli.options.condition.MinBASQConditionOption;
+import jacusa.cli.options.condition.MinCoverageConditionOption;
+import jacusa.cli.options.condition.MinMAPQConditionOption;
+import jacusa.cli.options.condition.filter.FilterFlagConditionOption;
+import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
+import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.RTArrestParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualReadInfoData;
 
 import jacusa.filter.factory.AbstractFilterFactory;
@@ -60,61 +59,61 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 	}
 		
 	public void initACOptions() {
-		// condition specific setting
-		// TODO make for n
-		ConditionParameters<BaseQualReadInfoData> condition1 = getParameters().getConditionParameters(1);
-		ConditionParameters<BaseQualReadInfoData> condition2 = getParameters().getConditionParameters(2);
-
-		for (int i = 1; i <= 2; ++i) {
-			initConditionACOptions(i, condition1);
-			initConditionACOptions(i, condition2);
-		}
-		List<ConditionParameters<BaseQualReadInfoData>> conditions = 
-				new ArrayList<ConditionParameters<BaseQualReadInfoData>>(2);
-		conditions.add(condition1);
-		conditions.add(condition2);
+		initGlobalACOptions();
+		initConditionACOptions();
 		
-		// global settings
-		acOptions.add(new MinMAPQOption<BaseQualReadInfoData>(conditions));
-
-		acOptions.add(new MinBASQOption<BaseQualReadInfoData>(conditions));
-		acOptions.add(new MinCoverageOption<BaseQualReadInfoData>(conditions));
-		acOptions.add(new MaxDepthOption(getParameters()));
-		acOptions.add(new FilterFlagOption<BaseQualReadInfoData>(conditions));
-		
-		acOptions.add(new TwoConditionBaseQualDataBuilderOption<BaseQualReadInfoData>(condition1, condition2));
-
-		acOptions.add(new BedCoordinatesOption(getParameters()));
-		acOptions.add(new ResultFileOption(getParameters()));
+		// result format
 		if (getResultFormats().size() == 1 ) {
 			Character[] a = getResultFormats().keySet().toArray(new Character[1]);
 			getParameters().setFormat(getResultFormats().get(a[0]));
 		} else {
 			getParameters().setFormat(getResultFormats().get(BED6call.CHAR));
-			acOptions.add(new FormatOption<BaseQualReadInfoData, AbstractOutputFormat<BaseQualReadInfoData>>(getParameters(), getResultFormats()));
+			addACOption(new FormatOption<BaseQualReadInfoData, AbstractOutputFormat<BaseQualReadInfoData>>(
+					getParameters(), getResultFormats()));
 		}
-
-		acOptions.add(new MaxThreadOption(getParameters()));
-		acOptions.add(new WindowSizeOption(getParameters()));
-		acOptions.add(new ThreadWindowSizeOption(getParameters()));
-
-		if (getStatistics().size() == 1 ) {
-			String[] a = getStatistics().keySet().toArray(new String[1]);
-			getParameters().getStatisticParameters().setStatisticCalculator(getStatistics().get(a[0]));
-		} else {
-			acOptions.add(new StatisticCalculatorOption<BaseQualReadInfoData>(getParameters().getStatisticParameters(), getStatistics()));
-		}
-
-		acOptions.add(new FilterModusOption(getParameters()));
-		acOptions.add(new FilterConfigOption<BaseQualReadInfoData>(getParameters(), getFilterFactories()));
-		
-		acOptions.add(new StatisticFilterOption(getParameters().getStatisticParameters()));
-
- 
-		acOptions.add(new ShowReferenceOption(getParameters()));
-		acOptions.add(new HelpOption(CLI.getSingleton()));
 	}
 
+	protected void initGlobalACOptions() {
+		addACOption(new FilterModusOption(getParameters()));
+		addACOption(new BaseConfigOption(getParameters()));
+		
+		addACOption(new StatisticFilterOption(getParameters().getStatisticParameters()));
+
+		addACOption(new ShowReferenceOption(getParameters()));
+		addACOption(new HelpOption(CLI.getSingleton()));
+		
+		addACOption(new MaxThreadOption(getParameters()));
+		addACOption(new WindowSizeOption(getParameters()));
+		addACOption(new ThreadWindowSizeOption(getParameters()));
+		
+		addACOption(new BedCoordinatesOption(getParameters()));
+		addACOption(new ResultFileOption(getParameters()));
+	}
+
+	protected void initConditionACOptions() {
+		// for all conditions
+		addACOption(new MinMAPQConditionOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		addACOption(new MinBASQConditionOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		addACOption(new MinCoverageConditionOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		addACOption(new MaxDepthConditionOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		addACOption(new FilterFlagConditionOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		
+		addACOption(new FilterNHsamTagOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		addACOption(new FilterNMsamTagOption<BaseQualReadInfoData>(getParameters().getConditionParameters()));
+		
+		// condition specific
+		for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
+			addACOption(new MinMAPQConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinBASQConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinCoverageConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MaxDepthConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterFlagConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			
+			addACOption(new FilterNHsamTagOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNMsamTagOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+		}
+	}
+	
 	public Map<String, StatisticCalculator<BaseQualReadInfoData>> getStatistics() {
 		Map<String, StatisticCalculator<BaseQualReadInfoData>> statistics = 
 				new TreeMap<String, StatisticCalculator<BaseQualReadInfoData>>();

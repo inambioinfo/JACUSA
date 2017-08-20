@@ -4,15 +4,7 @@ import jacusa.JACUSA;
 
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.SAMPathnameArg;
-import jacusa.cli.options.condition.InvertStrandOption;
-import jacusa.cli.options.condition.MaxDepthConditionOption;
-import jacusa.cli.options.condition.MinBASQConditionOption;
-import jacusa.cli.options.condition.MinCoverageConditionOption;
-import jacusa.cli.options.condition.MinMAPQConditionOption;
-import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
-import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.util.Coordinate;
@@ -39,21 +31,23 @@ import net.sf.samtools.SAMSequenceRecord;
  */
 public abstract class AbstractMethodFactory<T extends AbstractData> {
 
-	final private String name;
-	final private String desc;
+	private final String name;
+	private final String desc;
 
-	private AbstractParameters<T> parameters;
+	private final AbstractParameters<T> parameters;
 
-	protected CoordinateProvider coordinateProvider;
-	protected Set<AbstractACOption> acOptions;
+	private final Set<AbstractACOption> ACOptions;
 
+	private CoordinateProvider coordinateProvider;
+	
 	public AbstractMethodFactory(final String name, final String desc, 
 			final AbstractParameters<T> parameters) {
 		this.name = name;
 		this.desc = desc;
 
-		acOptions = new HashSet<AbstractACOption>();
 		this.parameters = parameters;
+		
+		ACOptions 		= new HashSet<AbstractACOption>(10);
 	}
 	
 	/**
@@ -64,24 +58,33 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 		return parameters;
 	}
 
-	/**
-	 * 
-	 */
 	public abstract void initACOptions();
+	protected abstract void initConditionACOptions();
+	protected abstract void initGlobalACOptions();
 
-	/**
-	 * 
-	 * @param conditionIndex
-	 * @param condition
-	 */
-	protected void initConditionACOptions(int conditionIndex, ConditionParameters<T> condition) {
-		acOptions.add(new MinMAPQConditionOption(conditionIndex, condition));
-		acOptions.add(new MinBASQConditionOption(conditionIndex, condition));
-		acOptions.add(new MinCoverageConditionOption(conditionIndex, condition));
-		acOptions.add(new MaxDepthConditionOption(conditionIndex, condition));
-		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition));
-		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition));
-		acOptions.add(new InvertStrandOption(conditionIndex, condition));
+	protected void addACOption(AbstractACOption newACOption) {
+		if (checkDuplicate(newACOption)) {
+			ACOptions.add(newACOption);
+		}
+	}
+	
+	private boolean checkDuplicate(final AbstractACOption newACOption) {
+		for (final AbstractACOption ACOption : ACOptions) {
+			try {
+			if (ACOption.getOpt().equals(newACOption.getOpt())) {
+					throw new Exception("Duplicate opt " + newACOption.getOpt());
+
+			}
+			if (ACOption.getLongOpt().equals(newACOption.getLongOpt())) {
+				throw new Exception("Duplicate longOpt " + newACOption.getLongOpt());
+			}
+			} catch (Exception e) {
+				e.printStackTrace();
+				System.exit(1);
+			}
+		}
+
+		return true;
 	}
 
 	/**
@@ -99,7 +102,7 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 	 * @return
 	 */
 	public Set<AbstractACOption> getACOptions() {
-		return acOptions;
+		return ACOptions;
 	}
 
 	/**

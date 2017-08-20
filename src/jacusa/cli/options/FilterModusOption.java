@@ -11,15 +11,13 @@ public class FilterModusOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters;
 	
 	public FilterModusOption(final AbstractParameters<?> parameters) {
+		super("s", "separate");
 		this.parameters = parameters;
-
-		opt = "s";
-		longOpt = "separate";
 	}
 	
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if(line.hasOption(opt)) {
+		if(line.hasOption(getOpt())) {
 			parameters.setSeparate(true);
 	    }
 	}
@@ -27,11 +25,11 @@ public class FilterModusOption extends AbstractACOption {
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-				.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+				.withArgName(getLongOpt().toUpperCase())
 				.hasArg(false)
 		        .withDescription("Put feature-filtered results in to a separate file (= RESULT-FILE.filtered)")
-		        .create(opt);
+		        .create(getOpt());
 	}
 
 }

@@ -3,13 +3,10 @@ package jacusa.method.pileup;
 import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
 import jacusa.cli.options.FilterConfigOption;
+import jacusa.cli.options.FilterModusOption;
 import jacusa.cli.options.FormatOption;
 import jacusa.cli.options.HelpOption;
-import jacusa.cli.options.MaxDepthOption;
 import jacusa.cli.options.MaxThreadOption;
-import jacusa.cli.options.MinBASQOption;
-import jacusa.cli.options.MinCoverageOption;
-import jacusa.cli.options.MinMAPQOption;
 import jacusa.cli.options.ResultFileOption;
 import jacusa.cli.options.ShowReferenceOption;
 import jacusa.cli.options.ThreadWindowSizeOption;
@@ -19,11 +16,11 @@ import jacusa.cli.options.condition.MaxDepthConditionOption;
 import jacusa.cli.options.condition.MinBASQConditionOption;
 import jacusa.cli.options.condition.MinCoverageConditionOption;
 import jacusa.cli.options.condition.MinMAPQConditionOption;
-import jacusa.cli.options.condition.filter.FilterFlagOption;
+import jacusa.cli.options.condition.filter.FilterFlagConditionOption;
 import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
+import jacusa.cli.options.pileupbuilder.OneConditionBaseQualDataBuilderOption;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.cli.parameters.PileupParameters;
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
@@ -48,8 +45,7 @@ import java.util.Map;
 
 import org.apache.commons.cli.ParseException;
 
-public class nConditionPileupFactory 
-extends AbstractMethodFactory<BaseQualData> {
+public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData> {
 
 	private static MpileupWorkerDispatcher<BaseQualData> instance;
 	
@@ -62,61 +58,68 @@ extends AbstractMethodFactory<BaseQualData> {
 		super("pileup", "SAMtools like mpileup", 
 				new PileupParameters<BaseQualData>(0));
 	}
-	
-	protected void initConditionACOptions(int conditionIndex, ConditionParameters<BaseQualData> condition) {
-		acOptions.add(new MinMAPQConditionOption(conditionIndex, condition));
-		acOptions.add(new MinBASQConditionOption(conditionIndex, condition));
-		acOptions.add(new MinCoverageConditionOption(conditionIndex, condition));
-		acOptions.add(new MaxDepthConditionOption(conditionIndex, condition));
-		acOptions.add(new FilterNHsamTagOption(conditionIndex, condition));
-		acOptions.add(new FilterNMsamTagOption(conditionIndex, condition));
-		acOptions.add(new InvertStrandOption(conditionIndex, condition));
-	}
-	
+
 	public void initACOptions() {
-		ConditionParameters<BaseQualData> condition1 = getParameters().getConditionParameters(0);
-		ConditionParameters<BaseQualData> condition2 = getParameters().getConditionParameters(1);
-
-		for (int conditionIndex = 1; conditionIndex <= 2; ++conditionIndex) {
-			initConditionACOptions(conditionIndex, condition1);
-			initConditionACOptions(conditionIndex, condition2);
-		}
-		List<ConditionParameters<BaseQualData>> conditions = 
-				new ArrayList<ConditionParameters<BaseQualData>>(2);
-		conditions.add(condition1);
-		conditions.add(condition2);
-
-		// global settings
-		acOptions.add(new MinMAPQOption<BaseQualData>(conditions));
-		acOptions.add(new MinBASQOption<BaseQualData>(conditions));
-		acOptions.add(new MinCoverageOption<BaseQualData>(conditions));
-		acOptions.add(new MaxDepthOption(getParameters()));
-		acOptions.add(new FilterFlagOption<BaseQualData>(conditions));
+		initGlobalACOptions();
+		initConditionACOptions();
 		
-		// FIXME acOptions.add(new nConditionBaseQualDataBuilderOption(conditions));
-
-		acOptions.add(new BedCoordinatesOption(getParameters()));
-		acOptions.add(new ResultFileOption(getParameters()));
-		
+		// result format
 		if (getOuptutFormats().size() == 1 ) {
 			Character[] a = getOuptutFormats().keySet().toArray(new Character[1]);
 			getParameters().setFormat(getOuptutFormats().get(a[0]));
 		} else {
-			getParameters().setFormat(getOuptutFormats().get(PileupFormat.CHAR));
-			acOptions.add(new FormatOption<BaseQualData,AbstractOutputFormat<BaseQualData>>(getParameters(), getOuptutFormats()));
+			getParameters().setFormat(getOuptutFormats().get(BED6call.CHAR));
+			addACOption(new FormatOption<BaseQualData, AbstractOutputFormat<BaseQualData>>(
+					getParameters(), getOuptutFormats()));
 		}
-
-		acOptions.add(new BaseConfigOption(getParameters()));
-		acOptions.add(new FilterConfigOption<BaseQualData>(getParameters(), getFilterFactories()));
-		acOptions.add(new WindowSizeOption(getParameters()));
-		acOptions.add(new ThreadWindowSizeOption(getParameters()));
-
-		acOptions.add(new MaxThreadOption(getParameters()));
-		// acOptions.add(new DebugOption(parameters));
-		acOptions.add(new ShowReferenceOption(getParameters()));
-		acOptions.add(new HelpOption(CLI.getSingleton()));
 	}
-
+	
+	protected void initGlobalACOptions() {
+		addACOption(new FilterModusOption(getParameters()));
+		addACOption(new BaseConfigOption(getParameters()));
+		addACOption(new FilterConfigOption<BaseQualData>(getParameters(), getFilterFactories()));
+		
+		addACOption(new ShowReferenceOption(getParameters()));
+		addACOption(new HelpOption(CLI.getSingleton()));
+		
+		addACOption(new MaxThreadOption(getParameters()));
+		addACOption(new WindowSizeOption(getParameters()));
+		addACOption(new ThreadWindowSizeOption(getParameters()));
+		
+		addACOption(new BedCoordinatesOption(getParameters()));
+		addACOption(new ResultFileOption(getParameters()));
+	}
+		
+	protected void initConditionACOptions() {
+		// for all conditions
+		addACOption(new MinMAPQConditionOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new MinBASQConditionOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new MinCoverageConditionOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new MaxDepthConditionOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new FilterFlagConditionOption<BaseQualData>(getParameters().getConditionParameters()));
+		
+		addACOption(new FilterNHsamTagOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new FilterNMsamTagOption<BaseQualData>(getParameters().getConditionParameters()));
+		addACOption(new InvertStrandOption<BaseQualData>(getParameters().getConditionParameters()));
+		
+		addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(getParameters().getConditionParameters()));
+		
+		// condition specific
+		for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
+			addACOption(new MinMAPQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinBASQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinCoverageConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MaxDepthConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterFlagConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			
+			addACOption(new FilterNHsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNMsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new InvertStrandOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			
+			addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+		}
+	}
+	
 	public Map<Character, AbstractOutputFormat<BaseQualData>> getOuptutFormats() {
 		final Map<Character, AbstractOutputFormat<BaseQualData>> outputFormats = 
 				new HashMap<Character, AbstractOutputFormat<BaseQualData>>();

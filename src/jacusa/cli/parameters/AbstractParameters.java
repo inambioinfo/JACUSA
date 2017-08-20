@@ -106,6 +106,12 @@ implements hasConditions<T> {
 	}
 	
 	@Override
+	public void setConditionParameters(
+			final List<ConditionParameters<T>> conditionParameters) {
+		this.conditionParameters = conditionParameters;
+	}
+	
+	@Override
 	public ConditionParameters<T> getConditionParameters(int conditionIndex) {
 		return conditionParameters.get(conditionIndex);
 	}

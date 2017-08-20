@@ -26,8 +26,8 @@ import net.sf.samtools.SAMValidationError;
  * @author Michael Piechotta
  *
  */
-public abstract class AbstractPileupBuilder<T extends AbstractData> 
-implements hasLibraryType {
+public abstract class AbstractDataBuilder<T extends AbstractData>
+implements DataBuilder<T>, hasLibraryType {
 
 	// in genomic coordinates
 	protected WindowCoordinates windowCoordinates;
@@ -40,8 +40,6 @@ implements hasLibraryType {
 	protected BaseConfig baseConfig;
 	protected ConditionParameters<T> condition;
 	protected AbstractParameters<T> parameters;
-	
-	protected boolean isCached;
 
 	protected WindowCache windowCache;
 	
@@ -53,9 +51,8 @@ implements hasLibraryType {
 	
 	protected LibraryType libraryType;
 	
-	public AbstractPileupBuilder (
+	public AbstractDataBuilder (
 			final WindowCoordinates windowCoordinates,
-			final STRAND strand, 
 			final SAMFileReader SAMFileReader, 
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters,
@@ -71,12 +68,9 @@ implements hasLibraryType {
 		this.condition			= condition;
 		this.parameters			= parameters;
 
-		isCached				= false;
-
 		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBases().length);
-		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, condition);
+		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, condition);
 		byte2int 				= parameters.getBaseConfig().getbyte2int();
-		this.strand				= strand;
 
 		this.libraryType		= libraryType;
 		
@@ -91,6 +85,7 @@ implements hasLibraryType {
 	 * @param targetPosition
 	 * @return
 	 */
+	@Override
 	public SAMRecord getNextValidRecord(int targetPosition) {
 		SAMRecordIterator iterator = reader.query(
 				windowCoordinates.getContig(), 
@@ -112,20 +107,16 @@ implements hasLibraryType {
 		// if no more reads are found 
 		return null;
 	}
-
-	public boolean isCached() {
-		return isCached;
-	}
 	
 	/**
 	 * Tries to adjust to target position
 	 * Return true if at least one valid SAMRecord could be found.
 	 * WARNING: currentGenomicPosition != targetPosition is possible after method call 
-	 * @param smallestTargetPosition
+	 * @param genomicWindowStart
 	 * @return
 	 */
+	@Override
 	public boolean adjustWindowStart(int genomicWindowStart) {
-		isCached = false;
 		clearCache();
 		windowCoordinates.setGenomicWindowStart(genomicWindowStart);
 		
@@ -168,7 +159,6 @@ implements hasLibraryType {
 
 		if (! windowHit && SAMReocordsInBuffer == 0) {
 			// no reads found
-			isCached = false;
 			return false;
 		} else { // process any left SAMrecords in the buffer
 			for (int i = 0; i < SAMReocordsInBuffer; ++i) {
@@ -178,7 +168,6 @@ implements hasLibraryType {
 					e.printStackTrace();
 				}
 			}
-			isCached = true;
 			return true;
 		}
 	}
@@ -225,10 +214,12 @@ implements hasLibraryType {
 	 * 
 	 * @return
 	 */
+	@Override
 	public int getFilteredSAMRecords() {
 		return filteredSAMRecords;
 	}
 
+	@Override
 	public WindowCoordinates getWindowCoordinates() {
 		return windowCoordinates;
 	}
@@ -236,22 +227,16 @@ implements hasLibraryType {
 	// abstract methods
 
 	// Reset all caches in windows
+	@Override
 	public void clearCache() {
 		windowCache.clear();
 		filterContainer.clear();
 	}
 	
-	protected abstract void addHighQualityBaseCall(int windowPosition, int base, int qual, STRAND strand);
-	protected abstract void addLowQualityBaseCall(int windowPosition, int base, int qual, STRAND strand);
-
-	// strand dependent methods
-	public abstract boolean isCovered(int windowPosition, STRAND strand);
-	public abstract int getCoverage(int windowPosition, STRAND strand);
-
-	public abstract T getData(int windowPosition, STRAND strand);
-	public abstract WindowCache getWindowCache(STRAND strand);
-
-	public abstract FilterContainer<T> getFilterContainer(int windowPosition, STRAND strand);
+	protected abstract void addHighQualityBaseCall(final int windowPosition, 
+			final int baseIndex, final int qualIndex, final STRAND strand);
+	protected abstract void addLowQualityBaseCall(final int windowPosition, 
+			final int baseIndex, final int qualIndex, final STRAND strand);
 
 	/*
 	 * process CIGAR string methods
@@ -350,7 +335,7 @@ implements hasLibraryType {
 		return referenceBases;
 	}
 	
-	protected void processRecord(SAMRecord record) {
+	public void processRecord(SAMRecord record) {
 		// init	
 		int readPosition 	= 0;
 		int genomicPosition = record.getAlignmentStart();
@@ -485,10 +470,10 @@ implements hasLibraryType {
 		}
 		
 		for (int offset = 0; offset < cigarElement.getLength(); ++offset) {
-			final int baseI = byte2int[record.getReadBases()[readPosition + offset]];
-			int qualI = record.getBaseQualities()[readPosition + offset];
+			final int baseIndex = byte2int[record.getReadBases()[readPosition + offset]];
+			int qualIndex = record.getBaseQualities()[readPosition + offset];
 
-			if (baseI == -1) {
+			if (baseIndex == -1) {
 				windowPosition = windowCoordinates.convert2WindowPosition(genomicPosition + offset);
 				int orientation = windowCoordinates.getOrientation(genomicPosition + offset);
 				
@@ -513,9 +498,9 @@ implements hasLibraryType {
 			switch (orientation) {
 			case 1:
 				if ((genomicPosition + offset) - windowCoordinates.getGenomicWindowEnd() <= distance) {
-					if (qualI >= condition.getMinBASQ()) {
+					if (qualIndex >= condition.getMinBASQ()) {
 						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
+							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
 						}
 					}
 				} else {
@@ -526,24 +511,24 @@ implements hasLibraryType {
 				if (windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) > distance) {
 					offset += windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) - distance - 1;
 				} else {
-					if (qualI >= condition.getMinBASQ()) {
+					if (qualIndex >= condition.getMinBASQ()) {
 						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
+							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
 						}
 					}
 				}
 				break;
 			case 0:
 				if (windowPosition >= 0) {
-					if (qualI >= condition.getMinBASQ()) {
-						addHighQualityBaseCall(windowPosition, baseI, qualI, strand);
+					if (qualIndex >= condition.getMinBASQ()) {
+						addHighQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
 
 						// process any alignmentMatch specific filters
 						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseI, qualI);
+							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
 						}
 					} else if (parameters.collectLowQualityBaseCalls()) { 
-						addLowQualityBaseCall(windowPosition, baseI, qualI, strand);
+						addLowQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
 					}
 					// process MD on demand
 					if (record.getAttribute("MD") != null && windowCache.getReferenceBase(windowPosition) == (byte)'N') {
@@ -620,6 +605,7 @@ implements hasLibraryType {
 		}
 	}
 
+	@Override
 	public LibraryType getLibraryType() {
 		return libraryType;
 	}

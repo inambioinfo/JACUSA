@@ -1,5 +1,7 @@
 package jacusa.cli.options.pileupbuilder;
 
+import java.util.ArrayList;
+
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
@@ -15,32 +17,36 @@ import org.apache.commons.cli.OptionBuilder;
 public class TwoConditionBaseQualDataBuilderOption<T extends BaseQualData> 
 extends AbstractDataBuilderOption<T> {
 
-	private ConditionParameters<T> condition1;
-	private ConditionParameters<T> condition2;
+	private static final char SEP = ',';
 	
-	public TwoConditionBaseQualDataBuilderOption(final ConditionParameters<T> condition1, 
-			final ConditionParameters<T> condition2) {
-		this.condition1 = condition1;
-		this.condition2 = condition2;
+	public TwoConditionBaseQualDataBuilderOption(final ConditionParameters<T> condition1, final ConditionParameters<T> condition2) {
+		super(new ArrayList<ConditionParameters<T>>() {
+			private static final long serialVersionUID = 1L;
+			{
+				add(condition1);
+				add(condition2);
+				
+			}
+		});
 	}
 
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 			.withDescription("Choose the library types and how parallel pileups are build for " +
 					"condition1(cond1) and condition2(cond2).\nFormat: cond1,cond2. \n" +
 					"Possible values for cond1 and cond2:\n" + getPossibleValues() + "\n" +
 					"default: " + LibraryType.UNSTRANDED + SEP + LibraryType.UNSTRANDED)
-			.create(opt);
+			.create(getLongOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String s = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String s = line.getOptionValue(getOpt());
 	    	String[] ss = s.split(Character.toString(SEP));
 	    	
 	    	StringBuilder sb = new StringBuilder();
@@ -58,8 +64,8 @@ extends AbstractDataBuilderOption<T> {
 	    	if (l1 == null || l2 == null) {
 	    		throw new IllegalArgumentException(sb.toString());
 	    	}
-	    	condition1.setPileupBuilderFactory(buildPileupBuilderFactory(l1));
-	    	condition2.setPileupBuilderFactory(buildPileupBuilderFactory(l2));
+	    	getConditions().get(0).setPileupBuilderFactory(buildPileupBuilderFactory(l1));
+	    	getConditions().get(1).setPileupBuilderFactory(buildPileupBuilderFactory(l2));
 	    }
 	}
 

@@ -1,6 +1,6 @@
 package jacusa.data;
 
-import jacusa.util.Coordinate.STRAND;
+import jacusa.util.Coordinate;
 
 /**
  * 
@@ -25,10 +25,8 @@ implements hasBaseQualCount {
 		this.baseQualCount = pileupData.baseQualCount.copy();
 	}
 	
-	public BaseQualData(final String contig, 
-			final int start, final int end, 
-			final STRAND strand, final int bases, final char referenceBase) {
-		super(contig, start, end, strand, referenceBase);
+	public BaseQualData(final Coordinate coordinate, final char referenceBase) {
+		super(coordinate, referenceBase);
 		
 		baseQualCount		= new BaseQualCount();
 	}
@@ -43,7 +41,7 @@ implements hasBaseQualCount {
 		this.baseQualCount = baseQualCount;
 	}
 
-	// TODO do we need this?
+	/* TODO
 	public void invertStrand() {
 		switch (getStrand()) {
 		case FORWARD:
@@ -58,6 +56,7 @@ implements hasBaseQualCount {
 			return;
 		}
 	}
+	*/
 	
 	public BaseQualData copy() {
 		return new BaseQualData(this);

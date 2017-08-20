@@ -3,8 +3,9 @@ package jacusa.pileup.builder.inverted;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
+import jacusa.pileup.builder.AbstractDataBuilder;
 import jacusa.pileup.builder.AbstractStrandedPileupBuilder;
-import jacusa.util.Coordinate.STRAND;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -26,26 +27,25 @@ extends AbstractStrandedPileupBuilder<T> {
 	}
 
 	// invert
-	protected void processRecord(SAMRecord record) {
+	public void processRecord(SAMRecord record) {
+		AbstractDataBuilder<T> dataBuilder = null;
+		
 		if (record.getReadPairedFlag()) { // paired end
 			if (record.getFirstOfPairFlag() && record.getReadNegativeStrandFlag() || 
 					record.getSecondOfPairFlag() && ! record.getReadNegativeStrandFlag() ) {
-				//strand = STRAND.REVERSE;
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			} else {
-				//strand = STRAND.FORWARD;
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			}
 		} else {
 			if (record.getReadNegativeStrandFlag()) {
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			} else {
-				//strand = STRAND.FORWARD;
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			}
 		}
-		switchByStrand();
-		super.processRecord(record);
+		
+		dataBuilder.processRecord(record);
 	}
 
 }

@@ -4,7 +4,6 @@ import jacusa.data.AbstractData;
 import jacusa.data.Result;
 import jacusa.pileup.builder.WindowCache;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.Location;
 
 /**
  * 
@@ -34,7 +33,7 @@ public abstract class AbstractStorageFilter<T extends AbstractData> {
 	 */
 	protected WindowCache getWindowCache(final FilterContainer<T> filterContainer) {
 		int filterIndex = filterContainer.getFilterConfig().c2i(c);
-		WindowCache windowCache = filterContainer.get(filterIndex).getContainer();
+		WindowCache windowCache = filterContainer.get(filterIndex).getWindowCache();
 		return windowCache;
 	}
 
@@ -45,9 +44,7 @@ public abstract class AbstractStorageFilter<T extends AbstractData> {
 	 * @param windowIterator
 	 * @return
 	 */
-	protected abstract boolean filter(final Result<T> result, 
-			final Location location, 
-			final WindowIterator<T> windowIterator);
+	protected abstract boolean filter(final Result<T> result, final WindowIterator<T> windowIterator);
 	
 	/**
 	 * 
@@ -56,10 +53,8 @@ public abstract class AbstractStorageFilter<T extends AbstractData> {
 	 * @param windowIterator
 	 * @return
 	 */
-	public boolean applyFilter(final Result<T> result, 
-			final Location location, 
-			final WindowIterator<T> windowIterator) {
-		if (filter(result, location, windowIterator)) {
+	public boolean applyFilter(final Result<T> result, final WindowIterator<T> windowIterator) {
+		if (filter(result, windowIterator)) {
 			addFilterInfo(result);
 			return true;
 		}

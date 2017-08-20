@@ -24,7 +24,7 @@ import jacusa.cli.parameters.CLI;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.method.call.OneConditionCallFactory;
 import jacusa.method.call.TwoConditionCallFactory;
-import jacusa.method.call.nConditionCallFactory;
+import jacusa.method.call.CallFactory;
 import jacusa.method.pileup.nConditionPileupFactory;
 import jacusa.method.rtarrest.RTArrestFactory;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
@@ -67,7 +67,7 @@ public class JACUSA {
 		// calling variants
 		factories.add(new OneConditionCallFactory());
 		factories.add(new TwoConditionCallFactory());
-		factories.add(new nConditionCallFactory());
+		factories.add(new CallFactory(-1)); // FIXMe
 		// pileup information
 		factories.add(new nConditionPileupFactory());
 		// Read info

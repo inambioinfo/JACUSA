@@ -33,13 +33,13 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 		super(c);
 
 		final int bases = baseConfig.getBases().length;
-		setContainer(new WindowCache(windowCoordinates, bases));
+		setWindowCache(new WindowCache(windowCoordinates, bases));
 		this.condition = condition;
 		this.windowSize = windowSize;
 		this.baseConfig = baseConfig;
 		
 		visited = new boolean[windowSize];
-		windowCache = getContainer();
+		windowCache = getWindowCache();
 	}
 	
 	protected void addRegion(int windowPosition, int length, int readPosition, SAMRecord record) {
@@ -68,40 +68,31 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 
 		for (int i = 0; i < length && windowPosition + i < windowSize && readPosition + i < record.getReadLength(); ++i) {
 			if (! visited[windowPosition + i]) {
-				int baseI = -1;
+				int baseIndex = -1;
 
 				// TODO move this to instantiation
-				switch (condition.getPileupBuilderFactory().getLibraryType()) {
+				switch (condition.getDataBuilderFactory().getLibraryType()) {
 				case UNSTRANDED:
 				case FR_SECONDSTRAND:
-					baseI = baseConfig.getBaseIndex(record.getReadBases()[readPosition + i]);
+					baseIndex = baseConfig.getBaseIndex(record.getReadBases()[readPosition + i]);
 					break;
 					
 				case FR_FIRSTSTRAND:
-					baseI = baseConfig.getComplementBaseIndex(record.getReadBases()[readPosition + i]);
-					
-					
-				default:
-					break;
+					baseIndex = baseConfig.getComplementBaseIndex(record.getReadBases()[readPosition + i]);
 				} 
-
-				/*
-				if (condition.getPileupBuilderFactory().isStranded() && record.getReadNegativeStrandFlag()) {
-					baseI = baseConfig.getComplementBaseI(record.getReadBases()[readPosition + i]);
-				} else {
-					baseI = baseConfig.getBaseI(record.getReadBases()[readPosition + i]);
+				if (condition.isInvertStrand()) {
+					baseIndex = baseConfig.getComplementbyte2int()[baseIndex];
 				}
-				*/
 
 				// corresponds to N -> ignore
-				if (baseI < 0) {
+				if (baseIndex < 0) {
 					continue;
 				}
 
 				byte qual = record.getBaseQualities()[readPosition + i];
 				// int genomicPosition = windowCache.getWindowCoordinates().getGenomicPosition(windowPosition + i);
 				if (qual >= condition.getMinBASQ()) {
-					windowCache.addHighQualityBaseCall(windowPosition + i, baseI, qual);
+					windowCache.addHighQualityBaseCall(windowPosition + i, baseIndex, qual);
 					visited[windowPosition + i] = true;
 				}
 			}
@@ -110,7 +101,7 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 
 	@Override
 	public void clearContainer() {
-		getContainer().clear();		
+		getWindowCache().clear();		
 	}
 
 }

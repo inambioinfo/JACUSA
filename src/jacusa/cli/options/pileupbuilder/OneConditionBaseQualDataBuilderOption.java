@@ -1,5 +1,7 @@
 package jacusa.cli.options.pileupbuilder;
 
+import java.util.List;
+
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
@@ -15,34 +17,37 @@ import org.apache.commons.cli.OptionBuilder;
 public class OneConditionBaseQualDataBuilderOption<T extends BaseQualData>
 extends AbstractDataBuilderOption<T> {
 
-	private final ConditionParameters<T> condition;
-
-	public OneConditionBaseQualDataBuilderOption(
-			final ConditionParameters<T> condition) {
-		super();
-		
-		this.condition 	= condition;
+	public OneConditionBaseQualDataBuilderOption(final int conditionIndex, final ConditionParameters<T> condition) {
+		super(conditionIndex, condition);
+	}
+	
+	public OneConditionBaseQualDataBuilderOption(final List<ConditionParameters<T>> conditions) {
+		super(conditions);
 	}
 	
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
-	        .withDescription("Choose the library type and how parallel pileups are build:\n" + getPossibleValues()+ "\n default: " + LibraryType.UNSTRANDED)
-	        .create(opt);
+	        .withDescription("Choose the library type and how parallel pileups are build:\n" + getPossibleValues() + 
+	        		"\n default: " + LibraryType.UNSTRANDED)
+	        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String s = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String s = line.getOptionValue(getOpt());
 	    	LibraryType l = parse(s);
 	    	if (l == null) {
-	    		throw new IllegalArgumentException("Possible values for " + longOpt.toUpperCase() + ":\n" + getPossibleValues());
+	    		throw new IllegalArgumentException("Possible values for " + getLongOpt().toUpperCase() + ":\n" + getPossibleValues());
 	    	}
-	    	condition.setPileupBuilderFactory(buildPileupBuilderFactory(l));
+	    	
+	    	for (final ConditionParameters<T> condition : getConditions()) {
+	    		condition.setPileupBuilderFactory(buildPileupBuilderFactory(l));
+	    	}
 	    }
 	}
 

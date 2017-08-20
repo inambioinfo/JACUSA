@@ -107,11 +107,11 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		final StringBuilder sb = new StringBuilder();
 
 		// coordinates
-		sb.append(parallelData.getContig());
+		sb.append(parallelData.getCoordinate().getSequenceName());
 		sb.append(SEP);
-		sb.append(parallelData.getStart() - 1);
+		sb.append(parallelData.getCoordinate().getStart() - 1);
 		sb.append(SEP);
-		sb.append(parallelData.getEnd());
+		sb.append(parallelData.getCoordinate().getEnd());
 		
 		sb.append(SEP);
 		sb.append("variant");
@@ -124,7 +124,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		}
 
 		sb.append(SEP);
-		sb.append(parallelData.getCombinedPooledData().getStrand().character());
+		sb.append(parallelData.getCombinedPooledData().getCoordinate().getStrand().character());
 
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); conditionIndex++) {
 			addData(sb, parallelData.getData(conditionIndex));

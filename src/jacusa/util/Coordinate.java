@@ -14,30 +14,45 @@ public class Coordinate {
 	private String sequenceName;
 	private int start;
 	private int end;
+	private STRAND strand;
 
 	public Coordinate() {
-		sequenceName = new String();
-		start = -1;
-		end = -1;
+		sequenceName 	= new String();
+		start 			= -1;
+		end 			= -1;
+		strand 			= STRAND.UNKNOWN;
 	}
 
 	public Coordinate(final Coordinate coordinate) {
-		sequenceName = new String(coordinate.sequenceName);
-		start 		= coordinate.start;
-		end 		= coordinate.end;
+		sequenceName 	= new String(coordinate.sequenceName);
+		start 			= coordinate.start;
+		end 			= coordinate.end;
+		strand			= coordinate.strand;
 	}
 	
-	public Coordinate(final String sequenceName, final int start, final int end) {
-		this.sequenceName = sequenceName;
-		this.start = start;
-		this.end = end;
+	public Coordinate(final String sequenceName, 
+			final int start, final int end) {
+		this(sequenceName, start, end, STRAND.UNKNOWN);
+	}
+	
+	public Coordinate(final String sequenceName, 
+			final int start, final STRAND strand) {
+		this(sequenceName, start, start + 1, strand);
+	}
+	
+	public Coordinate(final String sequenceName, 
+			final int start, final int end, STRAND strand) {
+		this.sequenceName 	= sequenceName;
+		this.start 			= start;
+		this.end 			= end;
+		this.strand			= strand;
 	}
 	
 	public String getSequenceName() {
 		return sequenceName;
 	}
 
-	public void setSequenceName(String sequenceName) {
+	public void setSequenceName(final String sequenceName) {
 		this.sequenceName = sequenceName;
 	}
 
@@ -45,7 +60,7 @@ public class Coordinate {
 		return start;
 	}
 
-	public void setStart(int begin) {
+	public void setStart(final int begin) {
 		this.start = begin;
 	}
 
@@ -53,12 +68,29 @@ public class Coordinate {
 		return end;
 	}
 
-	public void setEnd(int end) {
+	public void setEnd(final int end) {
 		this.end = end;
 	}
 
+	public void setPosition(final int position) {
+		start = position;
+		end = position + 1;
+	}
+	
+	public int getPosition() {
+		return start;
+	}
+	
 	public String toString() {
 		return sequenceName + "_" + start + "-" + end;
+	}
+	
+	public STRAND getStrand() {
+		return strand;
+	}
+	
+	public void setStrand(final STRAND strand) {
+		this.strand = strand;
 	}
 	
 	public enum STRAND {

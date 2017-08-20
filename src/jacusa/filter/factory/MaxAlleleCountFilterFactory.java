@@ -8,7 +8,6 @@ import jacusa.data.Result;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.DummyFilterFillCache;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.Location;
 import jacusa.util.WindowCoordinates;
 
 /**
@@ -88,8 +87,7 @@ extends AbstractFilterFactory<T> {
 		}
 		
 		@Override
-		public boolean filter(final Result<T> result, final Location location, 
-				final WindowIterator<T> windowIterator) {
+		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 			final ParallelPileupData<T> parallelData = result.getParellelData();
 			return parallelData.getCombinedPooledData()
 					.getBaseQualCount().getAlleles().length > alleles;
@@ -103,9 +101,8 @@ extends AbstractFilterFactory<T> {
 		}
 		
 		@Override
-		public boolean filter(final Result<T> result, final Location location, 
-				final WindowIterator<T> windowIterator) {
-			return windowIterator.getAlleleCount(location) > alleles;
+		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
+			return windowIterator.getAlleleCount(result.getParellelData().getCoordinate()) > alleles;
 		}
 	}
 	

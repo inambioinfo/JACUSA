@@ -14,26 +14,24 @@ public class BedCoordinatesOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters;
 	
 	public BedCoordinatesOption(AbstractParameters<?> parameters) {
+		super("b", "bed");
 		this.parameters = parameters;
-
-		opt = "b";
-		longOpt = "bed";
 	}
 
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase()) 
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase()) 
 			.hasArg(true)
-			.withDescription(longOpt.toUpperCase() + " file to scan for variants")
-			.create(opt);
+			.withDescription(getLongOpt().toUpperCase() + " file to scan for variants")
+			.create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String pathname = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String pathname = line.getOptionValue(getOpt());
 	    	File file = new File(pathname);
 	    	if(!file.exists()) {
 	    		throw new FileNotFoundException("BED file (" + pathname + ") in not accessible!");

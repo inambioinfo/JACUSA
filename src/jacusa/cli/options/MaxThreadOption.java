@@ -11,28 +11,26 @@ public class MaxThreadOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters;
 	
 	public MaxThreadOption(AbstractParameters<?> parameters) {
+		super("p", "threads");
 		this.parameters = parameters;
-
-		opt = "p";
-		longOpt = "threads";
 	}
 	
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-				.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+				.withArgName(getLongOpt().toUpperCase())
 				.hasArg(true)
-		        .withDescription("use # " + longOpt.toUpperCase() + " \n default: " + parameters.getMaxThreads())
-		        .create(opt);
+		        .withDescription("use # " + getLongOpt().toUpperCase() + " \n default: " + parameters.getMaxThreads())
+		        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	int maxThreads = Integer.parseInt(line.getOptionValue(opt));
+		if (line.hasOption(getOpt())) {
+	    	int maxThreads = Integer.parseInt(line.getOptionValue(getOpt()));
 	    	if(maxThreads < 1) {
-	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " must be > 0!");
+	    		throw new IllegalArgumentException(getLongOpt().toUpperCase() + " must be > 0!");
 	    	}
 	    	parameters.setMaxThreads(maxThreads);
 	    }

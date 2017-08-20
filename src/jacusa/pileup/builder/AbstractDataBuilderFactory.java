@@ -29,13 +29,12 @@ implements hasLibraryType {
 	 * @param parameters
 	 * @return
 	 */
-	public abstract AbstractPileupBuilder<T> newInstance(
+	public abstract DataBuilder<T> newInstance(
 			final WindowCoordinates windowCoordinates, 
 			final SAMFileReader reader, 
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters);
 
-	// TODO move to Builder
 	/**
 	 * 
 	 * @return
@@ -44,7 +43,6 @@ implements hasLibraryType {
 		return libraryType == LibraryType.UNSTRANDED;
 	}
 
-	// TODO move to Builder
 	@Override
 	final public LibraryType getLibraryType() {
 		return libraryType;

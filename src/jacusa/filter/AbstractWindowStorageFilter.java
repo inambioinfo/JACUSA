@@ -5,8 +5,8 @@ import java.util.List;
 import jacusa.data.BaseQualCount;
 import jacusa.data.BaseQualData;
 import jacusa.pileup.builder.WindowCache;
+import jacusa.util.Coordinate;
 import jacusa.util.Coordinate.STRAND;
-import jacusa.util.Location;
 
 /**
  * 
@@ -22,31 +22,30 @@ extends AbstractStorageFilter<T> {
 	}
 
 	// TODO check
-	protected BaseQualCount[] getCounts(final Location location, 
-			List<FilterContainer<T>> replicateFilterContainer) {
-		final int n = replicateFilterContainer.size();
-		BaseQualCount[] baseCount = new BaseQualCount[n];
+	protected BaseQualCount[] getBaseQualCounts(final Coordinate coordinate, 
+			final List<FilterContainer<T>> filterContainers) {
+		final int n = filterContainers.size();
+		BaseQualCount[] baseQualCount = new BaseQualCount[n];
 
 		// FIXME
 		// correct orientation in U,S S,U cases
 		boolean invert = false;
-		if (location.strand == STRAND.REVERSE && replicateFilterContainer.get(0).getStrand() == STRAND.UNKNOWN) {
+		if (coordinate.getStrand() == STRAND.REVERSE && filterContainers.get(0).getStrand() == STRAND.UNKNOWN) {
 			invert = true;
 		}
 		
-		for (int i = 0; i < n; ++i) {
-			final FilterContainer<T> filterContainer = replicateFilterContainer.get(i);
+		for (int replicateIndex = 0; replicateIndex < n; ++replicateIndex) {
+			final FilterContainer<T> filterContainer = filterContainers.get(replicateIndex);
 			final WindowCache windowCache = getWindowCache(filterContainer);
-			final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
+			final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
 
-			baseCount[i] = windowCache.getBaseCount(windowPosition);
+			baseQualCount[replicateIndex] = windowCache.getBaseCount(windowPosition);
 			if (invert) {
-				baseCount[i].invert();
+				baseQualCount[replicateIndex].invert();
 			}
-			
 		}
 
-		return baseCount;
+		return baseQualCount;
 	}
 
 }

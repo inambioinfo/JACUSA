@@ -3,7 +3,7 @@ package jacusa.pileup.builder;
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
-import jacusa.util.Coordinate.STRAND;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -24,25 +24,25 @@ extends AbstractStrandedPileupBuilder<T> {
 		super(windowCoordinates, reader, condition, parameters, LibraryType.FR_SECONDSTRAND);
 	}
 	
-	protected void processRecord(SAMRecord record) {
+	public void processRecord(SAMRecord record) {
+		AbstractDataBuilder<T> dataBuilder = null;
+		
 		if (record.getReadPairedFlag()) { // paired end
 			if (record.getFirstOfPairFlag() && record.getReadNegativeStrandFlag() || 
 					record.getSecondOfPairFlag() && ! record.getReadNegativeStrandFlag() ) {
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			} else {
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			}
 		} else { // single end
 			if (record.getReadNegativeStrandFlag()) {
-				strand = STRAND.REVERSE;
+				dataBuilder = getReverse();
 			} else {
-				strand = STRAND.FORWARD;
+				dataBuilder = getForward();
 			}
 		}
 
-		switchByStrand();
-
-		super.processRecord(record);
+		dataBuilder.processRecord(record);
 	}
 
 }

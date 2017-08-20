@@ -11,8 +11,7 @@ public class HelpOption extends AbstractACOption {
 	private CLI cmd;
 	
 	public HelpOption(CLI cmd) {
-		opt = "h";
-		longOpt = "help";
+		super("h", "help");
 
 		this.cmd = cmd;
 	}
@@ -20,15 +19,15 @@ public class HelpOption extends AbstractACOption {
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
+		return OptionBuilder.withLongOpt(getLongOpt())
 				.hasArg(false)
 				.withDescription("Print usage information")
-				.create(opt);
+				.create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) {
-		if (line.hasOption(opt)) {
+		if (line.hasOption(getOpt())) {
 	    	cmd.printUsage(); 
 	    	System.exit(0);
 	    }

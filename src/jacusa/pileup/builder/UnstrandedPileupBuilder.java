@@ -13,14 +13,13 @@ import net.sf.samtools.SAMFileReader;
  *
  */
 public class UnstrandedPileupBuilder<T extends BaseQualData> 
-extends AbstractPileupBuilder<T> {
+extends AbstractDataBuilder<T> {
 	
 	public UnstrandedPileupBuilder(final WindowCoordinates windowCoordinates,
 			final SAMFileReader SAMFileReader,
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters) {
 		super(windowCoordinates, 
-				STRAND.UNKNOWN, 
 				SAMFileReader, 
 				condition, 
 				parameters, 
@@ -36,9 +35,9 @@ extends AbstractPileupBuilder<T> {
 	public T getData(int windowPosition, STRAND strand) {
 		T dataContainer = parameters.getMethodFactory().createDataContainer();
 
-		dataContainer.setContig(windowCoordinates.getContig()); 
-		dataContainer.setPosition(windowCoordinates.getGenomicPosition(windowPosition));
-		dataContainer.setStrand(strand);
+		dataContainer.getCoordinate().setSequenceName(windowCoordinates.getContig()); 
+		dataContainer.getCoordinate().setPosition(windowCoordinates.getGenomicPosition(windowPosition));
+		dataContainer.getCoordinate().setStrand(strand);
 
 		// copy base and qual info from cache
 		dataContainer.setBaseQualCount(windowCache.getBaseCount(windowPosition));

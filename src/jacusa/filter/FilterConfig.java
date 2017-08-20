@@ -5,7 +5,6 @@ import jacusa.data.AbstractData;
 
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
 import java.util.ArrayList;
@@ -25,7 +24,7 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	private final Map<Character, Integer> c2i;
 	
 	public FilterConfig() {
-		int initialCapacity = 6;
+		final int initialCapacity = 6;
 
 		c2Factory = new HashMap<Character, AbstractFilterFactory<T>>(initialCapacity);
 		i2Factory = new ArrayList<AbstractFilterFactory<T>>(initialCapacity);
@@ -55,14 +54,12 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	 * 
 	 * @return
 	 */
-	public FilterContainer<T> createFilterContainer(
-			final WindowCoordinates windowCoordinates, final STRAND strand, final ConditionParameters<T> condition) {
-		AbstractFilterStorage[] filters = new AbstractFilterStorage[i2Factory.size()];
+	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, final ConditionParameters<T> condition) {
+		AbstractFilterStorage[] filterStorage = new AbstractFilterStorage[i2Factory.size()];
 		for (int filterIndex = 0; filterIndex < i2Factory.size(); ++filterIndex) {
-			filters[filterIndex] = i2Factory.get(filterIndex).createFilterStorage(windowCoordinates, condition);
-			
+			filterStorage[filterIndex] = i2Factory.get(filterIndex).createFilterStorage(windowCoordinates, condition);
 		}
-		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filters, windowCoordinates, strand);
+		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filterStorage, windowCoordinates);
 
 		return filterContainer;
 	}

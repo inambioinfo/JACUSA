@@ -9,7 +9,6 @@ import jacusa.data.Result;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Coordinate;
-import jacusa.util.Location;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -165,9 +164,7 @@ extends Thread {
 		return reader;
 	}
 
-	protected abstract Result<T> processParallelData(
-			final ParallelPileupData<T> parallelData, 
-			final Location location, 
+	protected abstract Result<T> processParallelData(final ParallelPileupData<T> parallelData, 
 			final WindowIterator<T> parallelPileupIterator);
 	
 	/**
@@ -185,11 +182,12 @@ extends Thread {
 
 		// iterate over parallel pileups
 		while (parallelDataIterator.hasNext()) {
-			final Location location = parallelDataIterator.next();
-			final ParallelPileupData<T> parallelPileup = 
-					parallelDataIterator.getParallelData().copy(
+			final Coordinate coordinate = parallelDataIterator.next();
+			
+			final ParallelPileupData<T> parallelPileup = parallelDataIterator.getParallelData().copy(
 							parameters.getMethodFactory().createDataContainer(parameters.getConditions(), -1));
-			final Result<T> result = processParallelData(parallelPileup, location, parallelDataIterator);
+			parallelPileup.setCoordinate(coordinate);
+			final Result<T> result = processParallelData(parallelPileup, parallelDataIterator);
 
 			// considered comparisons
 

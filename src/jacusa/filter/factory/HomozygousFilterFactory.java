@@ -8,7 +8,6 @@ import jacusa.data.Result;
 import jacusa.filter.AbstractStorageFilter;
 import jacusa.filter.storage.DummyFilterFillCache;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.Location;
 import jacusa.util.WindowCoordinates;
 
 /**
@@ -104,10 +103,9 @@ extends AbstractFilterFactory<T> {
 		}
 
 		@Override
-		public boolean filter(final Result<T> result, final Location location, 
-				final WindowIterator<T> windowIterator) {
+		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 			int alleles = 0;
-			alleles = windowIterator.getAlleleCount(homozygousConditionIndex, location);
+			alleles = windowIterator.getAlleleCount(homozygousConditionIndex, result.getParellelData().getCoordinate());
 	
 			if (alleles > 1) {
 				return true;
@@ -126,8 +124,7 @@ extends AbstractFilterFactory<T> {
 		}
 
 		@Override
-		public boolean filter(final Result<T> result, final Location location, 
-				final WindowIterator<T> windowIterator) {
+		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 			int alleles = 0;
 			final ParallelPileupData<T> parallelData = result.getParellelData();
 	

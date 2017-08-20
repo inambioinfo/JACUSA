@@ -7,42 +7,47 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.data.ParallelPileupData;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.builder.AbstractPileupBuilder;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
-import jacusa.pileup.iterator.location.LocationAdvancer;
+import jacusa.pileup.builder.DataBuilder;
+import jacusa.pileup.iterator.location.CoordinateAdvancer;
+import jacusa.pileup.iterator.location.StrandedCoordinateAdvancer;
+import jacusa.pileup.iterator.location.UnstrandedCoordinateAdvancer;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import jacusa.util.Coordinate.STRAND;
-import jacusa.util.Location;
 import jacusa.util.WindowCoordinates;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 
 public class WindowIterator<T extends AbstractData> 
-implements Iterator<Location> {
+implements Iterator<Coordinate> {
 
-	protected final Coordinate coordinate;
-	protected Variant<T> filter;
+	public static final int CONDITON_INDEX = 0;
+	public static final int REPLICATE_INDEX = 0;
 	
-	protected ParallelPileupData<T> parallelData;
+	private final Coordinate coordinate;
+	private Variant<T> filter;
 	
-	protected final AbstractPileupBuilder<T>[][] pileupBuilders;
+	private ParallelPileupData<T> parallelData;
 	
-	protected LocationAdvancer locationAdvancer;
+	private final Map<Integer, List<DataBuilder<T>>> dataBuilders;
 	
-	protected AbstractParameters<T> parameters;
+	private CoordinateAdvancer coordinateAdvancer;
+	
+	private AbstractParameters<T> parameters;
 	
 	public WindowIterator(
 			final Coordinate coordinate, 
 			final Variant<T> filter,
-			final AbstractPileupBuilder<T>[][] pileupBuilders,
 			final SAMFileReader[][] readers,
 			final AbstractParameters<T> parameters) {
 		this.coordinate = coordinate;
@@ -51,87 +56,98 @@ implements Iterator<Location> {
 		this.parallelData = new ParallelPileupData<T>();
 
 		final int conditions = parameters.getConditions();
-		
-		this.pileupBuilders = parameters.getMethodFactory().
-		
+
+		this.dataBuilders = new HashMap<Integer, List<DataBuilder<T>>>(parameters.getConditions());
+
 		final boolean[] isStranded = new boolean[conditions];
-		final Location[] locactions = new Location[conditions];
+		final Coordinate[] coordinates = new Coordinate[conditions];
 		
+		boolean unStranded = true;
 		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 			ConditionParameters<T> condition = parameters.getConditionParameters(conditionIndex);
 			
-			pileupBuilders[conditionIndex] = createPileupBuilders(
-					condition.getPileupBuilderFactory(), 
+			List<DataBuilder<T>> conditionDataBuilders = createDataBuilders(
+					condition.getDataBuilderFactory(), 
 					coordinate, readers[conditionIndex], parameters);
+			dataBuilders.put(conditionIndex, conditionDataBuilders);
 			
-			isStranded[conditionIndex] = condition.getPileupBuilderFactory().isStranded();
-			locactions[conditionIndex] = initLocation(coordinate, condition.getPileupBuilderFactory().isStranded(), pileupBuilders[conditionIndex]);
+			isStranded[conditionIndex] = condition.getDataBuilderFactory().isStranded();
+			coordinates[conditionIndex] = 
+					initCoordinates(coordinate, condition.getDataBuilderFactory().isStranded(), conditionDataBuilders);
+			
+			if (isStranded[conditionIndex]) {
+				unStranded = false;
+			}
 		}
 
-		locationAdvancer = new LocationAdvancer(isStranded, locactions);
+		if (unStranded) {
+			coordinateAdvancer = new UnstrandedCoordinateAdvancer(coordinates);
+		} else {
+			coordinateAdvancer = new StrandedCoordinateAdvancer(isStranded, coordinates);
+		}
 
 		this.parameters = parameters;
 	}
 
-	protected Location initLocation(Coordinate coordinate, 
-			final boolean isDirectional, 
-			final AbstractPileupBuilder<T>[] pileupBuilders) {
-		parallelData.setContig(coordinate.getSequenceName());
+	protected Coordinate initCoordinates(Coordinate coordinate, 
+			final boolean isStranded, 
+			final List<DataBuilder<T>> dataBuilders) {
+		parallelData.getCoordinate().setSequenceName(coordinate.getSequenceName());
 
 		// Default value for: not within coordinate
-		Location location = new Location(coordinate.getSequenceName(), Integer.MAX_VALUE, STRAND.UNKNOWN);
-		if (isDirectional) {
-			location.strand = STRAND.FORWARD;
+		Coordinate newCoordinate = new Coordinate(coordinate.getSequenceName(), Integer.MAX_VALUE, STRAND.UNKNOWN);
+		if (isStranded) {
+			newCoordinate.setStrand(STRAND.FORWARD);
 		}
 		
-		final SAMRecord record = getNextValidRecord(coordinate.getStart(), pileupBuilders);
+		final SAMRecord record = getNextValidRecord(coordinate.getStart(), dataBuilders);
 		if (record == null) {
-			return location;
+			return newCoordinate;
 		}
 
 		// find genomicPosition within coordinate.getStart() coordinate.getEnd();
 		int genomicPosition = Math.max(coordinate.getStart(), record.getAlignmentStart());
 		if (genomicPosition > coordinate.getEnd()) {
-			return location;
+			return newCoordinate;
 		}
 
 		genomicPosition = Math.min(genomicPosition, coordinate.getEnd());
-		for (AbstractPileupBuilder<T> pileupBuilder : pileupBuilders) {
+		for (DataBuilder<T> pileupBuilder : dataBuilders) {
 			pileupBuilder.adjustWindowStart(genomicPosition);
 		}
 
-		location.genomicPosition = genomicPosition;
-		return location;
+		newCoordinate.setPosition(genomicPosition);
+		return newCoordinate;
 	}
 
 	protected boolean hasNext(final int conditionIndex) {
-		return hasNext(locationAdvancer.getLocation(conditionIndex), pileupBuilders[conditionIndex]);
+		return hasNext(conditionIndex, dataBuilders.get(conditionIndex));
 	}
 	
 	@Override
 	public boolean hasNext() {
-		final Location[] locs = locationAdvancer.getLocations();
-		
-		final int conditions = locs.length;
+		final int conditions = parameters.getConditions();
 		
 		while (true) {
+
 			// check that all conditions have coverage...
 			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 				if (! hasNext(conditionIndex)) {
 					return false;
 				}
 			}
-			
+
 			int check = 0;
-			for (int conditionIndex = 1; conditionIndex < conditions; conditionIndex++) {
-				final int compare = new Integer(locs[0].genomicPosition).compareTo(locs[conditionIndex].genomicPosition);
+			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+				final int compare = new Integer(coordinateAdvancer.get(CONDITON_INDEX).getPosition())
+					.compareTo(coordinateAdvancer.get(conditionIndex).getPosition());
 	
 				switch (compare) {
 	
 				case -1:
 					// adjust actualPosition; instead of iterating jump to specific position
-					locationAdvancer.setLocation(0, locs[conditionIndex]);
-					adjustCurrentGenomicPosition(locs[conditionIndex], pileupBuilders[0]);
+					coordinateAdvancer.set(CONDITON_INDEX, coordinateAdvancer.get(conditionIndex));
+					adjustCurrentGenomicPosition(conditionIndex, dataBuilders.get(CONDITON_INDEX));
 					
 					break;
 	
@@ -141,68 +157,42 @@ implements Iterator<Location> {
 	
 				case 1:
 					// adjust actualPosition; instead of iterating jump to specific position
-					locationAdvancer.setLocation(conditionIndex, locs[0]);
-					adjustCurrentGenomicPosition(locs[0], pileupBuilders[conditionIndex]);
-	
+					coordinateAdvancer.set(conditionIndex, coordinateAdvancer.get(CONDITON_INDEX));
+					adjustCurrentGenomicPosition(CONDITON_INDEX, dataBuilders.get(conditionIndex));
+
 					break;
 				}
 			}
-			if (check == conditions) {
-				if (! locationAdvancer.checkStrand()) {
-					for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-						locs[conditionIndex].strand = STRAND.REVERSE;
-					}
-					
-					for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-						if (! isCovered(locs[conditionIndex], pileupBuilders[conditionIndex])) {
-							locationAdvancer.advance();
-							break;
-						}
-					}
-				}
-				final Location location = locationAdvancer.getLocation();
-				
-				parallelData.setContig(coordinate.getSequenceName());
-				parallelData.setStart(location.genomicPosition);
-				parallelData.setEnd(parallelData.getStart());
-				// parallelData.setStrand(location.strand);
 
-				for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-					locs[conditionIndex].strand = STRAND.REVERSE;
-					parallelData.setData(conditionIndex, getData(location, pileupBuilders[conditionIndex]));
-				}
-
-				if (filter.isValid(parallelData)) {
-					return true;
-				} else {
-					// reset
-					//parallelData.setPileups1(new Pileup[0]);
-					//parallelData.setPileups2(new Pileup[0]);
-					parallelData.reset();
-					for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-						locs[conditionIndex].strand = STRAND.REVERSE;
-					}
-
-					locationAdvancer.advance();
-				}				
+			if (check != conditions) {
+				return false;
 			}
-			
-			return false;
+
+			parallelData.setCoordinate(new Coordinate(coordinateAdvancer.get(CONDITON_INDEX)));
+			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
+				parallelData.setData(conditionIndex, getData(parallelData.getCoordinate(), dataBuilders.get(conditionIndex)));
+			}
+
+			if (filter.isValid(parallelData)) {
+				return true;
+			} else {
+				parallelData.reset();
+				coordinateAdvancer.advance();
+			}				
 		}
 	}
-
 	
-	public Location next() {
-		Location current = new Location(locationAdvancer.getLocation());;
+	public Coordinate next() {
+		Coordinate current = new Coordinate(coordinateAdvancer.get(CONDITON_INDEX));;
 
 		// advance to the next position
-		locationAdvancer.advance();
+		coordinateAdvancer.advance();
 
 		return current;
 	}
 	
-	public List<FilterContainer<T>> getFilterContainers(int conditionIndex, Location location) {
-		return getFilterCaches(location, pileupBuilders[conditionIndex]);
+	public List<FilterContainer<T>> getFilterContainers(int conditionIndex, Coordinate coordinate) {
+		return getFilterCaches(coordinate, dataBuilders.get(conditionIndex));
 	}
 	
 	/**
@@ -213,14 +203,13 @@ implements Iterator<Location> {
 	 * @param parameters
 	 * @return
 	 */
-	protected AbstractPileupBuilder<T>[] createPileupBuilders(
+	protected List<DataBuilder<T>> createDataBuilders(
 			final AbstractDataBuilderFactory<T> pileupBuilderFactory,
 			final Coordinate coordinate, 
 			final SAMFileReader[] readers, 
 			final AbstractParameters<T> parameters) {
 
-		@SuppressWarnings("unchecked")
-		final AbstractPileupBuilder<T>[] dataBuilders = (AbstractPileupBuilder<T>[]) new Object[readers.length];
+		final List<DataBuilder<T>> dataBuilders = new ArrayList<DataBuilder<T>>(readers.length);
 		
 		for(int i = 0; i < readers.length; ++i) {
 			final int sequenceLength = readers[i].getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
@@ -233,31 +222,30 @@ implements Iterator<Location> {
 					coordinate.getStart(), 
 					parameters.getWindowSize(), 
 					coordinate.getEnd());
-			
-			dataBuilders[i] = pileupBuilderFactory.newInstance(
-					windowCoordinates, readers[i], 
-					parameters.getConditionParameters(i), parameters);
+
+			dataBuilders.add(pileupBuilderFactory.newInstance(windowCoordinates, readers[i], 
+					parameters.getConditionParameters(i), parameters));
 		}
 
 		return dataBuilders;
 	}
 
 	protected SAMRecord getNextValidRecord(final int targetGenomicPosition, 
-			final AbstractPileupBuilder<T>[] pileupBuilders) {
-		return pileupBuilders[0].getNextValidRecord(targetGenomicPosition);
+			final List<DataBuilder<T>> dataBuilders) {
+		return dataBuilders.get(0).getNextValidRecord(targetGenomicPosition);
 	}
 
 	// Change here for more quantitative evaluation
-	protected boolean isCovered(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		int windowPosition = pileupBuilders[0]
+	protected boolean isCovered(Coordinate coordinate, List<DataBuilder<T>> dataBuilders) {
+		int windowPosition = dataBuilders.get(0)
 				.getWindowCoordinates()
-				.convert2WindowPosition(location.genomicPosition);
+				.convert2WindowPosition(coordinate.getPosition());
 		if (windowPosition < 0) {
 			return false;
 		}
 
-		for (AbstractPileupBuilder<T> pileupBuilder : pileupBuilders) {
-			if (! pileupBuilder.isCovered(windowPosition, location.strand)) {
+		for (DataBuilder<T> dataBuilder : dataBuilders) {
+			if (! dataBuilder.isCovered(windowPosition, coordinate.getStrand())) {
 				return false;
 			}
 		}
@@ -265,102 +253,103 @@ implements Iterator<Location> {
 		return true;
 	}
 	
-	protected T[] getData(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		int n = pileupBuilders.length;
+	protected T[] getData(Coordinate coordinate, List<DataBuilder<T>> dataBuilders) {
+		int n = dataBuilders.size();
 
-		T[] data = parameters.getMethodFactory().createDataContainer(pileupBuilders.length);
-		int windowPosition = pileupBuilders[0].getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
+		T[] data = parameters.getMethodFactory().createDataContainer(dataBuilders.size());
+		int windowPosition = dataBuilders.get(0).getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
 		for(int i = 0; i < n; ++i) {
-			data[i] = pileupBuilders[i].getData(windowPosition, location.strand);
+			data[i] = dataBuilders.get(i).getData(windowPosition, coordinate.getStrand());
 		}
 
 		return data;
 	}
 	
-	public int getAlleleCount(Location location) {
+	public int getAlleleCount(Coordinate coordinate) {
 		Set<Integer> alleles = new HashSet<Integer>(4);
 		
-		for (int conditionIndex = 0; conditionIndex < pileupBuilders.length; conditionIndex++) {
-			alleles.addAll(getAlleles(location, pileupBuilders[conditionIndex]));
+		for (int conditionIndex = 0; conditionIndex < dataBuilders.size(); conditionIndex++) {
+			alleles.addAll(getAlleles(coordinate, dataBuilders.get(conditionIndex)));
 		}
 
 		return alleles.size();
 	}
 	
-	public int getAlleleCount(final int conditionIndex, final Location location) {
-		return getAlleleCount(location, pileupBuilders[conditionIndex]);
+	public int getAlleleCount(final int conditionIndex, final Coordinate coordinate) {
+		return getAlleleCount(coordinate, dataBuilders.get(conditionIndex));
 	}
 	
-	protected int getAlleleCount(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		return getAlleles(location, pileupBuilders).size();		
+	protected int getAlleleCount(Coordinate coordinate, List<DataBuilder<T>> dataBuilders) {
+		return getAlleles(coordinate, dataBuilders).size();		
 	}
 	
-	protected Set<Integer> getAlleles(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
+	protected Set<Integer> getAlleles(Coordinate coordinate, List<DataBuilder<T>> dataBuilders) {
 		Set<Integer> alleles = new HashSet<Integer>(4);
-		int replicates = pileupBuilders.length;
-		int windowPosition = pileupBuilders[0].getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
+		int replicates = dataBuilders.size();
+		int windowPosition = dataBuilders.get(0).getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
 		for (int i = 0; i < replicates; ++i) {
-			for (int baseI : pileupBuilders[i].getWindowCache(location.strand).getAlleles(windowPosition)) {
+			for (int baseI : dataBuilders.get(i).getWindowCache(coordinate.getStrand()).getAlleles(windowPosition)) {
 				alleles.add(baseI);
 			}
 		}
 		return alleles;
 	}
 
-	protected List<FilterContainer<T>> getFilterCaches(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		int replicates = pileupBuilders.length;
+	protected List<FilterContainer<T>> getFilterCaches(Coordinate coordinate, List<DataBuilder<T>> pileupBuilders) {
+		int replicates = pileupBuilders.size();
 
 		List<FilterContainer<T>> filterContainers = new ArrayList<FilterContainer<T>>(replicates);
-		int windowPosition = pileupBuilders[0].getWindowCoordinates().convert2WindowPosition(location.genomicPosition);
+		int windowPosition = pileupBuilders.get(REPLICATE_INDEX).getWindowCoordinates().convert2WindowPosition(coordinate.getStart());
 		for (int i = 0; i < replicates; ++i) {
-			filterContainers.add(pileupBuilders[i].getFilterContainer(windowPosition, location.strand));
+			filterContainers.add(pileupBuilders.get(i).getFilterContainer(windowPosition, coordinate.getStrand()));
 		}
 
 		return filterContainers;
 	}
 
-	protected boolean adjustCurrentGenomicPosition(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		if (! pileupBuilders[0].getWindowCoordinates().isContainedInWindow(location.genomicPosition)) {
-			return adjustWindowStart(location, pileupBuilders);
+	protected boolean adjustCurrentGenomicPosition(final int conditionIndex, final List<DataBuilder<T>> dataBuilders) {
+		if (! dataBuilders.get(REPLICATE_INDEX).getWindowCoordinates().isContainedInWindow(
+				coordinateAdvancer.get(conditionIndex).getStart())) {
+			return adjustWindowStart(conditionIndex, dataBuilders);
 		}
 
 		return true;
 	}
-
-	protected boolean adjustWindowStart(Location location, AbstractPileupBuilder<T>[] pileupBuilders) {
-		if (! pileupBuilders[0].adjustWindowStart(location.genomicPosition)) {
-			SAMRecord record = getNextValidRecord(pileupBuilders[0].getWindowCoordinates().getGenomicWindowEnd(), pileupBuilders);
+	
+	protected boolean adjustWindowStart(final int conditionIndex, List<DataBuilder<T>> dataBuilders) {
+		if (! dataBuilders.get(0).adjustWindowStart(coordinateAdvancer.get(conditionIndex).getStart())) {
+			SAMRecord record = getNextValidRecord(dataBuilders.get(REPLICATE_INDEX).getWindowCoordinates().getGenomicWindowEnd(), dataBuilders);
 			if (record == null) {
 				return false;
 			}
-			location.genomicPosition = record.getAlignmentStart();
+			coordinateAdvancer.get(conditionIndex).setPosition(record.getAlignmentStart());
 
-			return adjustWindowStart(location, pileupBuilders);
+			return adjustWindowStart(conditionIndex, dataBuilders);
 		}
-		location.genomicPosition = pileupBuilders[0]
-				.getWindowCoordinates()
-				.getGenomicWindowStart();
-		for (int i = 1; i < pileupBuilders.length; ++i) {
-			pileupBuilders[i].adjustWindowStart(location.genomicPosition);
+		// TODO 
+		coordinateAdvancer.get(conditionIndex).setPosition(
+				dataBuilders.get(REPLICATE_INDEX).getWindowCoordinates().getGenomicWindowStart());
+		for (int i = 1; i < dataBuilders.size(); ++i) {
+			dataBuilders.get(i).adjustWindowStart(coordinateAdvancer.get(conditionIndex).getStart());
 		}
 
 		return true;
 	}
 
-	protected boolean hasNext(Location location, final AbstractPileupBuilder<T>[] pileupBuilders) {
+	protected boolean hasNext(final int conditionIndex, final List<DataBuilder<T>> dataBuilders) {
 		// within
-		while (location.genomicPosition <= coordinate.getEnd()) {
-			if (pileupBuilders[0]
+		while (coordinateAdvancer.get(conditionIndex).getPosition() <= coordinate.getEnd()) {
+			if (dataBuilders.get(0)
 					.getWindowCoordinates()
-					.isContainedInWindow(location.genomicPosition)) {
-				if (isCovered(location, pileupBuilders)) {
+					.isContainedInWindow(coordinateAdvancer.get(conditionIndex).getPosition())) {
+				if (isCovered(coordinateAdvancer.get(conditionIndex), dataBuilders)) {
 					return true;
 				} else {
 					// move along the window
-					locationAdvancer.advanceLocation(location);
+					coordinateAdvancer.advance(conditionIndex);
 				}
 			} else {
-				if (! adjustWindowStart(location, pileupBuilders)) {
+				if (! adjustWindowStart(conditionIndex, dataBuilders)) {
 					return false;
 				}
 			}
@@ -369,6 +358,10 @@ implements Iterator<Location> {
 		return false;
 	}
 
+	public AbstractParameters<T> getParameters() {
+		return parameters;
+	}
+	
 	public Coordinate getCoordinate() {
 		return coordinate;
 	}
@@ -376,7 +369,11 @@ implements Iterator<Location> {
 	public ParallelPileupData<T> getParallelData() {
 		return parallelData;
 	}
-		
+	
+	protected void setParallelData(final ParallelPileupData<T> parallelData) {
+		this.parallelData = parallelData;
+	}
+	
 	@Override
 	public void remove() {
 		// not needed

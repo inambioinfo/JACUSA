@@ -8,7 +8,7 @@ import jacusa.data.Result;
 import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.MinCountFilter;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.Location;
+import jacusa.util.Coordinate;
 
 public class HomopolymerStorageFilter<T extends BaseQualData> 
 extends AbstractWindowStorageFilter<T> {
@@ -22,8 +22,7 @@ extends AbstractWindowStorageFilter<T> {
 	}
 
 	@Override
-	protected boolean filter(final Result<T> result, final Location location, 
-			final WindowIterator<T> windowIterator) {
+	protected boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 		final ParallelPileupData<T> parallelData = result.getParellelData();
 
 		final int[] variantBaseIndexs = countFilter.getVariantBaseIndexs(parallelData);
@@ -31,9 +30,11 @@ extends AbstractWindowStorageFilter<T> {
 			return false;
 		}
 
+		final Coordinate coordinate = result.getParellelData().getCoordinate();
 		BaseQualCount[][] baseQualCounts = new BaseQualCount[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			baseQualCounts[conditionIndex] = getCounts(location, windowIterator.getFilterContainers(conditionIndex, location));
+			
+			baseQualCounts[conditionIndex] = getBaseQualCounts(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseQualCounts);

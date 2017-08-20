@@ -13,7 +13,6 @@ import jacusa.pileup.iterator.WindowIterator;
 import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
-import jacusa.util.Location;
 
 public class RTArrestWorker<T extends BaseQualReadInfoData>
 extends AbstractWorker<T> {
@@ -44,9 +43,7 @@ extends AbstractWorker<T> {
 	}
 	
 	@Override
-	protected Result<T> processParallelData(
-			final ParallelPileupData<T> parallelData, 
-			final Location location, 
+	protected Result<T> processParallelData(final ParallelPileupData<T> parallelData, 
 			final WindowIterator<T> parallelDataIterator) {
 		// result object
 		Result<T> result = new Result<T>();
@@ -61,7 +58,7 @@ extends AbstractWorker<T> {
 			// apply each filter
 			for (AbstractFilterFactory<T> filterFactory : parameters.getFilterConfig().getFactories()) {
 				AbstractStorageFilter<T> storageFilter = filterFactory.createStorageFilter();
-				storageFilter.applyFilter(result, location, parallelDataIterator);
+				storageFilter.applyFilter(result, parallelDataIterator);
 			}
 		}
 

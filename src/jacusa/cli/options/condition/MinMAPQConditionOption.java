@@ -1,44 +1,56 @@
 package jacusa.cli.options.condition;
 
-import jacusa.cli.options.AbstractACOption;
+import java.util.List;
+
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class MinMAPQConditionOption extends AbstractACOption {
+public class MinMAPQConditionOption<T extends AbstractData> extends AbstractConditionACOption<T> {
 
-	private int conditionIndex;
-	private ConditionParameters<?> condition;
+	private static final String OPT = "m";
+	private static final String LONG_OPT = "min-mapq";
 	
-	public MinMAPQConditionOption(final int conditionIndex, final ConditionParameters<?> condition) {
-		this.conditionIndex = conditionIndex;
-		this.condition = condition;
-
-		opt = "m" + conditionIndex;
-		longOpt = "min-mapq" + conditionIndex;
+	public MinMAPQConditionOption(final List<ConditionParameters<T>> conditions) {
+		super(OPT, LONG_OPT, conditions);
+	}
+	
+	public MinMAPQConditionOption(final int conditionIndex, final ConditionParameters<T> condition) {
+		super(OPT, LONG_OPT, conditionIndex, condition);
 	}
 	
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
-				.withArgName(longOpt.toUpperCase())
+		String s = new String();
+		if (getConditionIndex() >= 0) {
+			s = "filter condition " + getConditionIndex();
+		} else {
+			s = "filter all conditions";
+		}
+
+		return OptionBuilder.withLongOpt(getLongOpt())
+				.withArgName(getLongOpt().toUpperCase())
 				.hasArg(true)
-		        .withDescription("filter " + conditionIndex + " positions with MAPQ < " + longOpt.toUpperCase() + "\n default: " + condition.getMinMAPQ())
-		        .create(opt);
+		        .withDescription(s + " with positions with MAPQ < " + getLongOpt().toUpperCase() + "\n default: " + getConditions().get(0).getMinMAPQ())
+		        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String value = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String value = line.getOptionValue(getOpt());
 	    	int minMapq = Integer.parseInt(value);
 	    	if(minMapq < 0) {
-	    		throw new IllegalArgumentException(longOpt.toUpperCase() + " = " + minMapq + " not valid.");
+	    		throw new IllegalArgumentException(getLongOpt().toUpperCase() + " = " + minMapq + " not valid.");
 	    	}
-	    	condition.setMinMAPQ(minMapq);
+
+	    	for (final ConditionParameters<T> condition : getConditions()) {
+	    		condition.setMinMAPQ(minMapq);
+	    	}
 	    }
 	}
 

@@ -15,7 +15,7 @@ extends AbstractDataBuilderFactory<T> {
 	}
 
 	@Override
-	public AbstractPileupBuilder<T> newInstance(
+	public DataBuilder<T> newInstance(
 			WindowCoordinates windowCoordinates, 
 			SAMFileReader reader, 
 			ConditionParameters<T> condition, 

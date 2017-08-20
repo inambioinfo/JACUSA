@@ -1,15 +1,24 @@
 package jacusa.cli.options.condition.filter;
 
+import java.util.List;
+
 import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
 import jacusa.cli.options.condition.filter.samtag.SamTagNHFilter;
 import jacusa.cli.parameters.ConditionParameters;
+import jacusa.data.AbstractData;
 
-public class FilterNHsamTagOption extends AbstractFilterSamTagOption {
+public class FilterNHsamTagOption<T extends AbstractData> extends FilterNHsamTagConditionOption<T> {
 
-	public FilterNHsamTagOption(final int conditionIndex, final ConditionParameters<?> parameters) {
-		super(conditionIndex, parameters, "NH");
+	private static final String TAG = "NH";
+	
+	public FilterNHsamTagOption(final int conditionIndex, final ConditionParameters<T> condition) {
+		super(conditionIndex, condition, TAG);
 	}
 
+	public FilterNHsamTagOption(final List<ConditionParameters<T>> conditions) {
+		super(conditions, TAG);
+	}
+	
 	@Override
 	protected SamTagFilter createSamTagFilter(int value) {
 		return new SamTagNHFilter(value);

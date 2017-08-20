@@ -11,26 +11,25 @@ public class WindowSizeOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters; 
 	
 	public WindowSizeOption(AbstractParameters<?> parameters) {
+		super("w", "window-size");
 		this.parameters = parameters;
-
-		opt = "w";
-		longOpt = "window-size";
 	}
 
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-		return OptionBuilder.withLongOpt(longOpt)
+		return OptionBuilder.withLongOpt(getLongOpt())
 			.withArgName("WINDOW-SIZE")
 			.hasArg(true)
-	        .withDescription("size of the window used for caching. Make sure this is greater than the read size \n default: " + parameters.getWindowSize())
-	        .create(opt);
+	        .withDescription("size of the window used for caching. Make sure this is greater than the read size \n default: " + 
+	        		parameters.getWindowSize())
+	        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-	    	String value = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+	    	String value = line.getOptionValue(getOpt());
 	    	int windowSize = Integer.parseInt(value);
 	    	if (windowSize < 1) {
 	    		throw new IllegalArgumentException("WINDOW-SIZE too small: " + windowSize);

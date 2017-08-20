@@ -1,8 +1,11 @@
 package jacusa.pileup.iterator;
 
+import java.util.Arrays;
+
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.data.BaseConfig;
 import jacusa.data.BaseQualData;
-import jacusa.pileup.builder.AbstractPileupBuilder;
+import jacusa.data.ParallelPileupData;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
 import net.sf.samtools.SAMFileReader;
@@ -13,53 +16,70 @@ extends WindowIterator<T> {
 	public OneConditionCallIterator(
 			final Coordinate coordinate,
 			final Variant<T> filter,
-			final AbstractPileupBuilder<T>[][] dataBuilder,
 			final SAMFileReader[][] readers, 
 			final AbstractParameters<T> parameters) {
-		super(coordinate, filter, dataBuilder, readers, parameters);
+		super(coordinate, filter, readers, parameters);
 	}
 
 	@Override
-	public boolean hasNext() {
-		while (super.hasNext()) {
-			T bp = parallelData.getPooledData(0);
-			int[] allelesIs = bp.getBaseQualCount().getAlleles();
+	public ParallelPileupData<T> getParallelData() {
+		ParallelPileupData<T> parallelData = super.getParallelData();
+		
+		T data = parallelData.getCombinedPooledData();
+		int[] allelesIndexs = data.getBaseQualCount().getAlleles();
 
-			// pick reference base by MD or by majority.
-			// all other bases will be converted in pileup2 to refBaseI
-			int refBaseIndex = -1;
-			//if (bp.getRefBase() != 'N') {
-			// FIXME
-			if (refBaseIndex == -1) {
-				//char refBase = parallelData.getPooledPileup1().getRefBase();
-				//refBaseI = BaseConfig.BYTE_BASE2INT_BASE[(byte)refBase];
-			} else {
-				int maxBaseCount = 0;
+		// pick reference base by MD or by majority.
+		// all other bases will be converted in pileup2 to refBaseI
+		int refBaseIndex = -1;
+		if (data.getReferenceBase() != 'N') {
+			char refBase = data.getReferenceBase();
+			refBaseIndex = BaseConfig.BASES[(byte)refBase];
+		} else {
+			int maxBaseCount = 0;
 
-				for (int baseIndex : allelesIs) {
-					int count = bp.getBaseQualCount().getBaseCount(baseIndex);
-					if (count > maxBaseCount) {
-						maxBaseCount = count;
-						refBaseIndex = baseIndex;
-					}
+			for (int baseIndex : allelesIndexs) {
+				int count = data.getBaseQualCount().getBaseCount(baseIndex);
+				if (count > maxBaseCount) {
+					maxBaseCount = count;
+					refBaseIndex = baseIndex;
 				}
 			}
+		}
 
-			int [] tmpVariantBasesIs = new int[allelesIs.length];
-			int i = 0;
-			for (int j = 0; j < allelesIs.length; ++j) {
-				if (allelesIs[j] != refBaseIndex) {
-					tmpVariantBasesIs[i] = allelesIs[j];
-					++i;
-				}
+		// store non-reference base calls in variantBasesIndexs 
+		int [] tmpVariantBasesIndexs = new int[allelesIndexs.length];
+		int i = 0;
+		for (int j = 0; j < allelesIndexs.length; ++j) {
+			if (allelesIndexs[j] != refBaseIndex) {
+				tmpVariantBasesIndexs[i] = allelesIndexs[j];
+				++i;
 			}
-			// int[] variantBasesIs = Arrays.copyOf(tmpVariantBasesIs, i);
-			// FIXME parallelData.setPileups2(DefaultPileup.flat(parallelData.getPileups1(), variantBasesIs, refBaseIndex));
+		}
+		int[] variantBasesIndexs = Arrays.copyOf(tmpVariantBasesIndexs, i);
+		
+		// create fake condition by replacing non-reference base calls with reference BCs 
+		T[] fakeCondition = getParameters().getMethodFactory().createDataContainer(getParallelData().getReplicates(0));
+		for (int replicateIndex = 0; replicateIndex < fakeCondition.length; ++replicateIndex) {
+			fakeCondition[replicateIndex] = getParameters().getMethodFactory().createDataContainer();
+			fakeCondition[replicateIndex].setCoordinate(new Coordinate(data.getCoordinate()));
+			fakeCondition[replicateIndex].setReferenceBase(data.getReferenceBase());
 
-			return true;
+			for (int variantBaseIndex : variantBasesIndexs) {
+				fakeCondition[replicateIndex].getBaseQualCount()
+					.add(refBaseIndex, variantBaseIndex, parallelData.getData(0, replicateIndex).getBaseQualCount());
+				fakeCondition[replicateIndex].getBaseQualCount()
+					.substract(variantBaseIndex, variantBaseIndex, parallelData.getData(0, replicateIndex).getBaseQualCount());
+			}
 		}
 		
-		return false;
+		// new container
+		T[][] newData = getParameters().getMethodFactory().createDataContainer(2, -1);
+		ParallelPileupData<T> newParallelPileupData = new ParallelPileupData<T>(super.getParallelData(), newData);
+		newParallelPileupData.setData(1, fakeCondition);
+		setParallelData(newParallelPileupData);
+
+		return super.getParallelData();
 	}
+
 
 }

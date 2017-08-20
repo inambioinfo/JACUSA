@@ -171,7 +171,7 @@ implements hasLibraryType {
 	/**
 	 * @return the pileupBuilderFactory
 	 */
-	public AbstractDataBuilderFactory<T> getPileupBuilderFactory() {
+	public AbstractDataBuilderFactory<T> getDataBuilderFactory() {
 		return dataBuilderFactory;
 	}
 
@@ -199,7 +199,7 @@ implements hasLibraryType {
 	}
 
 	public LibraryType getLibraryType() {
-		return getPileupBuilderFactory().getLibraryType();
+		return getDataBuilderFactory().getLibraryType();
 	}
 
 	public int getReplicates() {

@@ -8,7 +8,6 @@ package jacusa.data;
 public interface hasBaseQualCount {
 	
 	BaseQualCount getBaseQualCount();
-	// TODO do we need setter?
 	void setBaseQualCount(final BaseQualCount baseQualCount);
 
 }

@@ -17,16 +17,14 @@ public class FilterConfigOption<T extends AbstractData> extends AbstractACOption
 	private static final char OR = ',';
 	//private static char AND = '&'; // Future Feature add logic
 
-	final private Map<Character, AbstractFilterFactory<T>> pileupFilterFactories;
+	final private Map<Character, AbstractFilterFactory<T>> filterFactories;
 
 	public FilterConfigOption(final AbstractParameters<T> parameters, 
-			final Map<Character, AbstractFilterFactory<T>> pileupFilterFactories) {
+			final Map<Character, AbstractFilterFactory<T>> filterFactories) {
+		super("a", "pileup-filter");
 		this.parameters = parameters;
 
-		opt = "a";
-		longOpt = "pileup-filter";
-
-		this.pileupFilterFactories = pileupFilterFactories;
+		this.filterFactories = filterFactories;
 	}
 
 	@SuppressWarnings("static-access")
@@ -34,35 +32,35 @@ public class FilterConfigOption<T extends AbstractData> extends AbstractACOption
 	public Option getOption() {
 		StringBuffer sb = new StringBuffer();
 
-		for (final char c : pileupFilterFactories.keySet()) {
-			final AbstractFilterFactory<T> pileupFilterFactory = pileupFilterFactories.get(c);
+		for (final char c : filterFactories.keySet()) {
+			final AbstractFilterFactory<T> pileupFilterFactory = filterFactories.get(c);
 			sb.append(pileupFilterFactory.getC());
 			sb.append(" | ");
 			sb.append(pileupFilterFactory.getDesc());
 			sb.append("\n");
 		}
 
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 			.withDescription(
-					"chain of " + longOpt.toUpperCase() + " to apply to pileups:\n" + sb.toString() + 
-					"\nSeparate multiple " + longOpt.toUpperCase() + " with '" + OR + "' (e.g.: D,I)")
-			.create(opt); 
+					"chain of " + getLongOpt().toUpperCase() + " to apply to pileups:\n" + sb.toString() + 
+					"\nSeparate multiple " + getLongOpt().toUpperCase() + " with '" + OR + "' (e.g.: D,I)")
+			.create(getOpt()); 
 	}
 
 	@Override
 	public void process(final CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-			final String s = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+			final String s = line.getOptionValue(getOpt());
 			final String[] t = s.split(Character.toString(OR));
 
 			for (final String a : t) {
 				char c = a.charAt(0);
-				if (! pileupFilterFactories.containsKey(c)) {
+				if (! filterFactories.containsKey(c)) {
 					throw new IllegalArgumentException("Unknown SAM processing: " + c);
 				}
-				AbstractFilterFactory<T> filterFactory = pileupFilterFactories.get(c);
+				AbstractFilterFactory<T> filterFactory = filterFactories.get(c);
 				if (a.length() > 1) {
 					filterFactory.processCLI(a);
 				}

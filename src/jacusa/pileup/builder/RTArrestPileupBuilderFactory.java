@@ -22,7 +22,7 @@ extends AbstractDataBuilderFactory<T> {
 	}
 
 	@Override
-	public AbstractPileupBuilder<T> newInstance(
+	public DataBuilder<T> newInstance(
 			final WindowCoordinates windowCoordinates,
 			final SAMFileReader reader, 
 			final ConditionParameters<T> condition, 

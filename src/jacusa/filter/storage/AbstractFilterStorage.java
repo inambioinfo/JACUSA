@@ -7,19 +7,19 @@ import net.sf.samtools.SAMRecord;
 public abstract class AbstractFilterStorage {
 
 	// corresponds to CLI option 
-	private char c; 
-	private WindowCache container;
+	private final char c; 
+	private WindowCache windowCache;
 
 	public AbstractFilterStorage(final char c) {
 		this.c = c;
 	}
 	
-	protected void setContainer(WindowCache container) {
-		this.container = container;
+	protected void setWindowCache(final WindowCache windowCache) {
+		this.windowCache = windowCache;
 	}
 
-	public WindowCache getContainer() {
-		return container;
+	public WindowCache getWindowCache() {
+		return windowCache;
 	}
 
 	public final char getC() {

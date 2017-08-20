@@ -5,10 +5,13 @@ import org.apache.commons.cli.Option;
 
 public abstract class AbstractACOption {
 
-	protected String opt;
-	protected String longOpt;
+	private String opt;
+	private String longOpt;
 
-	public AbstractACOption() {}
+	public AbstractACOption(final String opt, final String longOpt) {
+		this.opt 		= opt;
+		this.longOpt 	= longOpt;
+	}
 
 	public abstract void process(CommandLine line) throws Exception;
 	public abstract Option getOption();
@@ -16,9 +19,9 @@ public abstract class AbstractACOption {
 	public String getOpt() {
 		return opt;
 	}
-
+	
 	public String getLongOpt() {
 		return longOpt;
 	}
-
+		
 }

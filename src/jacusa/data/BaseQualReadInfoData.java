@@ -1,6 +1,6 @@
 package jacusa.data;
 
-import jacusa.util.Coordinate.STRAND;
+import jacusa.util.Coordinate;
 
 /**
  * 
@@ -26,10 +26,8 @@ implements hasReadInfoCount {
 		this.readInfoCount = pileupData.readInfoCount.copy();
 	}
 	
-	public BaseQualReadInfoData(final String contig, 
-			final int start, final int end, 
-			final STRAND strand, final int bases, final char referenceBase) {
-		super(contig, start, end, strand, bases, referenceBase);
+	public BaseQualReadInfoData(final Coordinate coordinate, final char referenceBase) {
+		super(coordinate, referenceBase);
 		
 		readInfoCount = new ReadInfoCount();
 	}

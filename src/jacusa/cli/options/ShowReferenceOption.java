@@ -16,25 +16,23 @@ public class ShowReferenceOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters;
 
 	public ShowReferenceOption(final AbstractParameters<?> parameters) {
+		super("R", "show-ref");
 		this.parameters = parameters;
-
-		opt = "R";
-		longOpt = "show-ref";
 	}
 
 	@SuppressWarnings("static-access")
 	@Override
 	public Option getOption() {
-				return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+				return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(false)
 	        .withDescription("Add reference base to output. BAM file(s) must have MD field!")
-	        .create(opt);
+	        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if(line.hasOption(opt)) {
+		if(line.hasOption(getOpt())) {
 	    	parameters.setShowReferenceBase(true);
 	    }
 	}

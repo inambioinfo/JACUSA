@@ -11,7 +11,6 @@ import jacusa.pileup.iterator.WindowIterator;
 import jacusa.pileup.iterator.variant.AllParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
-import jacusa.util.Location;
 
 public class MpileupWorker<T extends BaseQualData> 
 extends AbstractWorker<T> {
@@ -30,7 +29,6 @@ extends AbstractWorker<T> {
 	@Override
 	protected Result<T> processParallelData(
 			final ParallelPileupData<T> parallelPileup, 
-			final Location location, 
 			final WindowIterator<T> parallelDataIterator) {
 		Result<T> result = new Result<T>();
 		result.setParallelData(parallelPileup);
@@ -39,7 +37,7 @@ extends AbstractWorker<T> {
 			// apply each filter
 			for (final AbstractFilterFactory<T> filterFactory : getParameters().getFilterConfig().getFactories()) {
 				AbstractStorageFilter<T> storageFilter = filterFactory.createStorageFilter();
-				storageFilter.applyFilter(result, location, parallelDataIterator);
+				storageFilter.applyFilter(result, parallelDataIterator);
 			}
 		}
 

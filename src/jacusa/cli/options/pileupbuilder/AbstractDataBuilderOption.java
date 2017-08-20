@@ -1,20 +1,27 @@
 package jacusa.cli.options.pileupbuilder;
 
-import jacusa.cli.options.AbstractACOption;
+import java.util.List;
+
+import jacusa.cli.options.condition.AbstractConditionACOption;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.builder.hasLibraryType.LibraryType;
 
 public abstract class AbstractDataBuilderOption<T extends AbstractData>
-extends AbstractACOption {
-	
-	protected static final char SEP = ',';
+extends AbstractConditionACOption<T> {
 
-	public AbstractDataBuilderOption() {
-		opt = "P";
-		longOpt = "build-pileup";
+	private static final String OPT = "P";
+	private static final String LONG_OPT = "build-pileup";
+
+	public AbstractDataBuilderOption(final List<ConditionParameters<T>> conditions) { 
+		super(OPT, LONG_OPT, conditions);
 	}
 
+	public AbstractDataBuilderOption(final int conditionIndex, final ConditionParameters<T> condition) { 
+		super(OPT, LONG_OPT, conditionIndex, condition);
+	}
+	
 	protected abstract AbstractDataBuilderFactory<T> buildPileupBuilderFactory(
 			final LibraryType libraryType);
 

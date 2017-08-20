@@ -64,14 +64,14 @@ public class WindowCache {
 		return reference[windowPosition];
 	}
 	
-	public void addHighQualityBaseCall(final int windowPosition, final int baseI, int qualI) {
+	public void addHighQualityBaseCall(final int windowPosition, final int baseIndex, final int qual) {
 		// make sure we don't exceed...
-		Math.min(Phred2Prob.MAX_Q - 1, qualI);
+		Math.min(Phred2Prob.MAX_Q - 1, qual);
 		++coverage[windowPosition];
-		++baseCount[windowPosition][baseI];
-		++qualCount[windowPosition][baseI][qualI];
+		++baseCount[windowPosition][baseIndex];
+		++qualCount[windowPosition][baseIndex][qual];
 
-		int r = 2 << baseI;
+		int r = 2 << baseIndex;
 		int t = alleleMask[windowPosition] & r;
 		if (t == 0) {
 			alleleMask[windowPosition] += r;
@@ -80,14 +80,14 @@ public class WindowCache {
 	}
 
 	// only count for alleles
-	public void addLowQualityBaseCall(final int windowPosition, final int baseI, final int qualI) {
-		int r = 2 << baseI;
+	public void addLowQualityBaseCall(final int windowPosition, final int baseIndex, final int qual) {
+		int r = 2 << baseIndex;
 		int t = alleleMask[windowPosition] & r;
 		if (t == 0) {
 			alleleMask[windowPosition] += r;
 			++alleleCount[windowPosition];
 		}
-		minQual[windowPosition][baseI] = Math.min(minQual[windowPosition][baseI], qualI);
+		minQual[windowPosition][baseIndex] = Math.min(minQual[windowPosition][baseIndex], qual);
 	}
 
 	public int getCoverage(final int windowPosition) {
@@ -116,10 +116,6 @@ public class WindowCache {
 		
 		return alleles;
 	}
-	
-	public int getBaseLength() {
-		return bases;
-	}
 
 	public BaseQualCount getBaseCount(final int windowPosition) {
 		return new BaseQualCount(baseCount[windowPosition], qualCount[windowPosition], minQual[windowPosition]);
@@ -136,4 +132,5 @@ public class WindowCache {
 	public byte[] getReference() {
 		return reference;
 	}
+
 }

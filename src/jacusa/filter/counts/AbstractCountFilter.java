@@ -104,10 +104,7 @@ public abstract class AbstractCountFilter<T extends BaseQualData> {
 		}
 
 		final ParallelPileupData<T> filteredParallelData =
-				new ParallelPileupData<T>(parallelData.getContig(),
-					parallelData.getStart(),
-					parallelData.getEnd(),
-					filteredData);
+				new ParallelPileupData<T>(parallelData.getCoordinate(), filteredData);
 
 		return filteredParallelData;
 	}

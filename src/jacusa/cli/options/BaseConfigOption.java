@@ -12,10 +12,8 @@ public class BaseConfigOption extends AbstractACOption {
 	final private AbstractParameters<?> parameters;
 
 	public BaseConfigOption(final AbstractParameters<?> parameters) {
+		super("C", "base-config");
 		this.parameters = parameters;
-
-		opt = "C";
-		longOpt = "base-config";
 	}
 
 	@SuppressWarnings("static-access")
@@ -26,19 +24,19 @@ public class BaseConfigOption extends AbstractACOption {
 			sb.append(c);
 		}
 
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 	        .withDescription("Choose what bases should be considered for variant calling: TC or AG or ACGT or AT...\n default: " + sb.toString())
-	        .create(opt);
+	        .create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if(line.hasOption(opt)) {
-	    	char[] values = line.getOptionValue(opt).toCharArray();
+		if(line.hasOption(getOpt())) {
+	    	char[] values = line.getOptionValue(getOpt()).toCharArray();
 	    	if(values.length < 2 || values.length > BaseConfig.BASES.length) {
-	    		throw new IllegalArgumentException("Possible values for " + longOpt.toUpperCase() + ": TC, AG, ACGT, AT...");
+	    		throw new IllegalArgumentException("Possible values for " + getLongOpt().toUpperCase() + ": TC, AG, ACGT, AT...");
 	    	}
 	    	parameters.getBaseConfig().setBases(values);
 	    }

@@ -65,10 +65,7 @@ extends DirichletMultinomialCompoundError<T> {
 			System.arraycopy(data[1], 0, parallelData.getData(0), 0, parallelData.getData(0).length);
 
 			adjustedParallelPileup = new ParallelPileupData<T>(
-					parallelData.getContig(),
-					parallelData.getStart(),
-					parallelData.getEnd(),
-					data);
+					parallelData.getCoordinate(), data);
 			// and replace pileups2 with pileups1 where the variant bases have been replaced with the common base
 			T[] newConditionData = parameters.getMethodFactory().createDataContainer(adjustedParallelPileup.getData(0).length);
 			adjustedParallelPileup.setData(0, ParallelPileupData.flat(adjustedParallelPileup.getData(0), newConditionData, variantBaseIs, commonBaseIndex));
@@ -78,10 +75,7 @@ extends DirichletMultinomialCompoundError<T> {
 			System.arraycopy(data[1], 0, parallelData.getData(1), 0, parallelData.getData(1).length);
 			
 			adjustedParallelPileup = new ParallelPileupData<T>(
-					parallelData.getContig(),
-					parallelData.getStart(),
-					parallelData.getEnd(),
-					data);
+					parallelData.getCoordinate(), data);
 			T[] newConditionData = parameters.getMethodFactory().createDataContainer(adjustedParallelPileup.getData(1).length);
 			adjustedParallelPileup.setData(1, ParallelPileupData.flat(adjustedParallelPileup.getData(1), newConditionData, variantBaseIs, commonBaseIndex));
 		}

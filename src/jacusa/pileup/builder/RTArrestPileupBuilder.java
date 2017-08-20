@@ -4,7 +4,9 @@ import java.util.Arrays;
 
 import jacusa.data.BaseQualReadInfoData;
 import jacusa.filter.FilterContainer;
+import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.Coordinate.STRAND;
+import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMRecord;
 
 /**
@@ -12,28 +14,23 @@ import net.sf.samtools.SAMRecord;
  *
  */
 public class RTArrestPileupBuilder<T extends BaseQualReadInfoData>
-extends AbstractPileupBuilder<T> {
+implements DataBuilder<T> {
 	
 	private final int[] readStartCount;
 	private final int[] readEndCount;
-	private final AbstractPileupBuilder<T> pileupBuilder;
+	private final DataBuilder<T> dataBuilder;
 	
-	public RTArrestPileupBuilder(final AbstractPileupBuilder<T> pileupBuilder) {
-		super(pileupBuilder.windowCoordinates,
-				pileupBuilder.strand,
-				pileupBuilder.reader,
-				pileupBuilder.condition, 
-				pileupBuilder.parameters,
-				pileupBuilder.libraryType);
-		this.pileupBuilder = pileupBuilder;
+	public RTArrestPileupBuilder(final DataBuilder<T> dataBuilder) {
+		this.dataBuilder = dataBuilder;
 		
-		readStartCount	= new int[windowCoordinates.getWindowSize()];
-		readEndCount	= new int[windowCoordinates.getWindowSize()];
+		final int windowSize = dataBuilder.getWindowCoordinates().getWindowSize();
+		readStartCount	= new int[windowSize];
+		readEndCount	= new int[windowSize];
 	}
 	
 	@Override
 	public T getData(int windowPosition, STRAND strand) {
-		T dataContainer = pileupBuilder.getData(windowPosition, strand);
+		T dataContainer = dataBuilder.getData(windowPosition, strand);
 
 		dataContainer.getReadInfoCount().setStart(readStartCount[windowPosition]);
 		dataContainer.getReadInfoCount().setEnd(readEndCount[windowPosition]);
@@ -41,7 +38,7 @@ extends AbstractPileupBuilder<T> {
 		int arrest = 0;
 		int through = 0;
 
-		switch (libraryType) {
+		switch (getLibraryType()) {
 		
 		case UNSTRANDED:
 			arrest 	+= dataContainer.getReadInfoCount().getStart();
@@ -66,16 +63,16 @@ extends AbstractPileupBuilder<T> {
 		return dataContainer;
 	}
 
-	protected void processRecord(SAMRecord record) {
-		super.processRecord(record);
+	public void processRecord(SAMRecord record) {
+		dataBuilder.processRecord(record);
 		
 		int genomicPosition = record.getAlignmentStart();
-		int windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
+		int windowPosition  = getWindowCoordinates().convert2WindowPosition(genomicPosition);
 		
 		if (windowPosition >= 0) {
 			readStartCount[windowPosition] += 1;
 		}
-		int windowPositionReadEnd = windowCoordinates.convert2WindowPosition(record.getAlignmentEnd());
+		int windowPositionReadEnd = getWindowCoordinates().convert2WindowPosition(record.getAlignmentEnd());
 		if (windowPositionReadEnd >= 0) {
 			readEndCount[windowPositionReadEnd] += 1;
 		}
@@ -83,40 +80,55 @@ extends AbstractPileupBuilder<T> {
 	
 	@Override
 	public void clearCache() {
-		pileupBuilder.clearCache();
+		dataBuilder.clearCache();
 
 		Arrays.fill(readStartCount, 0);
 		Arrays.fill(readEndCount, 0);		
 	}
 
 	@Override
-	protected void addHighQualityBaseCall(int windowPosition, int base,	int qual, STRAND strand) {
-		pileupBuilder.addHighQualityBaseCall(windowPosition, base, qual, strand);
-	}
-
-	@Override
-	protected void addLowQualityBaseCall(int windowPosition, int base, int qual, STRAND strand) {
-		pileupBuilder.addLowQualityBaseCall(windowPosition, base, qual, strand);
-	}
-
-	@Override
 	public boolean isCovered(int windowPosition, STRAND strand) {
-		return pileupBuilder.isCovered(windowPosition, strand);
+		return dataBuilder.isCovered(windowPosition, strand);
 	}
 
 	@Override
-	public int getCoverage(int windowPosition, STRAND strand) {
+	public int getCoverage(final int windowPosition, final STRAND strand) {
 		return getCoverage(windowPosition, strand);
 	}
 
 	@Override
-	public WindowCache getWindowCache(STRAND strand) {
+	public WindowCache getWindowCache(final STRAND strand) {
 		return getWindowCache(strand);
 	}
 
 	@Override
-	public FilterContainer<T> getFilterContainer(int windowPosition, STRAND strand) {
+	public FilterContainer<T> getFilterContainer(final int windowPosition, final STRAND strand) {
 		return getFilterContainer(windowPosition, strand);
+	}
+
+	@Override
+	public SAMRecord getNextValidRecord(final int targetPosition) {
+		return dataBuilder.getNextValidRecord(targetPosition);
+	}
+
+	@Override
+	public boolean adjustWindowStart(final int genomicWindowStart) {
+		return dataBuilder.adjustWindowStart(genomicWindowStart);
+	}
+
+	@Override
+	public int getFilteredSAMRecords() {
+		return dataBuilder.getFilteredSAMRecords();
+	}
+
+	@Override
+	public WindowCoordinates getWindowCoordinates() {
+		return dataBuilder.getWindowCoordinates();
+	}
+
+	@Override
+	public LibraryType getLibraryType() {
+		return dataBuilder.getLibraryType();
 	}
 
 }

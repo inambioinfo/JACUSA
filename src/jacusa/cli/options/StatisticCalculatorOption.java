@@ -18,13 +18,10 @@ extends AbstractACOption {
 	private Map<String,StatisticCalculator<T>> statistics;
 
 	public StatisticCalculatorOption(final StatisticParameters<T> parameters, 
-			final Map<String, StatisticCalculator<T>> pileup2Statistic) {
+			final Map<String, StatisticCalculator<T>> statisticCalculator) {
+		super("u", "modues");
 		this.parameters = parameters;
-
-		opt = "u";
-		longOpt = "modus";
-
-		this.statistics = pileup2Statistic;
+		this.statistics = statisticCalculator;
 	}
 
 	@SuppressWarnings("static-access")
@@ -46,17 +43,17 @@ extends AbstractACOption {
 			sb.append("\n");
 		}
 
-		return OptionBuilder.withLongOpt(longOpt)
-			.withArgName(longOpt.toUpperCase())
+		return OptionBuilder.withLongOpt(getLongOpt())
+			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 			.withDescription("Choose between different modes:\n" + sb.toString())
-			.create(opt);
+			.create(getOpt());
 	}
 
 	@Override
 	public void process(CommandLine line) throws Exception {
-		if (line.hasOption(opt)) {
-			String name = line.getOptionValue(opt);
+		if (line.hasOption(getOpt())) {
+			String name = line.getOptionValue(getOpt());
 			String str = Character.toString(AbstractFilterFactory.SEP);
 			if (name.indexOf(str) > -1) {
 				String[] cols = name.split(str, 2);
@@ -67,7 +64,7 @@ extends AbstractACOption {
 				throw new IllegalArgumentException("Unknown statistic: " + name);
 			}
 			parameters.setStatisticCalculator(statistics.get(name));
-			parameters.getStatisticCalculator().processCLI(line.getOptionValue(opt));
+			parameters.getStatisticCalculator().processCLI(line.getOptionValue(getOpt()));
 		}
 	}
 
