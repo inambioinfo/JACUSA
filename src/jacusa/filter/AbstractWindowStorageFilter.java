@@ -22,10 +22,10 @@ extends AbstractStorageFilter<T> {
 	}
 
 	// TODO check
-	protected BaseQualCount[] getBaseQualCounts(final Coordinate coordinate, 
+	protected BaseQualData[] getBaseQualData(final Coordinate coordinate, 
 			final List<FilterContainer<T>> filterContainers) {
 		final int n = filterContainers.size();
-		BaseQualCount[] baseQualCount = new BaseQualCount[n];
+		BaseQualData[] baseQualData = new BaseQualData[n];
 
 		// FIXME
 		// correct orientation in U,S S,U cases
@@ -33,19 +33,19 @@ extends AbstractStorageFilter<T> {
 		if (coordinate.getStrand() == STRAND.REVERSE && filterContainers.get(0).getStrand() == STRAND.UNKNOWN) {
 			invert = true;
 		}
-		
+
 		for (int replicateIndex = 0; replicateIndex < n; ++replicateIndex) {
 			final FilterContainer<T> filterContainer = filterContainers.get(replicateIndex);
 			final WindowCache windowCache = getWindowCache(filterContainer);
 			final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
 
-			baseQualCount[replicateIndex] = windowCache.getBaseCount(windowPosition);
+			baseQualData[replicateIndex] = windowCache.getBaseCount(windowPosition);
 			if (invert) {
-				baseQualCount[replicateIndex].invert();
+				baseQualData[replicateIndex].invert();
 			}
 		}
 
-		return baseQualCount;
+		return baseQualData;
 	}
 
 }

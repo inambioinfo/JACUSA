@@ -17,12 +17,14 @@ extends AbstractDataBuilder<T> {
 	
 	public UnstrandedPileupBuilder(final WindowCoordinates windowCoordinates,
 			final SAMFileReader SAMFileReader,
+			final STRAND strand,
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters) {
 		super(windowCoordinates, 
 				SAMFileReader, 
 				condition, 
 				parameters, 
+				strand,
 				LibraryType.UNSTRANDED);
 	}
 

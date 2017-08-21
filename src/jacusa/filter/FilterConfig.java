@@ -5,6 +5,7 @@ import jacusa.data.AbstractData;
 
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
+import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
 import java.util.ArrayList;
@@ -54,12 +55,13 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	 * 
 	 * @return
 	 */
-	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, final ConditionParameters<T> condition) {
+	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, 
+			final STRAND strand, final ConditionParameters<T> condition) {
 		AbstractFilterStorage[] filterStorage = new AbstractFilterStorage[i2Factory.size()];
 		for (int filterIndex = 0; filterIndex < i2Factory.size(); ++filterIndex) {
 			filterStorage[filterIndex] = i2Factory.get(filterIndex).createFilterStorage(windowCoordinates, condition);
 		}
-		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filterStorage, windowCoordinates);
+		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filterStorage, strand, windowCoordinates);
 
 		return filterContainer;
 	}

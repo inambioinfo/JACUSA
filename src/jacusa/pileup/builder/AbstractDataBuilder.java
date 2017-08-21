@@ -56,6 +56,7 @@ implements DataBuilder<T>, hasLibraryType {
 			final SAMFileReader SAMFileReader, 
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters,
+			final STRAND strand,
 			final LibraryType libraryType) {
 		this.windowCoordinates	= windowCoordinates;
 		
@@ -69,7 +70,7 @@ implements DataBuilder<T>, hasLibraryType {
 		this.parameters			= parameters;
 
 		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBases().length);
-		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, condition);
+		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, condition);
 		byte2int 				= parameters.getBaseConfig().getbyte2int();
 
 		this.libraryType		= libraryType;

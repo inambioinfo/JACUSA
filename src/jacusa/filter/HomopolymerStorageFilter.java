@@ -34,7 +34,7 @@ extends AbstractWindowStorageFilter<T> {
 		BaseQualCount[][] baseQualCounts = new BaseQualCount[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			
-			baseQualCounts[conditionIndex] = getBaseQualCounts(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
+			baseQualCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseQualCounts);

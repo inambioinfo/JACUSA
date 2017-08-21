@@ -36,8 +36,8 @@ implements DataBuilder<T> {
 		this.condition 			= condition;
 		this.libraryType		= libraryType;
 		
-		forward = new UnstrandedPileupBuilder<T>(windowCoordinates, reader, condition, parameters);
-		reverse = new UnstrandedPileupBuilder<T>(windowCoordinates, reader, condition, parameters);
+		forward = new UnstrandedPileupBuilder<T>(windowCoordinates, reader, STRAND.FORWARD, condition, parameters);
+		reverse = new UnstrandedPileupBuilder<T>(windowCoordinates, reader, STRAND.REVERSE, condition, parameters);
 	}
 
 	@Override

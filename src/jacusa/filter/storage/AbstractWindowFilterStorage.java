@@ -17,7 +17,7 @@ public abstract class AbstractWindowFilterStorage extends AbstractFilterStorage 
 	private boolean[] visited;
 	private BaseConfig baseConfig;
 
-	protected int windowSize;
+	private int windowSize;
 	protected WindowCache windowCache;
 
 	private ConditionParameters<?> condition;

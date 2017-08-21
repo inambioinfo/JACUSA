@@ -6,6 +6,7 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 
 import jacusa.util.WindowCoordinates;
+import jacusa.util.Coordinate.STRAND;
 import net.sf.samtools.SAMFileReader;
 
 /**
@@ -27,7 +28,7 @@ extends AbstractDataBuilderFactory<T> {
 			final ConditionParameters<T> condition, 
 			final AbstractParameters<T> parameters) {
 		return new UnstrandedPileupBuilder<T>(windowCoordinates, reader, 
-				condition, parameters);
+				STRAND.UNKNOWN, condition, parameters);
 	}
 
 }

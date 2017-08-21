@@ -93,6 +93,22 @@ public class Coordinate {
 		this.strand = strand;
 	}
 	
+	public static STRAND invertStrand(final STRAND strand) {
+		switch (strand) {
+		case FORWARD:
+			return STRAND.REVERSE;
+
+		case REVERSE:
+			return STRAND.FORWARD;
+	
+		case UNKNOWN:
+			return STRAND.UNKNOWN;
+			
+		}
+			
+		return STRAND.UNKNOWN;
+	}
+	
 	public enum STRAND {
 		FORWARD(STRAND_FORWARD_CHAR),REVERSE(STRAND_REVERSE_CHAR),UNKNOWN(STRAND_UNKNOWN_CHAR);
 		

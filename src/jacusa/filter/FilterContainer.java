@@ -14,6 +14,7 @@ import jacusa.data.AbstractData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.util.WindowCoordinates;
+import jacusa.util.Coordinate.STRAND;
 
 /**
  * 
@@ -31,11 +32,15 @@ public class FilterContainer<T extends AbstractData> {
 
 	private Map<CigarOperator, Set<AbstractFilterStorage>> cigar2cFilter;
 	
+	private STRAND strand;
+	
 	public FilterContainer(
 			final FilterConfig<T> filterConfig, 
-			final AbstractFilterStorage[] filters, 
+			final AbstractFilterStorage[] filters,
+			final STRAND strand,
 			final WindowCoordinates windowCoordinates) {
 		this.filterConfig = filterConfig;
+		this.strand	= strand;
 		this.windowCoordinates = windowCoordinates;
 		this.filterStorage = filters;
 		
@@ -85,6 +90,10 @@ public class FilterContainer<T extends AbstractData> {
 
 	public List<AbstractFilterStorage> getPR() {
 		return processRecordFilters;
+	}
+
+	public STRAND getStrand() {
+		return strand;
 	}
 	
 	public Set<AbstractFilterStorage> get(CigarOperator cigarOperator) {
