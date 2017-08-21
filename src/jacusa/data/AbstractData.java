@@ -12,37 +12,20 @@ public abstract class AbstractData
 implements hasCoordinate, hasReferenceBase {
 
 	private Coordinate coordinate;
-	private char referenceBase;
+
 	
 	public AbstractData() {
 		coordinate = new Coordinate();
-		referenceBase	= 'N';
 	}
 
-	public AbstractData(final AbstractData pileupData) {
-		coordinate = new Coordinate(pileupData.getCoordinate());
-		this.referenceBase = pileupData.referenceBase; 
+	public AbstractData(final AbstractData abstractData) {
+		coordinate = new Coordinate(abstractData.getCoordinate());
 	}
 	
-	public AbstractData(final Coordinate coordinate, final char referenceBase) {
+	public AbstractData(final Coordinate coordinate) {
 		this.coordinate = new Coordinate(coordinate);
-		this.referenceBase 	= referenceBase;
 	}
 		
-	@Override
-	public void setReferenceBase(final char referenceBase) {
-		this.referenceBase = referenceBase;
-	}
-
-	@Override
-	public char getReferenceBase() {
-		return referenceBase;
-	}
-
-	public void add(final AbstractData pileupData) {
-		referenceBase = pileupData.referenceBase;
-	}
-
 	public Coordinate getCoordinate() {
 		return coordinate;
 	}
@@ -50,7 +33,7 @@ implements hasCoordinate, hasReferenceBase {
 	public void setCoordinate(final Coordinate coordinate) {
 		this.coordinate = coordinate;
 	}
-	
-	public abstract Object copy();
-	
+
+	public abstract void add(final AbstractData abstractData);
+	public abstract AbstractData copy();
 }

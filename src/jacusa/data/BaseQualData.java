@@ -2,33 +2,31 @@ package jacusa.data;
 
 import jacusa.util.Coordinate;
 
-/**
- * 
- * @author michael
- *
- * 
- */
-public class BaseQualData 
+public class BaseQualData
 extends AbstractData
 implements hasBaseQualCount {
 
 	private BaseQualCount baseQualCount;
-	
+	private char referenceBase;
+
 	public BaseQualData() {
 		super();
-		
+
 		baseQualCount 	= new BaseQualCount();
+		referenceBase	= 'N';
 	}
 
 	public BaseQualData(final BaseQualData pileupData) {
 		super(pileupData);
-		this.baseQualCount = pileupData.baseQualCount.copy();
+		this.baseQualCount = pileupData.getBaseQualCount().copy();
+		this.referenceBase = pileupData.getReferenceBase();
 	}
 	
 	public BaseQualData(final Coordinate coordinate, final char referenceBase) {
-		super(coordinate, referenceBase);
+		super(coordinate);
 		
 		baseQualCount		= new BaseQualCount();
+		this.referenceBase	= referenceBase;
 	}
 		
 	@Override
@@ -41,6 +39,27 @@ implements hasBaseQualCount {
 		this.baseQualCount = baseQualCount;
 	}
 
+	@Override
+	public void setReferenceBase(final char referenceBase) {
+		this.referenceBase = referenceBase;
+	}
+
+	@Override
+	public char getReferenceBase() {
+		return referenceBase;
+	}
+
+	public void add(AbstractData abstractData) {
+		BaseQualData baseQualData = (BaseQualData) abstractData;
+		baseQualCount.add(baseQualData.getBaseQualCount());
+		this.referenceBase = baseQualData.getReferenceBase();
+	}
+	
+	@Override
+	public BaseQualData copy() {
+		return new BaseQualData(this);
+	}
+	
 	/* TODO
 	public void invertStrand() {
 		switch (getStrand()) {
@@ -57,9 +76,5 @@ implements hasBaseQualCount {
 		}
 	}
 	*/
-	
-	public BaseQualData copy() {
-		return new BaseQualData(this);
-	}
 	
 }

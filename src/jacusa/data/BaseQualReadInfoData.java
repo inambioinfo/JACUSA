@@ -2,12 +2,6 @@ package jacusa.data;
 
 import jacusa.util.Coordinate;
 
-/**
- * 
- * @author michael
- *
- * 
- */
 public class BaseQualReadInfoData
 extends BaseQualData
 implements hasReadInfoCount {
@@ -37,8 +31,16 @@ implements hasReadInfoCount {
 		return readInfoCount;
 	}
 	
+	@Override
+	public void add(AbstractData abstractData) {
+		super.add(abstractData);
+		
+		BaseQualReadInfoData baseQualReadInfoData = (BaseQualReadInfoData) abstractData;
+		readInfoCount.add(baseQualReadInfoData.readInfoCount);
+	}
+	
+	@Override
 	public BaseQualReadInfoData copy() {
 		return new BaseQualReadInfoData(this);
 	}
-	
 }
