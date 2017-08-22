@@ -4,7 +4,6 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 
 import jacusa.filter.factory.AbstractFilterFactory;
-import jacusa.filter.storage.AbstractFilterStorage;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 
@@ -20,16 +19,10 @@ import java.util.Map;
  */
 public class FilterConfig<T extends AbstractData> implements Cloneable {
 
-	private final Map<Character, AbstractFilterFactory<T>> c2Factory;
-	private final List<AbstractFilterFactory<T>> i2Factory;
-	private final Map<Character, Integer> c2i;
+	private final Map<Character, AbstractFilterFactory<T>> c2factory;
 	
 	public FilterConfig() {
-		final int initialCapacity = 6;
-
-		c2Factory = new HashMap<Character, AbstractFilterFactory<T>>(initialCapacity);
-		i2Factory = new ArrayList<AbstractFilterFactory<T>>(initialCapacity);
-		c2i = new HashMap<Character, Integer>(initialCapacity);
+		c2factory = new HashMap<Character, AbstractFilterFactory<T>>(6);
 	}
 
 	/**
@@ -40,12 +33,10 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	public void addFactory(final AbstractFilterFactory<T> filterFactory) throws Exception {
 		final char c = filterFactory.getC();
 
-		if (c2Factory.containsKey(c)) {
+		if (c2factory.containsKey(c)) {
 			throw new Exception("Duplicate value: " + c);
 		} else {
-			c2i.put(c, i2Factory.size());
-			i2Factory.add(filterFactory);
-			c2Factory.put(c, filterFactory);	
+			c2factory.put(c, filterFactory);	
 		}
 	}
 
@@ -57,32 +48,23 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	 */
 	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, 
 			final STRAND strand, final ConditionParameters<T> condition) {
-		AbstractFilterStorage[] filterStorage = new AbstractFilterStorage[i2Factory.size()];
-		for (int filterIndex = 0; filterIndex < i2Factory.size(); ++filterIndex) {
-			filterStorage[filterIndex] = i2Factory.get(filterIndex).createFilterStorage(windowCoordinates, condition);
+		List<AbstractFilter<T>> filters = new ArrayList<AbstractFilter<T>>(c2factory.size());
+		for (final AbstractFilterFactory<T> filterFactory : c2factory.values()) {
+			filters.add(filterFactory.createFilter());
 		}
-		FilterContainer<T> filterContainer = new FilterContainer<T>(this, filterStorage, strand, windowCoordinates);
-
-		return filterContainer;
-	}
-
-	public List<AbstractFilterFactory<T>> getFactories() {
-		return i2Factory;
+		return new FilterContainer<T>(this, filters, strand, windowCoordinates, condition);
 	}
 
 	public boolean hasFiters() {
-		return c2Factory.size() > 0;
+		return c2factory.size() > 0;
 	}
 
 	public boolean hasFilter(final char c) {
-		return c2Factory.containsKey(c);
+		return c2factory.containsKey(c);
 	}
-
-	public int c2i(char c) {
-		if (! hasFilter(c)) {
-			return -1;
-		}
-		return c2i.get(c);
+	
+	public List<AbstractFilterFactory<T>> getFactories() {
+		return new ArrayList<AbstractFilterFactory<T>>(c2factory.values());
 	}
 	
 }

@@ -1,16 +1,7 @@
 package jacusa.filter.factory;
 
-import java.util.HashSet;
-
-import java.util.Set;
-
-import net.sf.samtools.CigarOperator;
-
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
-import jacusa.filter.AbstractStorageFilter;
-import jacusa.filter.storage.AbstractFilterStorage;
-import jacusa.util.WindowCoordinates;
+import jacusa.filter.AbstractFilter;
 
 public abstract class AbstractFilterFactory<T extends AbstractData> {
 
@@ -19,30 +10,12 @@ public abstract class AbstractFilterFactory<T extends AbstractData> {
 	private char c;
 	protected String desc;
 
-	private boolean filterByRecord;
-	private Set<CigarOperator> cigarOperators;
-
-	public AbstractFilterFactory(final char c, final String desc, 
-			final boolean filterByRecord, final Set<CigarOperator> cigarOperators) {
+	public AbstractFilterFactory(final char c, final String desc) {
 		this.c 				= c;
 		this.desc 			= desc;
-
-		this.filterByRecord = filterByRecord;
-		this.cigarOperators = cigarOperators;
 	}
 
-	public AbstractFilterFactory(final char c, final String desc, final Set<CigarOperator> cigarOperators) {
-		this(c, desc, false, cigarOperators);
-	}
-	
-	public AbstractFilterFactory(final char c, final String desc) {
-		this(c, desc, false, new HashSet<CigarOperator>());
-	}
-
-	public abstract AbstractFilterStorage createFilterStorage(
-			final WindowCoordinates windowCoordinates, final ConditionParameters<T> condition);
-
-	public abstract AbstractStorageFilter<T> createStorageFilter();
+	public abstract AbstractFilter<T> createFilter();
 
 	public char getC() {
 		return c;
@@ -54,18 +27,6 @@ public abstract class AbstractFilterFactory<T extends AbstractData> {
 
 	public void processCLI(final String line) throws IllegalArgumentException {
 		// implement to change behavior via CLI
-	}
-
-	public boolean hasFilterByCigar() {
-		return getCigarOperators().size() > 0;
-	}
-	
-	public boolean hasFilterByRecord() {
-		return filterByRecord;
-	}
-	
-	public Set<CigarOperator> getCigarOperators() {
-		return cigarOperators;
 	}
 
 }

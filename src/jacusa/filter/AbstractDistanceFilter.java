@@ -7,19 +7,25 @@ import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.RatioCountFilter;
+import jacusa.filter.storage.DistanceStorage;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Coordinate;
 
-public class DistanceStorageFilter<T extends BaseQualData> 
-extends AbstractWindowStorageFilter<T> {
+public abstract class AbstractDistanceFilter<T extends BaseQualData> 
+extends AbstractFilter<T> {
 
-	private AbstractCountFilter<T> countFilter;
+	private final int filterDistance;
+	private final AbstractCountFilter<T> countFilter;
 
-	public DistanceStorageFilter(final char c, final double minRatio, 
-			final int minCount, final AbstractParameters<T> parameters) {
+	private DistanceStorage<T> distanceStorage;
+	
+	public AbstractDistanceFilter(final char c, final double minRatio, final int minCount, final int filterDistance, 
+			final AbstractParameters<T> parameters) {
 		super(c);
-
-		countFilter = new RatioCountFilter<T>(minRatio, parameters);
+		this.filterDistance	= filterDistance;
+		
+		distanceStorage = new DistanceStorage<T>(c, filterDistance, parameters.getBaseConfig());
+		countFilter 	= new RatioCountFilter<T>(minRatio, parameters);
 	}
 
 	@Override
@@ -34,10 +40,24 @@ extends AbstractWindowStorageFilter<T> {
 		final Coordinate coordinate = parallelData.getCoordinate();
 		final BaseQualCount[][] baseCounts = new BaseQualCount[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			baseCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
+			// TODO baseCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseCounts);
 	}
-
+	
+	protected DistanceStorage<T> getDistanceStorage() {
+		return distanceStorage;
+	}
+	
+	@Override
+	public void clear() {
+		distanceStorage.clear();
+	}
+	
+	@Override
+	public int getOverhang() {
+		return 0;
+	}
+	
 }

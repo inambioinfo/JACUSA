@@ -4,7 +4,7 @@ import jacusa.cli.parameters.CallParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
-import jacusa.filter.AbstractStorageFilter;
+import jacusa.filter.AbstractFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.dispatcher.call.CallWorkerDispatcher;
@@ -48,7 +48,7 @@ extends AbstractWorker<T> {
 		if (parameters.getFilterConfig().hasFiters()) {
 			// apply each filter
 			for (final AbstractFilterFactory<T> filterFactory : parameters.getFilterConfig().getFactories()) {
-				AbstractStorageFilter<T> storageFilter = filterFactory.createStorageFilter();
+				AbstractFilter<T> storageFilter = filterFactory.createFilter();
 				storageFilter.applyFilter(result, parallelDataIterator);
 			}
 		}

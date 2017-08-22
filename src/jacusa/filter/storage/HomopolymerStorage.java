@@ -3,13 +3,15 @@ package jacusa.filter.storage;
 import java.util.ArrayList;
 import java.util.List;
 
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseConfig;
-import jacusa.util.WindowCoordinates;
+import jacusa.data.BaseQualData;
+
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMRecord;
 
-public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
+public class HomopolymerStorage<T extends BaseQualData> 
+extends AbstractWindowStorage<T> 
+implements ProcessAlignmentOperator {
 	
 	private int minLength;
 
@@ -24,15 +26,8 @@ public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
 	 * @param c
 	 * @param distance
 	 */
-	public HomopolymerFilterStorage(
-			final char c, 
-			final int length, 
-			final WindowCoordinates windowCoordinates,
-			final ConditionParameters<?> condition,
-			final int windowSize,
-			final BaseConfig baseConfig) {
-		super(c, windowCoordinates, condition, windowSize, baseConfig);
-
+	public HomopolymerStorage(final char c, final int length, final BaseConfig baseConfig) {
+		super(c, baseConfig);
 		this.minLength = length;
 
 		int n = minLength + 5;
@@ -41,7 +36,8 @@ public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
 	}
 
 	@Override
-	public void processAlignmentMatch(int windowPosition, int readPosition, int genomicPosition, CigarElement cigarElement, SAMRecord record, int base, int qual) {
+	public void processAlignmentOperator(int windowPosition, int readPosition, int genomicPosition, 
+			CigarElement cigarElement, SAMRecord record, int base, int qual) {
 		// check if record changed		
 		if (this.record != record) {
 			checkAndAdd2WindowCache();
@@ -82,8 +78,8 @@ public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
 		int coveredReadLength = bases.size();
 		if (coveredReadLength >= minLength) {
 			for (int i = 0; i < bases.size(); ++i) {
-				if (windowPositionStart + i >= 0 && windowPositionStart + i < windowSize) {
-					windowCache.addHighQualityBaseCall(windowPositionStart + i, bases.get(i), quals.get(i));
+				if (windowPositionStart + i >= 0 && windowPositionStart + i < getWindowCache().getWindowSize()) {
+					getWindowCache().addHighQualityBaseCall(windowPositionStart + i, bases.get(i), quals.get(i));
 				} else {
 					return;
 				}
@@ -130,7 +126,7 @@ public class HomopolymerFilterStorage extends AbstractWindowFilterStorage {
 		return minLength;
 	}
 
-	public int getDistance() {
+	public int getOverhang() {
 		return minLength;
 	}
 	

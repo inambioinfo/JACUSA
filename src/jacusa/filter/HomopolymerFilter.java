@@ -7,17 +7,20 @@ import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.MinCountFilter;
+import jacusa.filter.storage.HomopolymerStorage;
 import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Coordinate;
 
-public class HomopolymerStorageFilter<T extends BaseQualData> 
-extends AbstractWindowStorageFilter<T> {
+public class HomopolymerFilter<T extends BaseQualData> 
+extends AbstractFilter<T> {
 
 	private AbstractCountFilter<T> countFilter;
-	
-	public HomopolymerStorageFilter(final char c, final AbstractParameters<T> parameters) {
+	private HomopolymerStorage<T> homopolymerStorage;
+
+	public HomopolymerFilter(final char c, final int length, final AbstractParameters<T> parameters) {
 		super(c);
 
+		homopolymerStorage = new HomopolymerStorage<T>(c, length, parameters.getBaseConfig()); 
 		countFilter = new MinCountFilter<T>(c, 1, parameters);
 	}
 
@@ -34,10 +37,18 @@ extends AbstractWindowStorageFilter<T> {
 		BaseQualCount[][] baseQualCounts = new BaseQualCount[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			
-			baseQualCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
+			// TODO baseQualCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseQualCounts);
 	}
+
+	@Override
+	public int getOverhang() {
+		return 0;
+	}
+
+	@Override
+	public void clear() {}
 	
 }

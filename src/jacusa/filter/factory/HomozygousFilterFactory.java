@@ -1,14 +1,11 @@
 package jacusa.filter.factory;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
-import jacusa.filter.AbstractStorageFilter;
-import jacusa.filter.storage.DummyFilterFillCache;
+import jacusa.filter.AbstractFilter;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.WindowCoordinates;
 
 /**
  * 
@@ -68,15 +65,6 @@ extends AbstractFilterFactory<T> {
 			}
 		}
 	}
-
-	@Override
-	public DummyFilterFillCache createFilterStorage(
-			final WindowCoordinates windowCoordinates, 
-			final ConditionParameters<T> condition) {
-		// storage is not needed - done 
-		// Low Quality Base Calls are stored in AbstractBuilder 
-		return new DummyFilterFillCache(getC());
-	}
 	
 	public final void setHomozygousConditionIndex(final int conditionIndex) {
 		this.homozygousConditionIndex = conditionIndex;
@@ -87,7 +75,7 @@ extends AbstractFilterFactory<T> {
 	}
 
 	@Override
-	public AbstractStorageFilter<T> createStorageFilter() {
+	public AbstractFilter<T> createFilter() {
 		if (strict) {
 			return new HomozygousStrictFilter(getC());
 		}
@@ -96,7 +84,7 @@ extends AbstractFilterFactory<T> {
 	}
 
 	private class HomozygousStrictFilter 
-	extends AbstractStorageFilter<T> {
+	extends AbstractFilter<T> {
 
 		public HomozygousStrictFilter(final char c) {
 			super(c);
@@ -113,11 +101,17 @@ extends AbstractFilterFactory<T> {
 	
 			return false;
 		}
+		
+		@Override
+		public void clear() {}
+		
+		@Override
+		public int getOverhang() { return 0; }
 
 	}
 	
 	private class HomozygousFilter 
-	extends AbstractStorageFilter<T> {
+	extends AbstractFilter<T> {
 
 		public HomozygousFilter(final char c) {
 			super(c);
@@ -125,16 +119,18 @@ extends AbstractFilterFactory<T> {
 
 		@Override
 		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
-			int alleles = 0;
 			final ParallelPileupData<T> parallelData = result.getParellelData();
-	
-			alleles = parallelData
-				.getPooledData(homozygousConditionIndex)
-				.getBaseQualCount()
-				.getAlleles().length;
+			final int alleles = parallelData.getPooledData(homozygousConditionIndex)
+					.getBaseQualCount().getAlleles().length;
 
 			return alleles > 1;
 		}
+		
+		@Override
+		public void clear() {}
+		
+		@Override
+		public int getOverhang() { return 0; }
 
 	}
 	

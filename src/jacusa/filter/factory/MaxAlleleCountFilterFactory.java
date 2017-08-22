@@ -1,14 +1,11 @@
 package jacusa.filter.factory;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
-import jacusa.filter.AbstractStorageFilter;
-import jacusa.filter.storage.DummyFilterFillCache;
+import jacusa.filter.AbstractFilter;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.WindowCoordinates;
 
 /**
  * 
@@ -28,22 +25,14 @@ extends AbstractFilterFactory<T> {
 	private boolean strict;
 	
 	public MaxAlleleCountFilterFactory(AbstractParameters<T> parameters) {
-		super('M', 
-				"Max allowed alleles per parallel pileup. Default: "+ MAX_ALLELES);
+		super('M', "Max allowed alleles per parallel pileup. Default: "+ MAX_ALLELES);
 		alleles = MAX_ALLELES;
 		this.parameters = parameters;
 		strict = parameters.collectLowQualityBaseCalls();
 	}
-	
-	@Override
-	public DummyFilterFillCache createFilterStorage(
-			WindowCoordinates windowCoordinates,
-			ConditionParameters<T> condition) {
-		return new DummyFilterFillCache(getC());
-	}
 
 	@Override
-	public AbstractStorageFilter<T> createStorageFilter() {
+	public AbstractFilter<T> createFilter() {
 		if (strict) {
 			return new MaxAlleleStrictFilter(getC());
 		}
@@ -81,7 +70,7 @@ extends AbstractFilterFactory<T> {
 		}
 	}
 	
-	private class MaxAlleleFilter extends AbstractStorageFilter<T> {
+	private class MaxAlleleFilter extends AbstractFilter<T> {
 		public MaxAlleleFilter(final char c) {
 			super(c);
 		}
@@ -92,9 +81,18 @@ extends AbstractFilterFactory<T> {
 			return parallelData.getCombinedPooledData()
 					.getBaseQualCount().getAlleles().length > alleles;
 		}
+		
+		@Override
+		public void clear() {}
+		
+		@Override
+		public int getOverhang() { 
+			return 0;
+		}
+
 	}
 	
-	private class MaxAlleleStrictFilter extends AbstractStorageFilter<T> {
+	private class MaxAlleleStrictFilter extends AbstractFilter<T> {
 		
 		public MaxAlleleStrictFilter(final char c) {
 			super(c);
@@ -104,6 +102,15 @@ extends AbstractFilterFactory<T> {
 		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 			return windowIterator.getAlleleCount(result.getParellelData().getCoordinate()) > alleles;
 		}
+		
+		@Override
+		public void clear() {}
+		
+		@Override
+		public int getOverhang() { 
+			return 0;
+		}
+		
 	}
 	
 }

@@ -7,7 +7,12 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.data.BaseConfig;
 import jacusa.filter.FilterContainer;
-import jacusa.filter.storage.AbstractFilterStorage;
+import jacusa.filter.storage.ProcessDeletionOperator;
+import jacusa.filter.storage.ProcessInsertionOperator;
+import jacusa.filter.storage.ProcessRecord;
+import jacusa.filter.storage.ProcessSkippedOperator;
+import jacusa.filter.storage.ProcessAlignmentOperator;
+import jacusa.filter.storage.ProcessAlignmentBlock;
 import jacusa.util.WindowCoordinates;
 import jacusa.util.Coordinate.STRAND;
 
@@ -15,7 +20,6 @@ import java.util.Arrays;
 import java.util.List;
 
 import net.sf.samtools.CigarElement;
-import net.sf.samtools.CigarOperator;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
@@ -76,9 +80,7 @@ implements DataBuilder<T>, hasLibraryType {
 		this.libraryType		= libraryType;
 		
 		// get max overhang
-		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-			distance = Math.max(filter.getDistance(), distance);
-		}
+		distance = filterContainer.getOverhang();
 	}
 
 	/**
@@ -356,8 +358,8 @@ implements DataBuilder<T>, hasLibraryType {
 		alignmentBlockLength[record.getAlignmentBlocks().size() + 1] = 0;
 
 		// process record specific filters
-		for (AbstractFilterStorage filter : filterContainer.getPR()) {
-			filter.processRecord(windowCoordinates.getGenomicWindowStart(), record);
+		for (ProcessRecord storage : filterContainer.getProcessRecord()) {
+			storage.processRecord(windowCoordinates.getGenomicWindowStart(), record);
 		}
 		
 		// process CIGAR -> SNP, INDELs
@@ -457,17 +459,13 @@ implements DataBuilder<T>, hasLibraryType {
 	}
 
 	protected void processAlignmentMatch(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition, 
-			final CigarElement cigarElement, 
-			final SAMRecord record,
-			final int MDPosition, 
-			byte[] referenceBases) {
+			int windowPosition, int readPosition, int genomicPosition, 
+			final CigarElement cigarElement, final SAMRecord record,
+			final int MDPosition, byte[] referenceBases) {
 		// process alignmentBlock specific filters
-
-		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-			filter.processAlignmentBlock(windowPosition, readPosition, genomicPosition, cigarElement, record);
+		for (final ProcessAlignmentBlock filterAlignmentBlock : filterContainer.getProcessAlignmentBlock()) {
+			filterAlignmentBlock.process(windowPosition, readPosition, genomicPosition, 
+					cigarElement, record);
 		}
 		
 		for (int offset = 0; offset < cigarElement.getLength(); ++offset) {
@@ -500,8 +498,12 @@ implements DataBuilder<T>, hasLibraryType {
 			case 1:
 				if ((genomicPosition + offset) - windowCoordinates.getGenomicWindowEnd() <= distance) {
 					if (qualIndex >= condition.getMinBASQ()) {
-						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
+						for (final ProcessAlignmentOperator filterAligmnentOperator : 
+							filterContainer.getProcessAlignment()) {
+							filterAligmnentOperator.processAlignmentOperator(
+									windowPosition, readPosition + offset, genomicPosition + offset, 
+									cigarElement, record, 
+									baseIndex, qualIndex);
 						}
 					}
 				} else {
@@ -513,8 +515,12 @@ implements DataBuilder<T>, hasLibraryType {
 					offset += windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) - distance - 1;
 				} else {
 					if (qualIndex >= condition.getMinBASQ()) {
-						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
+						for (final ProcessAlignmentOperator filterAligmnentOperator : 
+							filterContainer.getProcessAlignment()) {
+							filterAligmnentOperator.processAlignmentOperator(
+									windowPosition, readPosition + offset, genomicPosition + offset, 
+									cigarElement, record, 
+									baseIndex, qualIndex);
 						}
 					}
 				}
@@ -525,8 +531,12 @@ implements DataBuilder<T>, hasLibraryType {
 						addHighQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
 
 						// process any alignmentMatch specific filters
-						for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.M)) {
-							filter.processAlignmentMatch(windowPosition, readPosition + offset, genomicPosition + offset, cigarElement, record, baseIndex, qualIndex);
+						for (final ProcessAlignmentOperator filterAligmnentOperator : 
+							filterContainer.getProcessAlignment()) {
+							filterAligmnentOperator.processAlignmentOperator(
+									windowPosition, readPosition + offset, genomicPosition + offset, 
+									cigarElement, record, 
+									baseIndex, qualIndex);
 						}
 					} else if (parameters.collectLowQualityBaseCalls()) { 
 						addLowQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
@@ -547,62 +557,35 @@ implements DataBuilder<T>, hasLibraryType {
 	}
 
 	protected void processInsertion(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition,
-			int upstreamMatch,
-			int downstreamMatch,
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
-		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.I)) {
-			filter.processInsertion(
-					windowPosition, 
-					readPosition, 
-					genomicPosition, 
-					upstreamMatch, 
-					downstreamMatch, 
-					cigarElement, 
-					record);
+			int windowPosition, int readPosition, int genomicPosition,
+			int upstreamMatch, int downstreamMatch,
+			final CigarElement cigarElement, final SAMRecord record) {
+		for (final ProcessInsertionOperator filterInsertionOperator : filterContainer.getProcessInsertion()) {
+			filterInsertionOperator.processInsertionOperator(windowPosition, readPosition, genomicPosition, 
+					upstreamMatch, downstreamMatch, 
+					cigarElement, record);
 		}
 	}
 
 	protected void processDeletion(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition, 
-			int upstreamMatch,
-			int downstreamMatch,
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
-		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.D)) {
-			filter.processDeletion(
-					windowPosition, 
-					readPosition, 
-					genomicPosition, 
-					upstreamMatch,
-					downstreamMatch,
-					cigarElement, 
-					record);
+			int windowPosition, int readPosition, int genomicPosition, 
+			int upstreamMatch, int downstreamMatch,
+			final CigarElement cigarElement, final SAMRecord record) {
+		for (final ProcessDeletionOperator filterDeletionOperator : filterContainer.getProcessDeletion()) {
+			filterDeletionOperator.processInsertionOperator(windowPosition, readPosition, genomicPosition, 
+					upstreamMatch, downstreamMatch,
+					cigarElement, record);
 		}
 	}
 
 	protected void processSkipped(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition,
-			int upstreamMatch,
-			int downstreamMatch,
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
-		for (AbstractFilterStorage filter : filterContainer.get(CigarOperator.N)) {
-			filter.processSkipped(
-					windowPosition, 
-					readPosition, 
-					genomicPosition,
-					upstreamMatch,
-					downstreamMatch,
-					cigarElement, 
-					record);
+			int windowPosition, int readPosition, int genomicPosition,
+			int upstreamMatch, int downstreamMatch,
+			final CigarElement cigarElement, final SAMRecord record) {
+		for (final ProcessSkippedOperator filterSkippedOperator : filterContainer.getProcessSkipped()) {
+			filterSkippedOperator.process(windowPosition, readPosition, genomicPosition,
+					upstreamMatch, downstreamMatch,
+					cigarElement, record);
 		}
 	}
 

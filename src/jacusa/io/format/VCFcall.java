@@ -49,11 +49,11 @@ public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 		sb.append('\n');
 
 		// add filter descriptions to header
-		for (final AbstractFilterFactory<BaseQualData> filter : filterConfig.getFactories()) {
+		for (final AbstractFilterFactory<BaseQualData> filterFactory : filterConfig.getFactories()) {
 			sb.append("##FILTER=<ID=");
-			sb.append(filter.getC());
+			sb.append(filterFactory.getC());
 			sb.append(",Description=");
-			sb.append("\"" + filter.getDesc() + "\"");
+			sb.append("\"" + filterFactory.getDesc() + "\"");
 			sb.append('\n');
 		}
 		sb.append("##FORMAT=<ID=DP,Number=1,Type=Integer,Description=\"Read Depth\">\n");
