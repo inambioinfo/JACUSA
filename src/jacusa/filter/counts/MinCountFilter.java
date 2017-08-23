@@ -10,7 +10,7 @@ extends AbstractCountFilter<T> {
 
 	private double minCount;
 	
-	public MinCountFilter(final char c, 
+	public MinCountFilter( 
 			final double minCount, 
 			final AbstractParameters<T> parameters) {
 		super(parameters);

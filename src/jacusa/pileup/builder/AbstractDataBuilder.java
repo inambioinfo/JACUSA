@@ -560,8 +560,8 @@ implements DataBuilder<T>, hasLibraryType {
 			int windowPosition, int readPosition, int genomicPosition,
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
-		for (final ProcessInsertionOperator filterInsertionOperator : filterContainer.getProcessInsertion()) {
-			filterInsertionOperator.processInsertionOperator(windowPosition, readPosition, genomicPosition, 
+		for (final ProcessInsertionOperator storage : filterContainer.getProcessInsertion()) {
+			storage.processInsertionOperator(windowPosition, readPosition, genomicPosition, 
 					upstreamMatch, downstreamMatch, 
 					cigarElement, record);
 		}
@@ -571,8 +571,8 @@ implements DataBuilder<T>, hasLibraryType {
 			int windowPosition, int readPosition, int genomicPosition, 
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
-		for (final ProcessDeletionOperator filterDeletionOperator : filterContainer.getProcessDeletion()) {
-			filterDeletionOperator.processInsertionOperator(windowPosition, readPosition, genomicPosition, 
+		for (final ProcessDeletionOperator storage : filterContainer.getProcessDeletion()) {
+			storage.processDeletionOperator(windowPosition, readPosition, genomicPosition, 
 					upstreamMatch, downstreamMatch,
 					cigarElement, record);
 		}
@@ -582,8 +582,8 @@ implements DataBuilder<T>, hasLibraryType {
 			int windowPosition, int readPosition, int genomicPosition,
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
-		for (final ProcessSkippedOperator filterSkippedOperator : filterContainer.getProcessSkipped()) {
-			filterSkippedOperator.process(windowPosition, readPosition, genomicPosition,
+		for (final ProcessSkippedOperator storage : filterContainer.getProcessSkipped()) {
+			storage.processSkippedOperator(windowPosition, readPosition, genomicPosition,
 					upstreamMatch, downstreamMatch,
 					cigarElement, record);
 		}

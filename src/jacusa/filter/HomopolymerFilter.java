@@ -9,7 +9,6 @@ import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.MinCountFilter;
 import jacusa.filter.storage.HomopolymerStorage;
 import jacusa.pileup.iterator.WindowIterator;
-import jacusa.util.Coordinate;
 
 public class HomopolymerFilter<T extends BaseQualData> 
 extends AbstractFilter<T> {
@@ -20,8 +19,10 @@ extends AbstractFilter<T> {
 	public HomopolymerFilter(final char c, final int length, final AbstractParameters<T> parameters) {
 		super(c);
 
-		homopolymerStorage = new HomopolymerStorage<T>(c, length, parameters.getBaseConfig()); 
-		countFilter = new MinCountFilter<T>(c, 1, parameters);
+		homopolymerStorage = new HomopolymerStorage<T>(c, length, parameters.getBaseConfig());
+		addProcessAlignment(homopolymerStorage);
+		
+		countFilter = new MinCountFilter<T>(1, parameters);
 	}
 
 	@Override
@@ -33,7 +34,8 @@ extends AbstractFilter<T> {
 			return false;
 		}
 
-		final Coordinate coordinate = result.getParellelData().getCoordinate();
+		// TODO
+		// final Coordinate coordinate = result.getParellelData().getCoordinate();
 		BaseQualCount[][] baseQualCounts = new BaseQualCount[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			

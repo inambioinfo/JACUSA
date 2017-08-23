@@ -24,7 +24,7 @@ import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.PileupParameters;
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
-import jacusa.filter.factory.DistanceFilterFactory;
+import jacusa.filter.factory.CombinedDistanceFilterFactory;
 import jacusa.filter.factory.HomopolymerFilterFactory;
 import jacusa.filter.factory.HomozygousFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
@@ -146,7 +146,7 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 		final List<AbstractFilterFactory<BaseQualData>> filterFactories = 
 				new ArrayList<AbstractFilterFactory<BaseQualData>>(10);
 		
-		filterFactories.add(new DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new CombinedDistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new INDEL_DistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new ReadPositionDistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new SpliceSiteDistanceFilterFactory<BaseQualData>(getParameters()));

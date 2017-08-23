@@ -1,6 +1,7 @@
 package jacusa.filter;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import java.util.List;
 
@@ -26,7 +27,6 @@ public class FilterContainer<T extends AbstractData> {
 	private List<AbstractFilter<T>> filters;
 	private WindowCoordinates windowCoordinates;
 	private STRAND strand;
-	private ConditionParameters<T> condition;
 	
 	private int overhang;
 	
@@ -45,11 +45,10 @@ public class FilterContainer<T extends AbstractData> {
 		this.filters			= filters;
 		this.windowCoordinates 	= windowCoordinates;
 		this.strand				= strand;
-		this.condition			= condition;
 		
 		overhang 				= 0;
 
-		final int initialCapacity = 2;
+		final int initialCapacity = 3;
 		processRecord 			= new ArrayList<ProcessRecord>(initialCapacity);
 		processAlignment		= new ArrayList<ProcessAlignmentOperator>(initialCapacity);
 		processAlignmentBlock	= new ArrayList<ProcessAlignmentBlock>(initialCapacity);
@@ -58,28 +57,49 @@ public class FilterContainer<T extends AbstractData> {
 		processSkipped			= new ArrayList<ProcessSkippedOperator>(initialCapacity);
 
 		for (final AbstractFilter<T> filter : filters) {
-			if (! filter.getProcessRecord().isEmpty()) {
-				processRecord.addAll(filter.getProcessRecord());
+			filter.setCondition(condition);
+			filter.setWindowCoordinates(windowCoordinates);
+			
+			{
+				Iterator<ProcessRecord> it = filter.getProcessRecord();
+				while (it.hasNext()) {
+					processRecord.add(it.next());
+				}
 			}
 			
-			if (! filter.getProcessAlignment().isEmpty()) {
-				processAlignment.addAll(filter.getProcessAlignment());
+			{
+				Iterator<ProcessAlignmentOperator> it = filter.getProcessAlignment();
+				while (it.hasNext()) {
+					processAlignment.add(it.next());
+				}
 			}
 			
-			if (! filter.getProcessAlignmentBlock().isEmpty()) {
-				processAlignmentBlock.addAll(filter.getProcessAlignmentBlock());
+			{
+				Iterator<ProcessAlignmentBlock> it = filter.getProcessAlignmentBlock();
+				while (it.hasNext()) {
+					processAlignmentBlock.add(it.next());
+				}
 			}
 			
-			if (! filter.getProcessDeletion().isEmpty()) {
-				processDeletion.addAll(filter.getProcessDeletion());
+			{
+				Iterator<ProcessDeletionOperator> it = filter.getProcessDeletion();
+				while (it.hasNext()) {
+					processDeletion.add(it.next());
+				}
 			}
 			
-			if (! filter.getProcessInsertion().isEmpty()) {
-				processInsertion.addAll(filter.getProcessInsertion());
+			{
+				Iterator<ProcessInsertionOperator> it = filter.getProcessInsertion();
+				while (it.hasNext()) {
+					processInsertion.add(it.next());
+				}
 			}
 			
-			if (! filter.getProcessSkipped().isEmpty()) {
-				processSkipped.addAll(filter.getProcessSkipped());
+			{
+				Iterator<ProcessSkippedOperator> it = filter.getProcessSkipped();
+				while (it.hasNext()) {
+					processSkipped.add(it.next());
+				}
 			}
 
 			overhang = Math.max(filter.getOverhang(), overhang);

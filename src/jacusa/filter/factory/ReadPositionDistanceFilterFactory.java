@@ -1,15 +1,7 @@
 package jacusa.filter.factory;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import net.sf.samtools.CigarOperator;
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
-import jacusa.filter.AbstractDistanceFilter;
-import jacusa.filter.storage.DistanceStorage;
-import jacusa.util.WindowCoordinates;
 
 public class ReadPositionDistanceFilterFactory<T extends BaseQualData> 
 extends AbstractDistanceFilterFactory<T> {
@@ -19,7 +11,9 @@ extends AbstractDistanceFilterFactory<T> {
 	}
 
 	public ReadPositionDistanceFilter<T> createFilter() {
-		return new ReadPositionDistance<T>(getC(), get, minCount, filterDistance, parameters);
+		return new ReadPositionDistanceFilter<T>(getC(), 
+				getFilterDistance(), getFilterMinRatio(), getFilterMinCount(),
+				getParameters());
 	}
 
 }

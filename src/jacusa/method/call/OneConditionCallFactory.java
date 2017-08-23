@@ -2,7 +2,7 @@ package jacusa.method.call;
 
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
-import jacusa.filter.factory.DistanceFilterFactory;
+import jacusa.filter.factory.CombinedDistanceFilterFactory;
 import jacusa.filter.factory.INDEL_DistanceFilterFactory;
 import jacusa.filter.factory.MaxAlleleCountFilterFactory;
 import jacusa.filter.factory.ReadPositionDistanceFilterFactory;
@@ -43,7 +43,7 @@ extends CallFactory {
 		final List<AbstractFilterFactory<BaseQualData>> filterFactories = 
 				new ArrayList<AbstractFilterFactory<BaseQualData>>(5);
 		
-		filterFactories.add(new DistanceFilterFactory<BaseQualData>(getParameters()));
+		filterFactories.add(new CombinedDistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new INDEL_DistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new ReadPositionDistanceFilterFactory<BaseQualData>(getParameters()));
 		filterFactories.add(new SpliceSiteDistanceFilterFactory<BaseQualData>(getParameters()));

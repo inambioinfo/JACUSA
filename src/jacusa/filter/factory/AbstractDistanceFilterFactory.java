@@ -6,9 +6,6 @@ import jacusa.data.BaseQualData;
 public abstract class AbstractDistanceFilterFactory<T extends BaseQualData>
 extends AbstractFilterFactory<T> {
 
-	private static final int DISTANCE = 5;
-	private static final double MIN_RATIO = 0.5;
-
 	private int filterDistance;
 	private double filterMinRatio;
 	private int filterMinCount;

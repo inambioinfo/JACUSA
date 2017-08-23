@@ -1,10 +1,14 @@
 package jacusa.filter;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.data.Result;
+import jacusa.filter.storage.AbstractStorage;
+import jacusa.filter.storage.AbstractWindowStorage;
 import jacusa.filter.storage.ProcessAlignmentBlock;
 import jacusa.filter.storage.ProcessAlignmentOperator;
 import jacusa.filter.storage.ProcessDeletionOperator;
@@ -12,6 +16,7 @@ import jacusa.filter.storage.ProcessInsertionOperator;
 import jacusa.filter.storage.ProcessRecord;
 import jacusa.filter.storage.ProcessSkippedOperator;
 import jacusa.pileup.iterator.WindowIterator;
+import jacusa.util.WindowCoordinates;
 
 /**
  * 
@@ -22,22 +27,29 @@ public abstract class AbstractFilter<T extends AbstractData> {
 
 	private final char c;
 	
-	private final List<ProcessRecord> processRecord;
-	private final List<ProcessAlignmentOperator> processAlignment;
-	private final List<ProcessAlignmentBlock> processAlignmentBlock;
-	private final List<ProcessDeletionOperator> processDeletion;
-	private final List<ProcessInsertionOperator> processInsertion;
-	private final List<ProcessSkippedOperator> processSkipped;
+	private final Set<AbstractStorage<T>> storages;
+	private final Set<AbstractWindowStorage<T>> windowStorages;
+	
+	private final Set<ProcessRecord> processRecord;
+	private final Set<ProcessAlignmentOperator> processAlignment;
+	private final Set<ProcessAlignmentBlock> processAlignmentBlock;
+	private final Set<ProcessDeletionOperator> processDeletion;
+	private final Set<ProcessInsertionOperator> processInsertion;
+	private final Set<ProcessSkippedOperator> processSkipped;
 	
 	public AbstractFilter(final char c) {
 		this.c 					= c;
+		final int initialCapacity = 2;
 		
-		processRecord 			= new ArrayList<ProcessRecord>(2);
-		processAlignment		= new ArrayList<ProcessAlignmentOperator>(2);
-		processAlignmentBlock	= new ArrayList<ProcessAlignmentBlock>(2);
-		processDeletion			= new ArrayList<ProcessDeletionOperator>(2);
-		processInsertion		= new ArrayList<ProcessInsertionOperator>(2);
-		processSkipped			= new ArrayList<ProcessSkippedOperator>(2);
+		storages				= new HashSet<AbstractStorage<T>>(initialCapacity);
+		windowStorages			= new HashSet<AbstractWindowStorage<T>>(initialCapacity);
+				
+		processRecord 			= new HashSet<ProcessRecord>(initialCapacity);
+		processAlignment		= new HashSet<ProcessAlignmentOperator>(initialCapacity);
+		processAlignmentBlock	= new HashSet<ProcessAlignmentBlock>(initialCapacity);
+		processDeletion			= new HashSet<ProcessDeletionOperator>(initialCapacity);
+		processInsertion		= new HashSet<ProcessInsertionOperator>(initialCapacity);
+		processSkipped			= new HashSet<ProcessSkippedOperator>(initialCapacity);
 	}
 
 	/**
@@ -92,31 +104,76 @@ public abstract class AbstractFilter<T extends AbstractData> {
 		result.getFilterInfo().add(Character.toString(getC()));
 	}
 
-	public List<ProcessRecord> getProcessRecord() {
-		return processRecord;
+	public Iterator<ProcessRecord> getProcessRecord() {
+		return processRecord.iterator();
+	}
+
+	public void addStorage(final AbstractStorage<T> storage) {
+		this.storages.add(storage);
+	}
+
+	public void addWindowStorage(final AbstractWindowStorage<T> windowStorage) {
+		storages.add(windowStorage);
+		this.windowStorages.add(windowStorage);
 	}
 	
-	public List<ProcessAlignmentOperator> getProcessAlignment() {
-		return processAlignment;
+	public void addProcessRecord(final ProcessRecord e) {
+		processRecord.add(e);
 	}
 	
-	public List<ProcessAlignmentBlock> getProcessAlignmentBlock() {
-		return processAlignmentBlock;
+	public Iterator<ProcessAlignmentOperator> getProcessAlignment() {
+		return processAlignment.iterator();
 	}
 	
-	public List<ProcessDeletionOperator> getProcessDeletion() {
-		return processDeletion;
+	public void addProcessAlignment(final ProcessAlignmentOperator e) {
+		processAlignment.add(e);
 	}
 	
-	public List<ProcessInsertionOperator> getProcessInsertion() {
-		return processInsertion;
+	public Iterator<ProcessAlignmentBlock> getProcessAlignmentBlock() {
+		return processAlignmentBlock.iterator();
 	}
 	
-	public List<ProcessSkippedOperator> getProcessSkipped() {
-		return processSkipped;
+	public void addProcessAlignmentBlock(final ProcessAlignmentBlock e) {
+		processAlignmentBlock.add(e);
 	}
 	
+	public Iterator<ProcessDeletionOperator> getProcessDeletion() {
+		return processDeletion.iterator();
+	}
+	
+	public void addProcessDeletion(final ProcessDeletionOperator e) {
+		processDeletion.add(e);
+	}
+	
+	public Iterator<ProcessInsertionOperator> getProcessInsertion() {
+		return processInsertion.iterator();
+	}
+	
+	public void addProcessInsertion(final ProcessInsertionOperator e) {
+		processInsertion.add(e);
+	}
+	
+	public Iterator<ProcessSkippedOperator> getProcessSkipped() {
+		return processSkipped.iterator();
+	}
+	
+	public void addProcessSkipped(final ProcessSkippedOperator e) {
+		processSkipped.add(e);
+	}
+	
+	public void setCondition(final ConditionParameters<T> condition) {
+		for (final AbstractStorage<T> e : storages) {
+			e.setCondition(condition);
+		}
+	}
+	
+	public void setWindowCoordinates(final WindowCoordinates windowCoordinates) {
+		for (final AbstractWindowStorage<T> e : windowStorages) {
+			e.setWindowCoordinates(windowCoordinates);
+		}
+	}
+
 	public abstract int getOverhang();
-	
 	public abstract void clear();
+
 }

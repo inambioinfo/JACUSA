@@ -99,9 +99,9 @@ extends AbstractStorage<T> {
 
 			// FIXME
 			// correct orientation in U,S S,U cases
-			boolean invert = false;
+			// boolean invert = false;
 			if (coordinate.getStrand() == STRAND.REVERSE && filterContainers.get(0).getStrand() == STRAND.UNKNOWN) {
-				invert = true;
+				// invert = true;
 			}
 
 			/*
