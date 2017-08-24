@@ -1,7 +1,6 @@
 package jacusa.filter;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.data.BaseQualCount;
 import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
@@ -9,6 +8,7 @@ import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.CombinedCountFilter;
 import jacusa.filter.storage.DistanceStorage;
 import jacusa.pileup.iterator.WindowIterator;
+import jacusa.util.Coordinate;
 
 public abstract class AbstractDistanceFilter<T extends BaseQualData> 
 extends AbstractFilter<T> {
@@ -25,7 +25,10 @@ extends AbstractFilter<T> {
 		this.filterDistance	= filterDistance;
 		
 		countFilter 	= new CombinedCountFilter<T>(minRatio, minCount, parameters);
+
 		distanceStorage = new DistanceStorage<T>(c, filterDistance, parameters.getBaseConfig());
+		addStorage(distanceStorage);
+		addWindowStorage(distanceStorage);
 	}
 
 	@Override
@@ -37,13 +40,14 @@ extends AbstractFilter<T> {
 			return false;
 		}
 
-		// final Coordinate coordinate = parallelData.getCoordinate();
-		final BaseQualCount[][] baseCounts = new BaseQualCount[parallelData.getConditions()][];
+		final Coordinate coordinate = parallelData.getCoordinate();
+		final BaseQualData[][] baseQualData = new BaseQualData[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			// TODO baseCounts[conditionIndex] = getBaseQualData(coordinate, windowIterator.getFilterContainers(conditionIndex, coordinate));
+			baseQualData[conditionIndex] = distanceStorage.getBaseQualData(coordinate, 
+					windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
-		return countFilter.filter(variantBaseIndexs, parallelData, baseCounts);
+		return countFilter.filter(variantBaseIndexs, parallelData, baseQualData);
 	}
 	
 	protected DistanceStorage<T> getDistanceStorage() {

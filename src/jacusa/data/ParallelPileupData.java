@@ -177,6 +177,37 @@ implements hasCoordinate {
 		return new ParallelPileupData<T>(this, data);
 	}
 
+	public static <S extends BaseQualData> int[] getNonReferenceBaseIndexs(ParallelPileupData<S> parallelData) {
+		final char referenceBase = parallelData.getCombinedPooledData().getReferenceBase();
+		if (referenceBase == 'N') {
+			return new int[0];
+		}
+	
+		final int[] allelesIndexs = parallelData
+				.getCombinedPooledData()
+				.getBaseQualCount()
+				.getAlleles();
+		
+		final int referenceBaseIndex = BaseConfig.getInstance().getBaseIndex((byte)referenceBase);
+
+		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
+			int[] alleles = parallelData.getPooledData(conditionIndex).getBaseQualCount().getAlleles();
+		}
+		
+		// find non-reference base(s)
+		int i = 0;
+		final int[] tmp = new int[allelesIndexs.length];
+		for (final int baseIndex : allelesIndexs) {
+			if (baseIndex != referenceBaseIndex) {
+				tmp[i] = baseIndex;
+				++i;
+			}
+		}
+		final int[] ret = new int[i];
+		System.arraycopy(tmp, 0, ret, 0, i);
+		return ret;
+	}
+
 	public static <S extends BaseQualData> int[] getVariantBaseIndexs(ParallelPileupData<S> parallelData) {
 		int n = 0;
 		int[] alleles = parallelData.getCombinedPooledData().getBaseQualCount().getAlleles();
@@ -202,11 +233,6 @@ implements hasCoordinate {
 		}
 
 		return variantBaseIs;
-	}
-	
-	public static <S extends AbstractData> boolean isHoHo(ParallelPileupData<S> data) {
-		// TODO check old ParallelPileup
-		return false;
 	}
 	
 	public static <S extends BaseQualData> S[] flat(final S[] data, 

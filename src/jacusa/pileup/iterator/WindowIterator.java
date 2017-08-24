@@ -317,7 +317,7 @@ implements Iterator<Coordinate> {
 	}
 	
 	protected boolean adjustWindowStart(final int conditionIndex, List<DataBuilder<T>> dataBuilders) {
-		if (! dataBuilders.get(0).adjustWindowStart(coordinateAdvancer.get(conditionIndex).getStart())) {
+		if (! dataBuilders.get(REPLICATE_INDEX).adjustWindowStart(coordinateAdvancer.get(conditionIndex).getStart())) {
 			SAMRecord record = getNextValidRecord(dataBuilders.get(REPLICATE_INDEX).getWindowCoordinates().getGenomicWindowEnd(), dataBuilders);
 			if (record == null) {
 				return false;
@@ -326,7 +326,7 @@ implements Iterator<Coordinate> {
 
 			return adjustWindowStart(conditionIndex, dataBuilders);
 		}
-		// TODO 
+
 		coordinateAdvancer.get(conditionIndex).setPosition(
 				dataBuilders.get(REPLICATE_INDEX).getWindowCoordinates().getGenomicWindowStart());
 		for (int i = 1; i < dataBuilders.size(); ++i) {

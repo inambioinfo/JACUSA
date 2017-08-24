@@ -73,7 +73,7 @@ implements DataBuilder<T>, hasLibraryType {
 		this.condition			= condition;
 		this.parameters			= parameters;
 
-		windowCache				= new WindowCache(windowCoordinates, baseConfig.getBases().length);
+		windowCache				= new WindowCache(windowCoordinates);
 		filterContainer			= parameters.getFilterConfig().createFilterContainer(windowCoordinates, strand, condition);
 		byte2int 				= parameters.getBaseConfig().getbyte2int();
 

@@ -122,10 +122,6 @@ implements ProcessAlignmentOperator {
 	}
 	*/
 
-	public int getLength() {
-		return minLength;
-	}
-
 	public int getOverhang() {
 		return minLength;
 	}

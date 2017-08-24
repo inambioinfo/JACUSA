@@ -20,6 +20,7 @@ implements hasConditions<T> {
 	private int threadWindowSize;
 
 	private BaseConfig baseConfig;
+	private char[] bases;
 	private boolean showReferenceBase;
 
 	private int maxThreads;
@@ -46,21 +47,23 @@ implements hasConditions<T> {
 	public AbstractParameters() {
 		windowSize 			= 10000;
 		threadWindowSize	= 10 * windowSize;
-		baseConfig			= new BaseConfig();
-		showReferenceBase = false;
-
-		maxThreads		= 1;
 		
-		bedPathname		= new String();
+		baseConfig			= BaseConfig.getInstance();
+		bases				= BaseConfig.BASES.clone();
+		showReferenceBase 	= false;
+
+		maxThreads			= 1;
+		
+		bedPathname			= new String();
 		conditionParameters	= new ArrayList<ConditionParameters<T>>(2);
 
-		output			= new OutputPrinter();
-		filterConfig	= new FilterConfig<T>();
+		output				= new OutputPrinter();
+		filterConfig		= new FilterConfig<T>();
 		
-		separate		= false;
+		separate			= false;
 		
-		debug			= false;
-		collectLQBCs	= false;
+		debug				= false;
+		collectLQBCs		= false;
 	}
 
 	public AbstractParameters(final int conditions) {
@@ -129,8 +132,15 @@ implements hasConditions<T> {
 	/**
 	 * @return the baseConfig
 	 */
-	public BaseConfig getBaseConfig() {
-		return baseConfig;
+	public char[] getBases() {
+		return bases;
+	}
+	
+	/**
+	 * @return the baseConfig
+	 */
+	public void setBases(final char[] bases) {
+		this.bases = bases.clone();
 	}
 	
 	/**
@@ -230,6 +240,10 @@ implements hasConditions<T> {
 	
 	public void setShowReferenceBase(boolean showReferenceBase) {
 		this.showReferenceBase = showReferenceBase;
+	}
+
+	public BaseConfig getBaseConfig() {
+		return baseConfig;
 	}
 	
 	/**

@@ -17,6 +17,8 @@ public class BaseConfig {
 		BYTE2INT[78] = 4; // 78 N
 	}
 
+	private static BaseConfig instance;
+	
 	// this bases are the one that are used for computation
 	public static final char[] BASES = { 'A', 'C', 'G', 'T' };
 	public static final char[] BASES_COMPLEMENT = { 'T', 'G', 'C', 'A' };
@@ -29,14 +31,18 @@ public class BaseConfig {
 	// complement
 	private int[] complement_byte2int;
 
-	public BaseConfig() {
-		setBases(BASES);
+	private BaseConfig() {
+		processBases(BASES);
 	}
-
-	public BaseConfig(char[] bases) {
-		setBases(bases);
+	
+	public static BaseConfig getInstance() {
+		if (instance == null) {
+			instance = new BaseConfig();
+		}
+		
+		return instance;
 	}
-
+	
 	/**
 	 * Returns a mapping of byte(s) base calls to int(s)
 	 * 
@@ -100,7 +106,7 @@ public class BaseConfig {
 		return complement_byte2int;
 	}
 	
-	public void setBases(char[] bases) {
+	private void processBases(char[] bases) {
 		this.bases = bases;
 		byte2int = byte2int(bases);
 		complement_byte2int = complementbyte2int(bases);

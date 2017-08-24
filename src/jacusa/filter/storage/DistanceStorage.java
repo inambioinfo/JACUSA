@@ -76,7 +76,6 @@ implements ProcessRecord, ProcessInsertionOperator, ProcessDeletionOperator, Pro
 	 * @return
 	 */
 	public int getOverhang() {
-		// TODO
 		return distance;
 	}
 

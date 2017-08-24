@@ -61,21 +61,7 @@ extends AbstractStorage<T> {
 
 		for (int i = 0; i < length && windowPosition + i < windowCache.getWindowSize() && readPosition + i < record.getReadLength(); ++i) {
 			if (! visited[windowPosition + i]) {
-				int baseIndex = -1;
-
-				// TODO move this to instantiation
-				switch (getCondition().getDataBuilderFactory().getLibraryType()) {
-				case UNSTRANDED:
-				case FR_SECONDSTRAND:
-					baseIndex = baseConfig.getBaseIndex(record.getReadBases()[readPosition + i]);
-					break;
-					
-				case FR_FIRSTSTRAND:
-					baseIndex = baseConfig.getComplementBaseIndex(record.getReadBases()[readPosition + i]);
-				} 
-				if (getCondition().isInvertStrand()) {
-					baseIndex = baseConfig.getComplementbyte2int()[baseIndex];
-				}
+				final int baseIndex = baseConfig.getBaseIndex(record.getReadBases()[readPosition + i]);
 
 				// corresponds to N -> ignore
 				if (baseIndex < 0) {
@@ -92,36 +78,35 @@ extends AbstractStorage<T> {
 	}
 
 	// TODO check
-		protected BaseQualData[] getBaseQualData(final Coordinate coordinate, 
-				final List<FilterContainer<T>> filterContainers) {
-			final int n = filterContainers.size();
-			BaseQualData[] baseQualData = new BaseQualData[n];
+	public BaseQualData[] getBaseQualData(final Coordinate coordinate, 
+			final List<FilterContainer<T>> filterContainers) {
+		final int n = filterContainers.size();
+		BaseQualData[] baseQualData = new BaseQualData[n];
 
-			// FIXME
-			// correct orientation in U,S S,U cases
-			// boolean invert = false;
-			if (coordinate.getStrand() == STRAND.REVERSE && filterContainers.get(0).getStrand() == STRAND.UNKNOWN) {
-				// invert = true;
-			}
-
-			/*
-			for (int replicateIndex = 0; replicateIndex < n; ++replicateIndex) {
-				final FilterContainer<T> filterContainer = filterContainers.get(replicateIndex);
-				final WindowCache windowCache = getWindowCache(filterContainer);
-				final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
-
-				baseQualData[replicateIndex] = windowCache.getBaseCount(windowPosition);
-				if (invert) {
-					baseQualData[replicateIndex].invert();
-				}
-			}
-			*/
-
-			return baseQualData;
+		// correct orientation in U,S S,U cases
+		// boolean invert = false;
+		if (coordinate.getStrand() == STRAND.REVERSE && filterContainers.get(0).getStrand() == STRAND.UNKNOWN) {
+			// invert = true;
 		}
+
+		/*
+		for (int replicateIndex = 0; replicateIndex < n; ++replicateIndex) {
+			final FilterContainer<T> filterContainer = filterContainers.get(replicateIndex);
+			final WindowCache windowCache = getWindowCache(filterContainer);
+			final int windowPosition = filterContainer.getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
+
+			baseQualData[replicateIndex] = windowCache.getBaseCount(windowPosition);
+			if (invert) {
+				baseQualData[replicateIndex].invert();
+			}
+		}
+		*/
+
+		return baseQualData;
+	}
 	
 	public void setWindowCoordinates(final WindowCoordinates windowCoordinates) {
-		windowCache = new WindowCache(windowCoordinates, baseConfig.getBases().length);
+		windowCache = new WindowCache(windowCoordinates);
 	}
 
 	public WindowCache getWindowCache() {

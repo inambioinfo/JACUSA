@@ -20,7 +20,7 @@ public class BaseConfigOption extends AbstractACOption {
 	@Override
 	public Option getOption() {
 		StringBuilder sb = new StringBuilder();
-		for(char c : parameters.getBaseConfig().getBases()) {
+		for(char c : parameters.getBases()) {
 			sb.append(c);
 		}
 
@@ -38,7 +38,7 @@ public class BaseConfigOption extends AbstractACOption {
 	    	if(values.length < 2 || values.length > BaseConfig.BASES.length) {
 	    		throw new IllegalArgumentException("Possible values for " + getLongOpt().toUpperCase() + ": TC, AG, ACGT, AT...");
 	    	}
-	    	parameters.getBaseConfig().setBases(values);
+	    	parameters.setBases(values);
 	    }
 	}
 

@@ -2,6 +2,7 @@ package jacusa.pileup.builder;
 
 import java.util.Arrays;
 
+import jacusa.data.BaseConfig;
 import jacusa.data.BaseQualCount;
 import jacusa.phred2prob.Phred2Prob;
 import jacusa.util.WindowCoordinates;
@@ -9,8 +10,10 @@ import jacusa.util.WindowCoordinates;
 public class WindowCache {
 
 	private WindowCoordinates windowCoordinates;
-	private final int bases;
 
+	private int bases;
+	private int windowSize;
+	
 	private int[] coverage;
 	private int[][] baseCount;
 	private int[][][] qualCount;
@@ -22,13 +25,14 @@ public class WindowCache {
 	private int[] alleleCount;
 	private int[] alleleMask;
 
-	private int windowSize;
+	
 
-	public WindowCache(final WindowCoordinates windowCoordinates, final int bases) {
+	public WindowCache(final WindowCoordinates windowCoordinates) {
 		this.windowCoordinates 	= windowCoordinates;
-		this.bases 				= bases;
 
+		bases = BaseConfig.getInstance().getBases().length;	 
 		windowSize	= windowCoordinates.getWindowSize();
+		
 		coverage = new int[windowSize];
 		baseCount = new int[windowSize][bases];
 		qualCount = new int[windowSize][bases][Phred2Prob.MAX_Q];
@@ -44,12 +48,12 @@ public class WindowCache {
 	public void clear() {
 		Arrays.fill(coverage, 0);
 		Arrays.fill(reference, (byte)'N');
-		for (int windowPositionI = 0; windowPositionI < windowSize; ++windowPositionI) {
-			Arrays.fill(baseCount[windowPositionI], 0);
-			for (int baseI = 0; baseI < bases; ++baseI) {
-				Arrays.fill(qualCount[windowPositionI][baseI], 0);
+		for (int windowPositionIndex = 0; windowPositionIndex < windowSize; ++windowPositionIndex) {
+			Arrays.fill(baseCount[windowPositionIndex], 0);
+			for (int baseIndex = 0; baseIndex < bases; ++baseIndex) {
+				Arrays.fill(qualCount[windowPositionIndex][baseIndex], 0);
 			}
-			Arrays.fill(minQual[windowPositionI], 20);
+			Arrays.fill(minQual[windowPositionIndex], 20);
 		}
 
 		Arrays.fill(alleleCount, 0);

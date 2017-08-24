@@ -50,9 +50,8 @@ implements hasBaseQualCount, hasLibraryType {
 		return baseQualCount;
 	}
 
-	// TODO
 	@Override
-	public void setBaseQualCount(BaseQualCount baseQualCount) {
+	public void setBaseQualCount(final BaseQualCount baseQualCount) {
 		this.baseQualCount = baseQualCount;
 	}
 

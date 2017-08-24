@@ -20,7 +20,7 @@ extends AbstractCountFilter<T> {
 	@Override
 	protected boolean filter(final int variantBaseIndex, 
 			final ParallelPileupData<T> parallelData, 
-			final BaseQualCount[][] counts) {
+			final BaseQualData[][] baseQualData) {
 		int count = parallelData
 				.getCombinedPooledData()
 				.getBaseQualCount()
@@ -29,7 +29,7 @@ extends AbstractCountFilter<T> {
 			return false;
 		}
 
-		ParallelPileupData<T> filteredParallelData = applyFilter(variantBaseIndex, parallelData, counts);
+		ParallelPileupData<T> filteredParallelData = applyFilter(variantBaseIndex, parallelData, baseQualData);
 		int filteredCount = filteredParallelData
 				.getCombinedPooledData()
 				.getBaseQualCount()
