@@ -1,10 +1,7 @@
 package jacusa.filter.counts;
 
-
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.data.BaseQualData;
-import jacusa.data.BaseConfig;
-import jacusa.data.BaseQualCount;
 import jacusa.data.ParallelPileupData;
 
 public abstract class AbstractCountFilter<T extends BaseQualData> {

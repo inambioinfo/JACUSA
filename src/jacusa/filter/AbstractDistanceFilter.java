@@ -27,8 +27,8 @@ extends AbstractFilter<T> {
 		countFilter 	= new CombinedCountFilter<T>(minRatio, minCount, parameters);
 
 		distanceStorage = new DistanceStorage<T>(c, filterDistance, parameters.getBaseConfig());
-		addStorage(distanceStorage);
-		addWindowStorage(distanceStorage);
+		registerStorage(distanceStorage);
+		registerWindowStorage(distanceStorage);
 	}
 
 	@Override

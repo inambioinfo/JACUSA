@@ -20,7 +20,7 @@ extends AbstractFilter<T> {
 		super(c);
 
 		homopolymerStorage = new HomopolymerStorage<T>(c, length, parameters.getBaseConfig());
-		addProcessAlignment(homopolymerStorage);
+		registerProcessAlignment(homopolymerStorage);
 		
 		countFilter = new MinCountFilter<T>(1, parameters);
 	}

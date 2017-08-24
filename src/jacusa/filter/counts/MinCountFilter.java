@@ -1,7 +1,6 @@
 package jacusa.filter.counts;
 
 import jacusa.cli.parameters.AbstractParameters;
-import jacusa.data.BaseQualCount;
 import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 

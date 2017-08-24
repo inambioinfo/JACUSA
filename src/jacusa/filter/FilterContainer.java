@@ -1,7 +1,6 @@
 package jacusa.filter;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 
 import java.util.List;
 
@@ -60,46 +59,29 @@ public class FilterContainer<T extends AbstractData> {
 			filter.setCondition(condition);
 			filter.setWindowCoordinates(windowCoordinates);
 			
-			{
-				Iterator<ProcessRecord> it = filter.getProcessRecord();
-				while (it.hasNext()) {
-					processRecord.add(it.next());
-				}
+			
+			if (filter.getProcessRecord() != null) {
+				processRecord.add(filter.getProcessRecord());
+			}
+						
+			if (filter.getProcessAlignment() != null){
+				processAlignment.add(filter.getProcessAlignment());
 			}
 			
-			{
-				Iterator<ProcessAlignmentOperator> it = filter.getProcessAlignment();
-				while (it.hasNext()) {
-					processAlignment.add(it.next());
-				}
+			if (filter.getProcessAlignmentBlock() != null) {
+				processAlignmentBlock.add(filter.getProcessAlignmentBlock());
 			}
 			
-			{
-				Iterator<ProcessAlignmentBlock> it = filter.getProcessAlignmentBlock();
-				while (it.hasNext()) {
-					processAlignmentBlock.add(it.next());
-				}
+			if (filter.getProcessDeletion() != null) {
+				processDeletion.add(filter.getProcessDeletion());
 			}
 			
-			{
-				Iterator<ProcessDeletionOperator> it = filter.getProcessDeletion();
-				while (it.hasNext()) {
-					processDeletion.add(it.next());
-				}
+			if (filter.getProcessInsertion() != null) {
+				processInsertion.add(filter.getProcessInsertion());
 			}
 			
-			{
-				Iterator<ProcessInsertionOperator> it = filter.getProcessInsertion();
-				while (it.hasNext()) {
-					processInsertion.add(it.next());
-				}
-			}
-			
-			{
-				Iterator<ProcessSkippedOperator> it = filter.getProcessSkipped();
-				while (it.hasNext()) {
-					processSkipped.add(it.next());
-				}
+			if (filter.getProcessSkipped() != null) {
+				processSkipped.add(filter.getProcessSkipped());
 			}
 
 			overhang = Math.max(filter.getOverhang(), overhang);

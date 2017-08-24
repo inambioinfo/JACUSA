@@ -18,8 +18,8 @@ extends	AbstractDistanceFilter<T> {
 			final int filterDistance, final double filterMinRatio, final int filterMinCount,
 			AbstractParameters<T> parameters) {
 		super(c, filterDistance, filterMinRatio, filterMinCount, parameters);
-		addProcessInsertion(getDistanceStorage());
-		addProcessDeletion(getDistanceStorage());
+		registerProcessInsertion(getDistanceStorage());
+		registerProcessDeletion(getDistanceStorage());
 	}
 	
 }
