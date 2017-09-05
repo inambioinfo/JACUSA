@@ -7,5 +7,7 @@ public interface ProcessAlignmentBlock {
 
 	public abstract void process(int windowPosition, int readPosition,
 			int genomicPosition, CigarElement cigarElement, SAMRecord record);
+	
+	public char getC();
 
 }

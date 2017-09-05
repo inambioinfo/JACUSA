@@ -16,7 +16,6 @@ extends AbstractFilter<T> {
 	private final int filterDistance;
 	private final AbstractCountFilter<T> countFilter;
 
-	private DistanceStorage<T> distanceStorage;
 	
 	public AbstractDistanceFilter(final char c, 
 			final int filterDistance, final double minRatio, final int minCount,
@@ -25,10 +24,6 @@ extends AbstractFilter<T> {
 		this.filterDistance	= filterDistance;
 		
 		countFilter 	= new CombinedCountFilter<T>(minRatio, minCount, parameters);
-
-		distanceStorage = new DistanceStorage<T>(c, filterDistance, parameters.getBaseConfig());
-		registerStorage(distanceStorage);
-		registerWindowStorage(distanceStorage);
 	}
 
 	@Override
@@ -43,24 +38,15 @@ extends AbstractFilter<T> {
 		final Coordinate coordinate = parallelData.getCoordinate();
 		final BaseQualData[][] baseQualData = new BaseQualData[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			baseQualData[conditionIndex] = distanceStorage.getBaseQualData(coordinate, 
-					windowIterator.getFilterContainers(conditionIndex, coordinate));
+			// baseQualData[conditionIndex] = distanceStorage.getBaseQualData(coordinate, 
+			//		windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseQualData);
 	}
-	
-	protected DistanceStorage<T> getDistanceStorage() {
-		return distanceStorage;
-	}
 
 	public int getFilterDistance() {
 		return filterDistance;
-	}
-	
-	@Override
-	public void clear() {
-		distanceStorage.clear();
 	}
 	
 	@Override

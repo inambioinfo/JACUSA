@@ -1,11 +1,12 @@
 package jacusa.filter;
 
-import java.util.ArrayList;
-
-import java.util.List;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.Map;
 
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
+import jacusa.filter.storage.AbstractWindowStorage;
 import jacusa.filter.storage.ProcessAlignmentBlock;
 import jacusa.filter.storage.ProcessAlignmentOperator;
 import jacusa.filter.storage.ProcessDeletionOperator;
@@ -23,74 +24,48 @@ import jacusa.util.Coordinate.STRAND;
 public class FilterContainer<T extends AbstractData> {
 
 	private FilterConfig<T> filterConfig;
-	private List<AbstractFilter<T>> filters;
+	
+	private Map<Character,AbstractFilter<T>> filters;
+	private Map<Character,AbstractWindowStorage<T>> windowStorage;
+
 	private WindowCoordinates windowCoordinates;
 	private STRAND strand;
-	
+
 	private int overhang;
-	
-	private List<ProcessRecord> processRecord;
-	private List<ProcessAlignmentOperator> processAlignment;
-	private List<ProcessAlignmentBlock> processAlignmentBlock;
-	private List<ProcessDeletionOperator> processDeletion;
-	private List<ProcessInsertionOperator> processInsertion;
-	private List<ProcessSkippedOperator> processSkipped;
+
+	private Map<Character,ProcessRecord> processRecord;
+	private Map<Character,ProcessAlignmentOperator> processAlignment;
+	private Map<Character,ProcessAlignmentBlock> processAlignmentBlock;
+	private Map<Character,ProcessDeletionOperator> processDeletion;
+	private Map<Character,ProcessInsertionOperator> processInsertion;
+	private Map<Character,ProcessSkippedOperator> processSkipped;
 	
 	public FilterContainer(
-			final FilterConfig<T> filterConfig, final List<AbstractFilter<T>> filters,
+			final FilterConfig<T> filterConfig,
 			final STRAND strand, final WindowCoordinates windowCoordinates,
 			final ConditionParameters<T> condition) {
 		this.filterConfig 		= filterConfig;
-		this.filters			= filters;
+		
 		this.windowCoordinates 	= windowCoordinates;
 		this.strand				= strand;
 		
 		overhang 				= 0;
 
 		final int initialCapacity = 3;
-		processRecord 			= new ArrayList<ProcessRecord>(initialCapacity);
-		processAlignment		= new ArrayList<ProcessAlignmentOperator>(initialCapacity);
-		processAlignmentBlock	= new ArrayList<ProcessAlignmentBlock>(initialCapacity);
-		processDeletion			= new ArrayList<ProcessDeletionOperator>(initialCapacity);
-		processInsertion		= new ArrayList<ProcessInsertionOperator>(initialCapacity);
-		processSkipped			= new ArrayList<ProcessSkippedOperator>(initialCapacity);
-
-		for (final AbstractFilter<T> filter : filters) {
-			filter.setCondition(condition);
-			filter.setWindowCoordinates(windowCoordinates);
-			
-			
-			if (filter.getProcessRecord() != null) {
-				processRecord.add(filter.getProcessRecord());
-			}
-						
-			if (filter.getProcessAlignment() != null){
-				processAlignment.add(filter.getProcessAlignment());
-			}
-			
-			if (filter.getProcessAlignmentBlock() != null) {
-				processAlignmentBlock.add(filter.getProcessAlignmentBlock());
-			}
-			
-			if (filter.getProcessDeletion() != null) {
-				processDeletion.add(filter.getProcessDeletion());
-			}
-			
-			if (filter.getProcessInsertion() != null) {
-				processInsertion.add(filter.getProcessInsertion());
-			}
-			
-			if (filter.getProcessSkipped() != null) {
-				processSkipped.add(filter.getProcessSkipped());
-			}
-
-			overhang = Math.max(filter.getOverhang(), overhang);
-		}
+		filters					= new HashMap<Character,AbstractFilter<T>>(initialCapacity);
+		windowStorage			= new HashMap<Character,AbstractWindowStorage<T>>(initialCapacity);
+		
+		processRecord 			= new HashMap<Character,ProcessRecord>(initialCapacity);
+		processAlignment		= new HashMap<Character,ProcessAlignmentOperator>(initialCapacity);
+		processAlignmentBlock	= new HashMap<Character,ProcessAlignmentBlock>(initialCapacity);
+		processDeletion			= new HashMap<Character,ProcessDeletionOperator>(initialCapacity);
+		processInsertion		= new HashMap<Character,ProcessInsertionOperator>(initialCapacity);
+		processSkipped			= new HashMap<Character,ProcessSkippedOperator>(initialCapacity);
 	}
 	
 	public void clear() {
-		for (final AbstractFilter<T> filter : filters) {
-			filter.clear();
+		for (final AbstractWindowStorage<T> storage : windowStorage.values()) {
+			storage.clear();
 		}
 	}
 
@@ -110,28 +85,63 @@ public class FilterContainer<T extends AbstractData> {
 		return strand;
 	}
 	
-	public List<ProcessRecord> getProcessRecord() {
-		return processRecord;
+	public Collection<ProcessRecord> getProcessRecord() {
+		return processRecord.values();
 	}
 	
-	public List<ProcessAlignmentOperator> getProcessAlignment() {
-		return processAlignment;
+	public void registerProcessRecord(final ProcessRecord e) {
+		processRecord.put(e.getC(), e);
 	}
 	
-	public List<ProcessAlignmentBlock> getProcessAlignmentBlock() {
-		return processAlignmentBlock;
+	public Collection<ProcessAlignmentOperator> getProcessAlignment() {
+		return processAlignment.values();
 	}
 	
-	public List<ProcessDeletionOperator> getProcessDeletion() {
-		return processDeletion;
+	public void registerProcessAlignment(final ProcessAlignmentOperator e) {
+		processAlignment.put(e.getC(), e);
 	}
 	
-	public List<ProcessInsertionOperator> getProcessInsertion() {
-		return processInsertion;
+	public Collection<ProcessAlignmentBlock> getProcessAlignmentBlock() {
+		return processAlignmentBlock.values();
 	}
 	
-	public List<ProcessSkippedOperator> getProcessSkipped() {
-		return processSkipped;
+	public void registerProcessAlignmentBlock(final ProcessAlignmentBlock e) {
+		processAlignmentBlock.put(e.getC(), e);
+	}
+	
+	public Collection<ProcessDeletionOperator> getProcessDeletion() {
+		return processDeletion.values();
+	}
+	
+	public void registerProcessDeletion(final ProcessDeletionOperator e) {
+		processDeletion.put(e.getC(), e);
+	}
+	
+	public Collection<ProcessInsertionOperator> getProcessInsertion() {
+		return processInsertion.values();
+	}
+	
+	public void registerProcessInsertion(final ProcessInsertionOperator e) {
+		processInsertion.put(e.getC(), e);
+	}
+	
+	public Collection<ProcessSkippedOperator> getProcessSkipped() {
+		return processSkipped.values();
 	}
 
+	public void registerProcessSkipped(final ProcessSkippedOperator e) {
+		processSkipped.put(e.getC(), e);
+	}
+	
+	public AbstractWindowStorage<T> getWindowStorage(final char c) {
+		return windowStorage.get(c);
+	}
+	
+	public void registerWindowStorage(final AbstractWindowStorage<T> e) {
+		windowStorage.put(e.getC(), e);
+	}
+	
+	public void add(AbstractFilter<T> filter) {
+		filters.put(filter.getC(), filter);
+	}
 }

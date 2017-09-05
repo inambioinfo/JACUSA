@@ -190,9 +190,11 @@ implements hasCoordinate {
 		
 		final int referenceBaseIndex = BaseConfig.getInstance().getBaseIndex((byte)referenceBase);
 
+		/* TODO
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			int[] alleles = parallelData.getPooledData(conditionIndex).getBaseQualCount().getAlleles();
 		}
+		*/
 		
 		// find non-reference base(s)
 		int i = 0;

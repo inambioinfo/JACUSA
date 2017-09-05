@@ -5,6 +5,7 @@ import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.AbstractFilter;
+import jacusa.filter.FilterContainer;
 import jacusa.pileup.iterator.WindowIterator;
 
 /**
@@ -75,14 +76,18 @@ extends AbstractFilterFactory<T> {
 	}
 
 	@Override
-	public AbstractFilter<T> createFilter() {
+	public AbstractFilter<T> getFilter() {
 		if (strict) {
 			return new HomozygousStrictFilter(getC());
 		}
-		
 		return new HomozygousFilter(getC());
 	}
 
+	@Override
+	public void registerFilter(FilterContainer<T> filterContainer) {
+		filterContainer.add(getFilter());
+	}
+	
 	private class HomozygousStrictFilter 
 	extends AbstractFilter<T> {
 
@@ -101,10 +106,6 @@ extends AbstractFilterFactory<T> {
 	
 			return false;
 		}
-		
-		@Override
-		public void clear() {}
-		
 		@Override
 		public int getOverhang() { return 0; }
 
@@ -125,9 +126,6 @@ extends AbstractFilterFactory<T> {
 
 			return alleles > 1;
 		}
-		
-		@Override
-		public void clear() {}
 		
 		@Override
 		public int getOverhang() { return 0; }

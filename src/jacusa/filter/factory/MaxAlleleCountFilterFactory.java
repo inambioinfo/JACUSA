@@ -5,6 +5,7 @@ import jacusa.data.BaseQualData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.AbstractFilter;
+import jacusa.filter.FilterContainer;
 import jacusa.pileup.iterator.WindowIterator;
 
 /**
@@ -32,13 +33,19 @@ extends AbstractFilterFactory<T> {
 	}
 
 	@Override
-	public AbstractFilter<T> createFilter() {
+	public AbstractFilter<T> getFilter() {
 		if (strict) {
 			return new MaxAlleleStrictFilter(getC());
 		}
+
 		return new MaxAlleleFilter(getC());
 	}
 
+	@Override
+	public void registerFilter(FilterContainer<T> filterContainer) {
+		filterContainer.add(getFilter());
+	}
+	
 	@Override
 	public void processCLI(String line) throws IllegalArgumentException {
 		if (line.length() == 1) {
@@ -83,9 +90,6 @@ extends AbstractFilterFactory<T> {
 		}
 		
 		@Override
-		public void clear() {}
-		
-		@Override
 		public int getOverhang() { 
 			return 0;
 		}
@@ -102,9 +106,6 @@ extends AbstractFilterFactory<T> {
 		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
 			return windowIterator.getAlleleCount(result.getParellelData().getCoordinate()) > alleles;
 		}
-		
-		@Override
-		public void clear() {}
 		
 		@Override
 		public int getOverhang() { 

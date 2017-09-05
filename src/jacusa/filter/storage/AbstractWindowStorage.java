@@ -1,11 +1,15 @@
 package jacusa.filter.storage;
 
 import java.util.Arrays;
+import java.util.List;
 
 import jacusa.data.AbstractData;
 import jacusa.data.BaseConfig;
+import jacusa.data.BaseQualData;
+import jacusa.filter.FilterContainer;
 
 import jacusa.pileup.builder.WindowCache;
+import jacusa.util.Coordinate;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMRecord;
@@ -71,6 +75,32 @@ extends AbstractStorage<T> {
 			}
 		}
 	}
+
+	// TODO check
+	/*public BaseQualData[] getBaseQualData(final Coordinate coordinate, 
+			final List<FilterContainer<T>> filterContainers) {
+		final int n = filterContainers.size();
+		BaseQualData[] baseQualData = new BaseQualData[n];
+
+		for (int conditionIndex = 0; conditionIndex < n; ++conditionIndex) {
+			final FilterContainer<T> filterContainer = filterContainers.get(conditionIndex);
+			final WindowCache windowCache = filterContainer.getWindowCache();
+			final int windowPosition = filterContainer.getWindowCoordinates()
+					.convert2WindowPosition(coordinate.getPosition());
+
+			BaseQualData d = new BaseQualData(
+					coordinate, 'N', filterContainer.getL);
+			d.setBaseQualCount(windowCache.getBaseCount(windowPosition));
+			/* TODO
+			if (invert) {
+				baseQualData[replicateIndex].invert();
+			}
+			
+			baseQualData[conditionIndex] = d;
+		}
+
+		return baseQualData;
+	}*/
 	
 	public void setWindowCoordinates(final WindowCoordinates windowCoordinates) {
 		windowCache = new WindowCache(windowCoordinates);

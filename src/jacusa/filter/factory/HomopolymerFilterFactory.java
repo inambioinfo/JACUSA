@@ -2,7 +2,10 @@ package jacusa.filter.factory;
 
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.data.BaseQualData;
+import jacusa.filter.AbstractFilter;
+import jacusa.filter.FilterContainer;
 import jacusa.filter.HomopolymerFilter;
+import jacusa.filter.storage.HomopolymerStorage;
 
 public class HomopolymerFilterFactory<T extends BaseQualData> 
 extends AbstractFilterFactory<T> {
@@ -40,10 +43,21 @@ extends AbstractFilterFactory<T> {
 	}
 
 	@Override
-	public HomopolymerFilter<T> createFilter() {
-		return new HomopolymerFilter<T>(getC(), length, parameters);
+	public void registerFilter(final FilterContainer<T> filterContainer) {
+		filterContainer.add(getFilter());
+
+		HomopolymerStorage<T> storage = 
+					new HomopolymerStorage<T>(getC(), length, parameters.getBaseConfig());
+		
+		filterContainer.registerWindowStorage(storage);
+		filterContainer.registerProcessAlignment(storage);
 	}
 
+	@Override
+	public AbstractFilter<T> getFilter() {
+		return new HomopolymerFilter<T>(getC(), length, parameters);
+	}
+	
 	public final void setLength(int length) {
 		this.length = length;
 	}

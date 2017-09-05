@@ -14,14 +14,10 @@ public class HomopolymerFilter<T extends BaseQualData>
 extends AbstractFilter<T> {
 
 	private AbstractCountFilter<T> countFilter;
-	private HomopolymerStorage<T> homopolymerStorage;
 
 	public HomopolymerFilter(final char c, final int length, final AbstractParameters<T> parameters) {
 		super(c);
 
-		homopolymerStorage = new HomopolymerStorage<T>(c, length, parameters.getBaseConfig());
-		registerProcessAlignment(homopolymerStorage);
-		
 		countFilter = new MinCountFilter<T>(1, parameters);
 	}
 
@@ -37,8 +33,8 @@ extends AbstractFilter<T> {
 		final Coordinate coordinate = result.getParellelData().getCoordinate();
 		BaseQualData[][] baseQualData = new BaseQualData[parallelData.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			baseQualData[conditionIndex] = homopolymerStorage.getBaseQualData(coordinate, 
-					windowIterator.getFilterContainers(conditionIndex, coordinate));
+			// baseQualData[conditionIndex] = homopolymerStorage.getBaseQualData(coordinate, 
+			//		windowIterator.getFilterContainers(conditionIndex, coordinate));
 		}
 		
 		return countFilter.filter(variantBaseIndexs, parallelData, baseQualData);
@@ -48,8 +44,5 @@ extends AbstractFilter<T> {
 	public int getOverhang() {
 		return 0;
 	}
-
-	@Override
-	public void clear() {}
 	
 }

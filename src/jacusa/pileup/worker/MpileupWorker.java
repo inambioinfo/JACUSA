@@ -36,8 +36,8 @@ extends AbstractWorker<T> {
 		if (getParameters().getFilterConfig().hasFiters()) {
 			// apply each filter
 			for (final AbstractFilterFactory<T> filterFactory : getParameters().getFilterConfig().getFactories()) {
-				AbstractFilter<T> storageFilter = filterFactory.createFilter();
-				storageFilter.applyFilter(result, parallelDataIterator);
+				AbstractFilter<T> filter = filterFactory.getFilter();
+				filter.applyFilter(result, parallelDataIterator);
 			}
 		}
 

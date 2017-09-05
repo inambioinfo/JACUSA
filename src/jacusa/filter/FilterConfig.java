@@ -48,11 +48,15 @@ public class FilterConfig<T extends AbstractData> implements Cloneable {
 	 */
 	public FilterContainer<T> createFilterContainer(final WindowCoordinates windowCoordinates, 
 			final STRAND strand, final ConditionParameters<T> condition) {
-		List<AbstractFilter<T>> filters = new ArrayList<AbstractFilter<T>>(c2factory.size());
+		
+		FilterContainer<T> filterContainer = new FilterContainer<T>(
+				this, strand, windowCoordinates, condition);
+		
 		for (final AbstractFilterFactory<T> filterFactory : c2factory.values()) {
-			filters.add(filterFactory.createFilter());
+			filterFactory.registerFilter(filterContainer);
 		}
-		return new FilterContainer<T>(this, filters, strand, windowCoordinates, condition);
+		
+		return filterContainer;
 	}
 
 	public boolean hasFiters() {
