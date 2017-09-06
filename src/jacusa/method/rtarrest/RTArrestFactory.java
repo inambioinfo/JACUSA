@@ -103,14 +103,14 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 		
 		// condition specific
 		for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
-			addACOption(new MinMAPQConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinBASQConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinCoverageConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MaxDepthConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterFlagConditionOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinMAPQConditionOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinBASQConditionOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinCoverageConditionOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MaxDepthConditionOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterFlagConditionOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 			
-			addACOption(new FilterNHsamTagOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterNMsamTagOption<BaseQualReadInfoData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNHsamTagOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNMsamTagOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 		}
 	}
 	

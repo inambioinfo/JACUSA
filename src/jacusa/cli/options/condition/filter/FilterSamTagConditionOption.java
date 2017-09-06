@@ -11,17 +11,17 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public abstract class FilterNHsamTagConditionOption<T extends AbstractData> extends AbstractConditionACOption<T> {
+public abstract class FilterSamTagConditionOption<T extends AbstractData> extends AbstractConditionACOption<T> {
 
 	private static final String LONG_OPT = "filter";
 	private String tag;
 
-	public FilterNHsamTagConditionOption(final int conditionIndex, final ConditionParameters<T> condition, final String tag) {
+	public FilterSamTagConditionOption(final int conditionIndex, final ConditionParameters<T> condition, final String tag) {
 		super(new String(), LONG_OPT + tag, conditionIndex, condition);
 		this.tag = tag;
 	}
 
-	public FilterNHsamTagConditionOption(final List<ConditionParameters<T>> conditions, final String tag) {
+	public FilterSamTagConditionOption(final List<ConditionParameters<T>> conditions, final String tag) {
 		super(new String(), LONG_OPT + tag, conditions);
 		this.tag = tag;
 	}
@@ -40,12 +40,14 @@ public abstract class FilterNHsamTagConditionOption<T extends AbstractData> exte
 	@Override
 	public Option getOption() {
 		String s = new String();
+
 		if (getConditionIndex() >= 0) {
-			s = "Max " + tag + "-VALUE for SAM tag for condition " + getConditionIndex();
-		} else {
-			s = "Max " + tag + "-VALUE for SAM tag for all conditions";
+			s = " for condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " for all conditions";
 		}
-		
+		s = "Max " + tag + "-VALUE for SAM tag " + s;
+
 		return OptionBuilder.withLongOpt(getLongOpt())
 				.withArgName(tag + "-VALUE")
 				.hasArg(true)

@@ -25,7 +25,6 @@ extends AbstractDataBuilderOption<T> {
 			{
 				add(condition1);
 				add(condition2);
-				
 			}
 		});
 	}
@@ -40,7 +39,7 @@ extends AbstractDataBuilderOption<T> {
 					"condition1(cond1) and condition2(cond2).\nFormat: cond1,cond2. \n" +
 					"Possible values for cond1 and cond2:\n" + getPossibleValues() + "\n" +
 					"default: " + LibraryType.UNSTRANDED + SEP + LibraryType.UNSTRANDED)
-			.create(getLongOpt());
+			.create(getOpt());
 	}
 
 	@Override
@@ -48,22 +47,23 @@ extends AbstractDataBuilderOption<T> {
 		if (line.hasOption(getOpt())) {
 	    	String s = line.getOptionValue(getOpt());
 	    	String[] ss = s.split(Character.toString(SEP));
-	    	
+
 	    	StringBuilder sb = new StringBuilder();
 	    	sb.append("Format: cond1,cond2. \n");
 	    	sb.append("Possible values for cond1 and cond2:\n");
 	    	sb.append(getPossibleValues());
-	    	
+
 	    	if (ss.length != 2) {
 	    		throw new IllegalArgumentException(sb.toString());
 	    	}
-	    	
+
 	    	LibraryType l1 = parse(ss[0]);
 	    	LibraryType l2 = parse(ss[1]);
-	    	
+
 	    	if (l1 == null || l2 == null) {
 	    		throw new IllegalArgumentException(sb.toString());
 	    	}
+
 	    	getConditions().get(0).setPileupBuilderFactory(buildPileupBuilderFactory(l1));
 	    	getConditions().get(1).setPileupBuilderFactory(buildPileupBuilderFactory(l2));
 	    }

@@ -24,12 +24,12 @@ import jacusa.util.Coordinate.STRAND;
 public class FilterContainer<T extends AbstractData> {
 
 	private FilterConfig<T> filterConfig;
+	private STRAND strand;
+	private WindowCoordinates windowCoordinates;
+	private ConditionParameters<T> condition;
 	
 	private Map<Character,AbstractFilter<T>> filters;
 	private Map<Character,AbstractWindowStorage<T>> windowStorage;
-
-	private WindowCoordinates windowCoordinates;
-	private STRAND strand;
 
 	private int overhang;
 
@@ -45,9 +45,9 @@ public class FilterContainer<T extends AbstractData> {
 			final STRAND strand, final WindowCoordinates windowCoordinates,
 			final ConditionParameters<T> condition) {
 		this.filterConfig 		= filterConfig;
-		
-		this.windowCoordinates 	= windowCoordinates;
 		this.strand				= strand;
+		this.windowCoordinates 	= windowCoordinates;
+		this.condition			= condition;
 		
 		overhang 				= 0;
 
@@ -144,4 +144,9 @@ public class FilterContainer<T extends AbstractData> {
 	public void add(AbstractFilter<T> filter) {
 		filters.put(filter.getC(), filter);
 	}
+	
+	public ConditionParameters<T> getCondition() {
+		return condition;
+	}
+
 }

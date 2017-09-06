@@ -26,17 +26,20 @@ public class MinBASQConditionOption<T extends AbstractData> extends AbstractCond
 	@Override
 	public Option getOption() {
 		String s = new String();
-		if (getConditionIndex() >= 0) {
-			s = "filter condition " + getConditionIndex();
-		} else {
-			s = "filter all conditions";
-		}
 		
+		ConditionParameters<T> template = new ConditionParameters<T>(); 
+		if (getConditionIndex() >= 0) {
+			s = " for condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " for all conditions";
+		}
+		s = "filter positions with base quality < " + getLongOpt().toUpperCase() +
+				s + "\n default: " + template.getMinBASQ();
+
 		return OptionBuilder.withLongOpt(getLongOpt())
 			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
-	        .withDescription(s + " with positions with base quality < " + getLongOpt().toUpperCase() + 
-	        		" \n default: " + getConditions().get(0).getMinBASQ())
+	        .withDescription(s)
 	        .create(getOpt());
 	}
 

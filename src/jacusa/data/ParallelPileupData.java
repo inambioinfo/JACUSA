@@ -189,13 +189,7 @@ implements hasCoordinate {
 				.getAlleles();
 		
 		final int referenceBaseIndex = BaseConfig.getInstance().getBaseIndex((byte)referenceBase);
-
-		/* TODO
-		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
-			int[] alleles = parallelData.getPooledData(conditionIndex).getBaseQualCount().getAlleles();
-		}
-		*/
-		
+	
 		// find non-reference base(s)
 		int i = 0;
 		final int[] tmp = new int[allelesIndexs.length];
@@ -210,6 +204,7 @@ implements hasCoordinate {
 		return ret;
 	}
 
+	// suffices that one replicate contains replicate
 	public static <S extends BaseQualData> int[] getVariantBaseIndexs(ParallelPileupData<S> parallelData) {
 		int n = 0;
 		int[] alleles = parallelData.getCombinedPooledData().getBaseQualCount().getAlleles();

@@ -26,17 +26,20 @@ public class MinCoverageConditionOption<T extends AbstractData> extends Abstract
 	@Override
 	public Option getOption() {
 		String s = new String();
+		
+		ConditionParameters<T> template = new ConditionParameters<T>();
 		if (getConditionIndex() >= 0) {
-			s = "filter condition " + getConditionIndex();
-		} else {
-			s = "filter all conditions";
+			s = " for condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " for all conditions";
 		}
+		s = "filter positions with coverage < " + getLongOpt().toUpperCase() + 
+				s + "\ndefault: " + template.getMinCoverage();
 
 		return OptionBuilder.withLongOpt(getLongOpt())
 					.withArgName(getLongOpt().toUpperCase())
 					.hasArg(true)
-			        .withDescription(s + " with positions with coverage < " + 
-			        		getLongOpt().toUpperCase() + " \n default: " + getConditions().get(0).getMinCoverage())
+			        .withDescription(s)
 			        .create(getOpt());
 	}
 

@@ -26,16 +26,19 @@ public class MaxDepthConditionOption<T extends AbstractData> extends AbstractCon
 	@Override
 	public Option getOption() {
 		String s = new String();
+
+		ConditionParameters<T> template = new ConditionParameters<T>();
 		if (getConditionIndex() >= 0) {
-			s = "max depth for condition " + getConditionIndex();
-		} else {
-			s = "max depth for all conditions";
+			s = " for condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " for all conditions";
 		}
-		
+		s = "max read depth" + s + "\ndefault: " + template.getMaxDepth();
+				
 		return OptionBuilder.withLongOpt(getLongOpt())
 			.withArgName(getLongOpt().toUpperCase())
 			.hasArg()
-			.withDescription(s + "\nDefault: " + getConditions().get(0).getMaxDepth())
+			.withDescription(s)
 			.create(getOpt());
 	}
 

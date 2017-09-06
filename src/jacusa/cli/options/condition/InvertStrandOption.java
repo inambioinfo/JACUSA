@@ -35,16 +35,19 @@ public class InvertStrandOption<T extends AbstractData> extends AbstractConditio
 	@Override
 	public Option getOption() {
 		String s = new String();
+
+		ConditionParameters<T> template = new ConditionParameters<T>();
 		if (getConditionIndex() >= 0) {
-			s = "Invert strand of " + getConditionIndex() + " condition. ";
-		} else {
-			s = "Invert strand of all conditions. ";
+			s = " of condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " of all conditions";
 		}
+		s = "Invert strand information" + s + "\ndefault: " + Boolean.toString(template.isInvertStrand());
 
 		return OptionBuilder.withLongOpt(getLongOpt())
 				.withArgName(getLongOpt().toUpperCase())
 				.hasArg(false)
-		        .withDescription(s + " Default: " + Boolean.toString(getConditions().get(0).isInvertStrand()))
+		        .withDescription(s)
 		        .create(getOpt());
 	}
 

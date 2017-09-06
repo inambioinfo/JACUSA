@@ -71,13 +71,16 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 	private boolean checkDuplicate(final AbstractACOption newACOption) {
 		for (final AbstractACOption ACOption : ACOptions) {
 			try {
-			if (ACOption.getOpt().equals(newACOption.getOpt())) {
-					throw new Exception("Duplicate opt " + newACOption.getOpt());
-
-			}
-			if (ACOption.getLongOpt().equals(newACOption.getLongOpt())) {
-				throw new Exception("Duplicate longOpt " + newACOption.getLongOpt());
-			}
+				if (! ACOption.getOpt().isEmpty() && 
+						ACOption.getOpt().equals(newACOption.getOpt())) {
+					throw new Exception("Duplicate opt '" + newACOption.getOpt() + 
+							"' for object: " + newACOption.toString());
+				}
+				if (! ACOption.getOpt().isEmpty() && 
+						ACOption.getLongOpt().equals(newACOption.getLongOpt())) {
+					throw new Exception("Duplicate longOpt '" + newACOption.getLongOpt() + 
+							"' for object" + newACOption.toString());
+				}
 			} catch (Exception e) {
 				e.printStackTrace();
 				System.exit(1);

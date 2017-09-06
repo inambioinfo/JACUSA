@@ -7,7 +7,7 @@ import jacusa.cli.options.condition.filter.samtag.SamTagNMFilter;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 
-public class FilterNMsamTagOption<T extends AbstractData> extends FilterNHsamTagConditionOption<T> {
+public class FilterNMsamTagOption<T extends AbstractData> extends FilterSamTagConditionOption<T> {
 	
 	private static final String TAG = "NM";
 	

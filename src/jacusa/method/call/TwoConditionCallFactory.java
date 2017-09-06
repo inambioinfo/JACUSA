@@ -15,11 +15,17 @@ public class TwoConditionCallFactory extends CallFactory {
 	@Override
 	public void initACOptions() {
 		super.initACOptions();
-		
+
+		// workaround for old pileup builder 
+		// and new new data builder
+		AbstractACOption removeACOption = null;
 		for (final AbstractACOption ACOption : getACOptions()) {
 			if (ACOption.getOpt().equals("P")) {
-				getACOptions().remove(ACOption);
+				removeACOption = ACOption;
 			}
+		}
+		if (removeACOption != null) {
+			getACOptions().remove(removeACOption);
 		}
 
 		addACOption(new TwoConditionBaseQualDataBuilderOption<BaseQualData>(

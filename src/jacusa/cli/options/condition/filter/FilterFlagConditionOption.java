@@ -27,16 +27,20 @@ public class FilterFlagConditionOption<T extends AbstractData> extends AbstractC
 	@Override
 	public Option getOption() {
 		String s = new String();
-		if (getConditionIndex() >= 0) {
-			s = "filter reads with flags " + getLongOpt().toUpperCase() + " for condition " + getConditionIndex();
-		} else {
-			s = "filter reads with flags " + getLongOpt().toUpperCase() + " for all conditions";
-		}		
 		
+		ConditionParameters<T> template = new ConditionParameters<T>();
+		if (getConditionIndex() >= 0) {
+			s = " for condition " + getConditionIndex();
+		} else if (getConditions().size() > 1) {
+			s = " for all conditions";
+		}
+		s = "filter reads with flags " + getLongOpt().toUpperCase() + 
+				s + "\ndefault: " + template.getFilterFlags();
+
 		return OptionBuilder.withLongOpt(getLongOpt())
 				.withArgName(getLongOpt().toUpperCase())
 				.hasArg(true)
-		        .withDescription(s + " \ndefault: " + getConditions().get(0).getFilterFlags())
+		        .withDescription(s)
 		        .create(getOpt());
 	}
 

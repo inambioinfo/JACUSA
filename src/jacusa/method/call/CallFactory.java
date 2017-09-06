@@ -98,19 +98,21 @@ extends AbstractMethodFactory<BaseQualData> {
 		
 		addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(getParameters().getConditionParameters()));
 		
-		// condition specific
-		for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
-			addACOption(new MinMAPQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinBASQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinCoverageConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MaxDepthConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterFlagConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			
-			addACOption(new FilterNHsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterNMsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new InvertStrandOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			
-			addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+		// only add contions specific options when there are more than 1 conditions
+		if (getParameters().getConditions() > 1) {
+			for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
+				addACOption(new MinMAPQConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new MinBASQConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new MinCoverageConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new MaxDepthConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new FilterFlagConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				
+				addACOption(new FilterNHsamTagOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new FilterNMsamTagOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				addACOption(new InvertStrandOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+				
+				addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			}
 		}
 	}
 
