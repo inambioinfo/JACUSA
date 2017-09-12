@@ -171,32 +171,28 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 	}
 
 	@Override
-	public BaseQualReadInfoData createDataContainer() {
+	public BaseQualReadInfoData createData() {
 		return new BaseQualReadInfoData();
 	}
 	
 	@Override
-	public BaseQualReadInfoData[] createDataContainer(final int n) {
+	public BaseQualReadInfoData[] createReplicateData(final int n) {
 		return new BaseQualReadInfoData[n];
 	}
 	
 	@Override
-	public BaseQualReadInfoData[][] createDataContainer(final int n, final int m) {
-		if (m < 0) {
-			return new BaseQualReadInfoData[n][];
-		}
-
-		return new BaseQualReadInfoData[n][m];
+	public BaseQualReadInfoData[][] createContainer(final int n) {
+		return new BaseQualReadInfoData[n][];
 	}
 
 	@Override
-	public BaseQualReadInfoData copyDataContainer(final BaseQualReadInfoData dataContainer) {
+	public BaseQualReadInfoData copyData(final BaseQualReadInfoData dataContainer) {
 		return new BaseQualReadInfoData(dataContainer);
 	}
 	
 	@Override
-	public BaseQualReadInfoData[] copyDataContainer(final BaseQualReadInfoData[] dataContainer) {
-		BaseQualReadInfoData[] ret = createDataContainer(dataContainer.length);
+	public BaseQualReadInfoData[] copyReplicateData(final BaseQualReadInfoData[] dataContainer) {
+		BaseQualReadInfoData[] ret = createReplicateData(dataContainer.length);
 		for (int i = 0; i < dataContainer.length; ++i) {
 			ret[i] = new BaseQualReadInfoData(dataContainer[i]);
 		}
@@ -204,8 +200,8 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 	}
 	
 	@Override
-	public BaseQualReadInfoData[][] copyDataContainer(final BaseQualReadInfoData[][] dataContainer) {
-		BaseQualReadInfoData[][] ret = createDataContainer(dataContainer.length, -1);
+	public BaseQualReadInfoData[][] copyContainer(final BaseQualReadInfoData[][] dataContainer) {
+		BaseQualReadInfoData[][] ret = createContainer(dataContainer.length);
 		for (int i = 0; i < dataContainer.length; ++i) {
 			for (int j = 0; j < dataContainer[i].length; ++j) {
 				ret[i][j] = new BaseQualReadInfoData(dataContainer[i][j]);

@@ -29,7 +29,7 @@ implements DataBuilder<T> {
 	}
 	
 	@Override
-	public T getData(int windowPosition, STRAND strand) {
+	public T getData(final int windowPosition, final STRAND strand) {
 		T dataContainer = dataBuilder.getData(windowPosition, strand);
 
 		dataContainer.getReadInfoCount().setStart(readStartCount[windowPosition]);

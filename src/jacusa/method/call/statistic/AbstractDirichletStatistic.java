@@ -185,10 +185,9 @@ implements StatisticCalculator<T> {
 		}
 		// pooled data
 		int pooledIndex = conditions;
-		T[] pooledData = parameters.getMethodFactory().createDataContainer(parallelData.getTotalReplicates());
 		logLikelihood[pooledIndex] = estimate("P", alpha[pooledIndex], 
 				initAlpha[pooledIndex], estimateAlpha.getAlphaInit(), 
-				baseIndexs, parallelData.getCombinedData(pooledData), false);
+				baseIndexs, parallelData.getCombinedData(), false);
 		iterations[pooledIndex] = estimateAlpha.getIterations();
 		isReset |= estimateAlpha.isReset();
 
@@ -200,7 +199,7 @@ implements StatisticCalculator<T> {
 			}
 			
 			logLikelihood[pooledIndex] = estimate("P", 
-					alpha[pooledIndex], initAlpha[pooledIndex], fallbackAlphaInit, baseIndexs, parallelData.getCombinedData(pooledData), true);
+					alpha[pooledIndex], initAlpha[pooledIndex], fallbackAlphaInit, baseIndexs, parallelData.getCombinedData(), true);
 			iterations[pooledIndex] = estimateAlpha.getIterations();
 
 		}

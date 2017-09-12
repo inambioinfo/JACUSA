@@ -1,5 +1,6 @@
 package jacusa.data;
 
+import jacusa.method.AbstractMethodFactory;
 import jacusa.util.Coordinate;
 
 /**
@@ -9,6 +10,8 @@ import jacusa.util.Coordinate;
  */
 public class ParallelPileupData<T extends AbstractData> 
 implements hasCoordinate {
+	
+	private AbstractMethodFactory<T> methodFactory;
 	
 	private Coordinate coordinate;
 
@@ -20,17 +23,18 @@ implements hasCoordinate {
 
 	private int cachedTotalReplicates;
 	
-	public ParallelPileupData() {
-		coordinate 				= new Coordinate();		
-		cachedTotalReplicates 	= -1;
+	public ParallelPileupData(final AbstractMethodFactory<T> methodFactory) {
+		this.methodFactory 		= methodFactory;
+		reset();
 	}
 
-	public ParallelPileupData(final Coordinate coordinate,
-			final T[][] data) {
-		this.coordinate = new Coordinate(coordinate);
+	public ParallelPileupData(final AbstractMethodFactory<T> methodFactory, 
+			final Coordinate coordinate, final T[][] data) {
+		this.methodFactory 	= methodFactory;
+		this.coordinate 	= new Coordinate(coordinate);
 		
-		int conditions = data.length;
-		// copy data
+		int conditions 		= data.length;
+
 		this.data = data;
 		cachedTotalReplicates = 0;
 		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
@@ -43,20 +47,12 @@ implements hasCoordinate {
 	 * 
 	 * @param parallelPileupData
 	 */
-	@SuppressWarnings("unchecked")
-	public ParallelPileupData(final ParallelPileupData<T> parallelPileupData, T[][] data) {
+	public ParallelPileupData(final ParallelPileupData<T> parallelPileupData) {
+		this.methodFactory = parallelPileupData.methodFactory;
 		this.coordinate = new Coordinate(parallelPileupData.getCoordinate());
 
-		int conditions = parallelPileupData.data.length;
-
 		// copy data
-		this.data = data;
-		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-			for (int replicateIndex = 0; replicateIndex < conditions; replicateIndex++) {
-				data[conditionIndex][replicateIndex] = (T) parallelPileupData.getData(conditionIndex, replicateIndex).copy();
-			}
-		}
-
+		this.data = this.methodFactory.copyContainer(parallelPileupData.data);
 		cachedTotalReplicates = parallelPileupData.cachedTotalReplicates;
 	}
 	
@@ -70,17 +66,32 @@ implements hasCoordinate {
 	
 	// make this faster remove data and add new
 	public void setData(int conditionIndex, T[] data) {
-		System.arraycopy(data, 0, this.data[conditionIndex], 0, data.length);
+		this.data[conditionIndex] = data;
+		// TODO check System.arraycopy(data, 0, this.data[conditionIndex], 0, data.length);
 
-		cachedCombinedData[conditionIndex] = null;
+		if (cachedCombinedData != null) {
+			cachedCombinedData[conditionIndex] = null;
+		}
+
 		cachedCombinedPooledData = null;
-		cachedPooledData[conditionIndex] = null;
+		
+		if (cachedPooledData != null) {
+			cachedPooledData[conditionIndex] = null;
+		}
+		
 		cachedTotalReplicates = -1;
 	}
 
 	public void reset() {
 		coordinate 	= new Coordinate();
-		data 		= null;
+		
+		if (data != null) {
+			data = methodFactory.createContainer(data.length);
+		} else {
+			final int conditions = methodFactory.getParameters().getConditions();
+			data = methodFactory.createContainer(conditions); 
+		}
+			
 		resetCache();
 	}
 	
@@ -116,14 +127,21 @@ implements hasCoordinate {
 		return true;
 	}
 
-	@SuppressWarnings("unchecked")
 	public T getPooledData(int conditionIndex) {
-		if (cachedPooledData[conditionIndex] == null && getReplicates(conditionIndex) > 0) {
+		if (cachedPooledData == null) {
+			cachedPooledData = methodFactory.createReplicateData(getConditions());
+		}
+		
+		if (cachedPooledData[conditionIndex] == null && 
+				getReplicates(conditionIndex) > 0) {
 			
-			cachedPooledData[conditionIndex] = (T) getData(conditionIndex, 0).copy();
-			for (int replicateIndex = 1; replicateIndex < getReplicates(conditionIndex); replicateIndex++) {
-				cachedPooledData[conditionIndex].add(getData(conditionIndex, replicateIndex));
+			T tmpData = methodFactory.createData();
+			tmpData.setCoordinate(getCoordinate()); // TODO check
+			
+			for (int replicateIndex = 0; replicateIndex < getReplicates(conditionIndex); replicateIndex++) {
+				tmpData.add(getData(conditionIndex, replicateIndex));
 			}
+			cachedPooledData[conditionIndex] = tmpData;
 		}
 
 		return cachedPooledData[conditionIndex];
@@ -142,9 +160,9 @@ implements hasCoordinate {
 		return cachedCombinedPooledData;
 	}
 	
-	public T[] getCombinedData(T[] container) {
+	public T[] getCombinedData() {
 		if (cachedCombinedData == null) {
-			cachedCombinedData = container;
+			cachedCombinedData = methodFactory.createReplicateData(cachedTotalReplicates);
 
 			int dest = 0;;
 			for (int conditionIndex = 0; conditionIndex < getConditions(); conditionIndex++) {
@@ -173,8 +191,8 @@ implements hasCoordinate {
 		return data[conditionIndex];
 	}
 
-	public ParallelPileupData<T> copy(T[][] data) {
-		return new ParallelPileupData<T>(this, data);
+	public ParallelPileupData<T> copy() {
+		return new ParallelPileupData<T>(this);
 	}
 
 	public static <S extends BaseQualData> int[] getNonReferenceBaseIndexs(ParallelPileupData<S> parallelData) {
@@ -246,6 +264,5 @@ implements hasCoordinate {
 		}
 		return ret;
 	}
-	
 	
 }

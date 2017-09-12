@@ -53,8 +53,8 @@ implements Iterator<Coordinate> {
 		this.coordinate = coordinate;
 
 		this.filter	= filter;
-		this.parallelData = new ParallelPileupData<T>();
-
+		this.parallelData = new ParallelPileupData<T>(parameters.getMethodFactory());
+		
 		final int conditions = parameters.getConditions();
 
 		this.dataBuilders = new HashMap<Integer, List<DataBuilder<T>>>(parameters.getConditions());
@@ -68,7 +68,8 @@ implements Iterator<Coordinate> {
 			
 			List<DataBuilder<T>> conditionDataBuilders = createDataBuilders(
 					condition.getDataBuilderFactory(), 
-					coordinate, readers[conditionIndex], parameters);
+					coordinate, readers[conditionIndex], 
+					parameters.getConditionParameters(conditionIndex), parameters);
 			dataBuilders.put(conditionIndex, conditionDataBuilders);
 			
 			isStranded[conditionIndex] = condition.getDataBuilderFactory().isStranded();
@@ -176,8 +177,8 @@ implements Iterator<Coordinate> {
 			if (filter.isValid(parallelData)) {
 				return true;
 			} else {
-				parallelData.reset();
 				coordinateAdvancer.advance();
+				parallelData.reset();
 			}				
 		}
 	}
@@ -206,11 +207,12 @@ implements Iterator<Coordinate> {
 	protected List<DataBuilder<T>> createDataBuilders(
 			final AbstractDataBuilderFactory<T> pileupBuilderFactory,
 			final Coordinate coordinate, 
-			final SAMFileReader[] readers, 
+			final SAMFileReader[] readers,
+			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters) {
 
 		final List<DataBuilder<T>> dataBuilders = new ArrayList<DataBuilder<T>>(readers.length);
-		
+
 		for(int i = 0; i < readers.length; ++i) {
 			final int sequenceLength = readers[i].getFileHeader().getSequence(coordinate.getSequenceName()).getSequenceLength();
 			if (coordinate.getEnd() > sequenceLength) {
@@ -224,7 +226,7 @@ implements Iterator<Coordinate> {
 					coordinate.getEnd());
 
 			dataBuilders.add(pileupBuilderFactory.newInstance(windowCoordinates, readers[i], 
-					parameters.getConditionParameters(i), parameters));
+					condition, parameters));
 		}
 
 		return dataBuilders;
@@ -256,7 +258,7 @@ implements Iterator<Coordinate> {
 	protected T[] getData(Coordinate coordinate, List<DataBuilder<T>> dataBuilders) {
 		int n = dataBuilders.size();
 
-		T[] data = parameters.getMethodFactory().createDataContainer(dataBuilders.size());
+		T[] data = parameters.getMethodFactory().createReplicateData(dataBuilders.size());
 		int windowPosition = dataBuilders.get(0).getWindowCoordinates().convert2WindowPosition(coordinate.getPosition());
 		for(int i = 0; i < n; ++i) {
 			data[i] = dataBuilders.get(i).getData(windowPosition, coordinate.getStrand());

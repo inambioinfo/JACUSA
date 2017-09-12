@@ -55,7 +55,7 @@ public abstract class AbstractCountFilter<T extends BaseQualData> {
 	}
 
 	protected T[] applyFilter(final int variantBaseIndex, final T[] data, final BaseQualData[] baseQualData) {
-		final T[] filtered = parameters.getMethodFactory().createDataContainer(data.length);
+		final T[] filtered = parameters.getMethodFactory().createReplicateData(data.length);
 
 		// indicates if something has been filtered
 		boolean processed = false;
@@ -80,7 +80,7 @@ public abstract class AbstractCountFilter<T extends BaseQualData> {
 			final ParallelPileupData<T> parallelData, 
 			final BaseQualData[][] baseQualData) {
 		
-		T[][] filteredData = parameters.getMethodFactory().createDataContainer(parallelData.getConditions(), -1);
+		T[][] filteredData = parameters.getMethodFactory().createContainer(parallelData.getConditions());
 		int filtered = 0;
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			filteredData[conditionIndex] = 
@@ -98,7 +98,7 @@ public abstract class AbstractCountFilter<T extends BaseQualData> {
 		}
 
 		final ParallelPileupData<T> filteredParallelData =
-				new ParallelPileupData<T>(parallelData.getCoordinate(), filteredData);
+				new ParallelPileupData<T>(parameters.getMethodFactory(), parallelData.getCoordinate(), filteredData);
 
 		return filteredParallelData;
 	}

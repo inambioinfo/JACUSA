@@ -184,8 +184,7 @@ extends Thread {
 		while (parallelDataIterator.hasNext()) {
 			final Coordinate coordinate = parallelDataIterator.next();
 			
-			final ParallelPileupData<T> parallelPileup = parallelDataIterator.getParallelData().copy(
-							parameters.getMethodFactory().createDataContainer(parameters.getConditions(), -1));
+			final ParallelPileupData<T> parallelPileup = parallelDataIterator.getParallelData().copy();
 			parallelPileup.setCoordinate(coordinate);
 			final Result<T> result = processParallelData(parallelPileup, parallelDataIterator);
 

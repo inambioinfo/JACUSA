@@ -2,6 +2,7 @@ package jacusa.cli.parameters;
 
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
+import jacusa.data.AbstractData;
 import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.builder.hasLibraryType.LibraryType;
@@ -42,7 +43,7 @@ public class CLI {
 	 * 
 	 * @param methodFactories
 	 */
-	public void setMethodFactories(Map<String, AbstractMethodFactory<?>> methodFactories) {
+	public void setMethodFactories(Map<String, AbstractMethodFactory<? extends AbstractData>> methodFactories) {
 		this.methodFactories = methodFactories;
 	}
 
@@ -60,6 +61,7 @@ public class CLI {
 			System.exit(0);
 		}
 		methodFactory = methodFactories.get(args[0].toLowerCase());
+		
 		// init method factory (populate: parameters)
 		methodFactory.initACOptions();
 
@@ -106,7 +108,7 @@ public class CLI {
 				System.exit(0);
 			}
 		}
-
+		
 		return true;
 	}
 

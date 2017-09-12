@@ -46,6 +46,7 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 		this.desc = desc;
 
 		this.parameters = parameters;
+		parameters.setMethodFactory(this);
 		
 		ACOptions 		= new HashSet<AbstractACOption>(10);
 	}
@@ -272,12 +273,12 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 		return true;
 	}
 
-	public abstract T createDataContainer();
-	public abstract T[] createDataContainer(final int n);
-	public abstract T[][] createDataContainer(final int n, final int m);
+	public abstract T createData();
+	public abstract T[] createReplicateData(final int n);
+	public abstract T[][] createContainer(final int n);
 
-	public abstract T copyDataContainer(final T dataContainer);
-	public abstract T[] copyDataContainer(final T[] dataContainer);
-	public abstract T[][] copyDataContainer(final T[][] dataContainer);
+	public abstract T copyData(final T data);
+	public abstract T[] copyReplicateData(final T[] replicateData);
+	public abstract T[][] copyContainer(final T[][] container);
 	
 }

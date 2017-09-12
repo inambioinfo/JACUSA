@@ -60,8 +60,8 @@ public class Coordinate {
 		return start;
 	}
 
-	public void setStart(final int begin) {
-		this.start = begin;
+	public void setStart(final int start) {
+		this.start = start;
 	}
 
 	public int getEnd() {

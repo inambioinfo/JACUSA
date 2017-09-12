@@ -41,14 +41,17 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractData> {
 			final AbstractParameters<T> parameters) {
 		this.coordinateProvider = coordinateProvider;
 		
-		pathnames = new String[parameters.getConditions()][];
+		this.pathnames = new String[parameters.getConditions()][];
 		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
+			final String[] pathnames = parameters.getConditionParameters(conditionIndex).getPathnames();
+			
+			this.pathnames[conditionIndex] = new String[pathnames.length];
 			System.arraycopy(
 					parameters.getConditionParameters(conditionIndex).getPathnames(), 
 					0, 
-					pathnames[conditionIndex], 
+					this.pathnames[conditionIndex], 
 					0, 
-					parameters.getConditionParameters(conditionIndex).getPathnames().length);
+					pathnames.length);
 			
 		}
 		

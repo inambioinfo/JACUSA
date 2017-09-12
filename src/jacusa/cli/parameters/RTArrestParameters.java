@@ -19,6 +19,7 @@ implements hasStatisticCalculator<T> {
 		}
 		
 		statisticParameters = new StatisticParameters<T>();
+		statisticParameters.setStatisticCalculator(new BetaBinomial<T>());
 	}
 	
 	public RTArrestParameters() {

@@ -58,9 +58,9 @@ extends WindowIterator<T> {
 		int[] variantBasesIndexs = Arrays.copyOf(tmpVariantBasesIndexs, i);
 		
 		// create fake condition by replacing non-reference base calls with reference BCs 
-		T[] fakeCondition = getParameters().getMethodFactory().createDataContainer(getParallelData().getReplicates(0));
+		T[] fakeCondition = getParameters().getMethodFactory().createReplicateData(getParallelData().getReplicates(0));
 		for (int replicateIndex = 0; replicateIndex < fakeCondition.length; ++replicateIndex) {
-			fakeCondition[replicateIndex] = getParameters().getMethodFactory().createDataContainer();
+			fakeCondition[replicateIndex] = getParameters().getMethodFactory().createData();
 			fakeCondition[replicateIndex].setCoordinate(new Coordinate(data.getCoordinate()));
 			fakeCondition[replicateIndex].setReferenceBase(data.getReferenceBase());
 
@@ -72,9 +72,7 @@ extends WindowIterator<T> {
 			}
 		}
 		
-		// new container
-		T[][] newData = getParameters().getMethodFactory().createDataContainer(2, -1);
-		ParallelPileupData<T> newParallelPileupData = new ParallelPileupData<T>(super.getParallelData(), newData);
+		ParallelPileupData<T> newParallelPileupData = new ParallelPileupData<T>(super.getParallelData());
 		newParallelPileupData.setData(1, fakeCondition);
 		setParallelData(newParallelPileupData);
 

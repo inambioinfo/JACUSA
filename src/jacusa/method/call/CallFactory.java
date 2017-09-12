@@ -226,31 +226,28 @@ extends AbstractMethodFactory<BaseQualData> {
 	}
 
 	@Override
-	public BaseQualData createDataContainer() {
+	public BaseQualData createData() {
 		return new BaseQualData();
 	}
 
 	@Override
-	public BaseQualData[] createDataContainer(final int n) {
+	public BaseQualData[] createReplicateData(final int n) {
 		return new BaseQualData[n];
 	}
 
 	@Override
-	public BaseQualData[][] createDataContainer(final int n, final int m) {
-		if (m < 0) {
-			return new BaseQualData[n][];
-		}
-		return new BaseQualData[n][m];
+	public BaseQualData[][] createContainer(final int n) {
+		return new BaseQualData[n][];
 	}
 
 	@Override
-	public BaseQualData copyDataContainer(final BaseQualData dataContainer) {
+	public BaseQualData copyData(final BaseQualData dataContainer) {
 		return new BaseQualData(dataContainer);
 	}
 	
 	@Override
-	public BaseQualData[] copyDataContainer(final BaseQualData[] dataContainer) {
-		BaseQualData[] ret = createDataContainer(dataContainer.length);
+	public BaseQualData[] copyReplicateData(final BaseQualData[] dataContainer) {
+		BaseQualData[] ret = createReplicateData(dataContainer.length);
 		for (int i = 0; i < dataContainer.length; ++i) {
 			ret[i] = new BaseQualData(dataContainer[i]);
 		}
@@ -258,8 +255,8 @@ extends AbstractMethodFactory<BaseQualData> {
 	}
 	
 	@Override
-	public BaseQualData[][] copyDataContainer(final BaseQualData[][] dataContainer) {
-		BaseQualData[][] ret = createDataContainer(dataContainer.length, -1);
+	public BaseQualData[][] copyContainer(final BaseQualData[][] dataContainer) {
+		BaseQualData[][] ret = createContainer(dataContainer.length);
 		for (int i = 0; i < dataContainer.length; ++i) {
 			for (int j = 0; j < dataContainer[i].length; ++j) {
 				ret[i][j] = new BaseQualData(dataContainer[i][j]);

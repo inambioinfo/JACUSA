@@ -16,12 +16,12 @@ public class ReadInfoCount {
 	private int through;
 	
 	public ReadInfoCount() {
-		start 	= -1;
-		inner 	= -1;
-		end 	= -1;
+		start 	= 0;
+		inner 	= 0;
+		end 	= 0;
 		
-		arrest	= -1;
-		through = -1;
+		arrest	= 0;
+		through = 0;
 	}
 	
 	/**

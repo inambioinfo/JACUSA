@@ -36,6 +36,9 @@ implements DataBuilder<T>, hasLibraryType {
 	// in genomic coordinates
 	protected WindowCoordinates windowCoordinates;
 
+	// true if a valid read is found within genomicWindowStart and genomicWindowStart + windowSize
+	protected boolean windowHit;
+	protected int SAMReocordsInBuffer;
 	protected SAMRecord[] SAMRecordsBuffer;
 	protected SAMFileReader reader;
 
@@ -64,6 +67,8 @@ implements DataBuilder<T>, hasLibraryType {
 			final LibraryType libraryType) {
 		this.windowCoordinates	= windowCoordinates;
 		
+		windowHit				= false;
+		SAMReocordsInBuffer		= 0;
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
 
@@ -111,29 +116,8 @@ implements DataBuilder<T>, hasLibraryType {
 		return null;
 	}
 	
-	/**
-	 * Tries to adjust to target position
-	 * Return true if at least one valid SAMRecord could be found.
-	 * WARNING: currentGenomicPosition != targetPosition is possible after method call 
-	 * @param genomicWindowStart
-	 * @return
-	 */
-	@Override
-	public boolean adjustWindowStart(int genomicWindowStart) {
-		clearCache();
-		windowCoordinates.setGenomicWindowStart(genomicWindowStart);
-		
-		// get iterator to fill the window
-		SAMRecordIterator iterator = reader.query(
-				windowCoordinates.getContig(), 
-				windowCoordinates.getGenomicWindowStart(), 
-				windowCoordinates.getGenomicWindowEnd(), 
-				false);
-
-		// true if a valid read is found within genomicWindowStart and genomicWindowStart + windowSize
-		boolean windowHit = false;
-		int SAMReocordsInBuffer = 0;
-
+	protected void processIterator(final SAMRecordIterator iterator) {
+		SAMReocordsInBuffer = 0;
 		while (iterator.hasNext()) {
 			SAMRecord record = iterator.next();
 
@@ -145,32 +129,59 @@ implements DataBuilder<T>, hasLibraryType {
 
 			// process buffer
 			if (SAMReocordsInBuffer >= SAMRecordsBuffer.length) {
-				for (SAMRecord bufferedRecord : SAMRecordsBuffer) {
-					try {
-						processRecord(bufferedRecord);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				}
-				// reset counter
-				SAMReocordsInBuffer = 0;
+				processBuffer();
+
 				// we found at least a valid SAMRecord
 				windowHit = true;
 			}
 		}
 		iterator.close();
+	}
+	
+	protected void processBuffer() {
+		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
+			try {
+				processRecord(SAMRecordsBuffer[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		// reset counter
+		SAMReocordsInBuffer = 0;
+	}
+	
+	protected SAMRecordIterator getIterator(final int genomicWindowStart) {
+		windowCoordinates.setGenomicWindowStart(genomicWindowStart);
+
+		// get iterator to fill the window
+		return reader.query(
+				windowCoordinates.getContig(), 
+				windowCoordinates.getGenomicWindowStart(), 
+				windowCoordinates.getGenomicWindowEnd(), 
+				false);
+	}
+	
+	/**
+	 * Tries to adjust to target position
+	 * Return true if at least one valid SAMRecord could be found.
+	 * WARNING: currentGenomicPosition != targetPosition is possible after method call 
+	 * @param genomicWindowStart
+	 * @return
+	 */
+	@Override
+	public boolean adjustWindowStart(int genomicWindowStart) {
+		clearCache();
+
+		// get iterator to fill the window
+		SAMRecordIterator iterator = getIterator(genomicWindowStart);
+		processIterator(iterator);
 
 		if (! windowHit && SAMReocordsInBuffer == 0) {
 			// no reads found
 			return false;
 		} else { // process any left SAMrecords in the buffer
-			for (int i = 0; i < SAMReocordsInBuffer; ++i) {
-				try {
-					processRecord(SAMRecordsBuffer[i]);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
+			processBuffer();
 			return true;
 		}
 	}

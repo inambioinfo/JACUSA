@@ -35,7 +35,7 @@ extends AbstractDataBuilder<T> {
 	
 	@Override
 	public T getData(int windowPosition, STRAND strand) {
-		T dataContainer = parameters.getMethodFactory().createDataContainer();
+		T dataContainer = parameters.getMethodFactory().createData();
 
 		dataContainer.getCoordinate().setSequenceName(windowCoordinates.getContig()); 
 		dataContainer.getCoordinate().setPosition(windowCoordinates.getGenomicPosition(windowPosition));

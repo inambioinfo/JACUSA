@@ -30,13 +30,13 @@ public class StrandedCoordinateAdvancer implements CoordinateAdvancer {
 				coordinates[conditionIndex].setStrand(STRAND.REVERSE);
 			} else {
 				coordinates[conditionIndex].setStrand(STRAND.FORWARD);
-
-				coordinates[conditionIndex].setPosition(coordinates[conditionIndex].getPosition());
+				final int currentPosition = coordinates[conditionIndex].getPosition() + 1;
+				coordinates[conditionIndex].setPosition(currentPosition);
 			}
 		} else {
-			coordinates[conditionIndex].setPosition(coordinates[conditionIndex].getPosition());
+			final int currentPosition = coordinates[conditionIndex].getPosition() + 1;
+			coordinates[conditionIndex].setPosition(currentPosition);
 		}
-		
 	}
 	
 	public void set(final int conditionIndex, final Coordinate newCoorindate) {
