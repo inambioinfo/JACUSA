@@ -257,7 +257,9 @@ extends AbstractMethodFactory<BaseQualData> {
 	@Override
 	public BaseQualData[][] copyContainer(final BaseQualData[][] dataContainer) {
 		BaseQualData[][] ret = createContainer(dataContainer.length);
+		
 		for (int i = 0; i < dataContainer.length; ++i) {
+			ret[i] = new BaseQualData[dataContainer[i].length];
 			for (int j = 0; j < dataContainer[i].length; ++j) {
 				ret[i][j] = new BaseQualData(dataContainer[i][j]);
 			}	

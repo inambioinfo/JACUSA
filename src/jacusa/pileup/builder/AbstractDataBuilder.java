@@ -38,11 +38,11 @@ implements DataBuilder<T>, hasLibraryType {
 
 	// true if a valid read is found within genomicWindowStart and genomicWindowStart + windowSize
 	protected boolean windowHit;
-	protected int SAMReocordsInBuffer;
 	protected SAMRecord[] SAMRecordsBuffer;
 	protected SAMFileReader reader;
 
 	protected int filteredSAMRecords;
+	protected int SAMRecords;
 
 	protected BaseConfig baseConfig;
 	protected ConditionParameters<T> condition;
@@ -68,11 +68,11 @@ implements DataBuilder<T>, hasLibraryType {
 		this.windowCoordinates	= windowCoordinates;
 		
 		windowHit				= false;
-		SAMReocordsInBuffer		= 0;
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
 
 		filteredSAMRecords		= 0;
+		SAMRecords				= 0;
 
 		baseConfig				= parameters.getBaseConfig();
 		this.condition			= condition;
@@ -116,29 +116,39 @@ implements DataBuilder<T>, hasLibraryType {
 		return null;
 	}
 	
-	protected void processIterator(final SAMRecordIterator iterator) {
-		SAMReocordsInBuffer = 0;
+	public int processIterator(final SAMRecordIterator iterator) {
+		int SAMReocordsInBuffer = 0;
 		while (iterator.hasNext()) {
 			SAMRecord record = iterator.next();
 
 			if(isValid(record)) {
 				SAMRecordsBuffer[SAMReocordsInBuffer++] = record;
+				incrementSAMRecords();
 			} else {
-				filteredSAMRecords++;
+				incrementFilteredSAMRecords();
 			}
 
 			// process buffer
 			if (SAMReocordsInBuffer >= SAMRecordsBuffer.length) {
-				processBuffer();
-
-				// we found at least a valid SAMRecord
-				windowHit = true;
+				SAMReocordsInBuffer = processBuffer(SAMReocordsInBuffer, SAMRecordsBuffer);
 			}
 		}
 		iterator.close();
+		
+		return SAMReocordsInBuffer;
 	}
 	
-	protected void processBuffer() {
+	@Override
+	final public void incrementFilteredSAMRecords() {
+		filteredSAMRecords++;
+	}
+	
+	@Override
+	final public void incrementSAMRecords() {
+		SAMRecords++;
+	}
+	
+	public int processBuffer(final int SAMReocordsInBuffer, final SAMRecord[] SAMRecordsBuffer) {
 		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
 			try {
 				processRecord(SAMRecordsBuffer[i]);
@@ -147,11 +157,10 @@ implements DataBuilder<T>, hasLibraryType {
 			}
 		}
 		
-		// reset counter
-		SAMReocordsInBuffer = 0;
+		return 0;
 	}
 	
-	protected SAMRecordIterator getIterator(final int genomicWindowStart) {
+	public SAMRecordIterator getIterator(final int genomicWindowStart) {
 		windowCoordinates.setGenomicWindowStart(genomicWindowStart);
 
 		// get iterator to fill the window
@@ -175,15 +184,19 @@ implements DataBuilder<T>, hasLibraryType {
 
 		// get iterator to fill the window
 		SAMRecordIterator iterator = getIterator(genomicWindowStart);
-		processIterator(iterator);
+		final int SAMReocordsInBuffer = processIterator(iterator);
 
-		if (! windowHit && SAMReocordsInBuffer == 0) {
+		if (SAMReocordsInBuffer > 0) {
+			// process any left SAMrecords in the buffer
+			processBuffer(SAMReocordsInBuffer, getSAMRecordsBuffer());
+		}
+		
+		if (getSAMRecords() == 0) {
 			// no reads found
 			return false;
-		} else { // process any left SAMrecords in the buffer
-			processBuffer();
-			return true;
 		}
+		
+		return true;
 	}
 
 	/**
@@ -191,7 +204,7 @@ implements DataBuilder<T>, hasLibraryType {
 	 * @param samRecord
 	 * @return
 	 */
-	protected boolean isValid(SAMRecord samRecord) {
+	public boolean isValid(SAMRecord samRecord) {
 		int mapq = samRecord.getMappingQuality();
 		List<SAMValidationError> errors = samRecord.isValid();
 
@@ -603,6 +616,16 @@ implements DataBuilder<T>, hasLibraryType {
 	@Override
 	public LibraryType getLibraryType() {
 		return libraryType;
+	}
+	
+	@Override
+	public int getSAMRecords() {
+		return SAMRecords;
+	}
+	
+	@Override
+	public SAMRecord[] getSAMRecordsBuffer() {
+		return SAMRecordsBuffer;
 	}
 	
 }

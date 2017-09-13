@@ -10,6 +10,7 @@ import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordIterator;
 
 /**
  * @author Michael Piechotta
@@ -40,6 +41,11 @@ implements DataBuilder<T> {
 		reverse = new UnstrandedPileupBuilder<T>(windowCoordinates, reader, STRAND.REVERSE, condition, parameters);
 	}
 
+	@Override
+	public int processBuffer(int SAMReocordsInBuffer, SAMRecord[] SAMRecordsBuffer) {
+		return forward.processBuffer(SAMReocordsInBuffer, SAMRecordsBuffer);
+	}
+	
 	@Override
 	public void clearCache() {
 		forward.clearCache();
@@ -117,6 +123,41 @@ implements DataBuilder<T> {
 	}
 	
 	@Override
+	public SAMRecordIterator getIterator(int genomicWindowStart) {
+		return forward.getIterator(genomicWindowStart);
+	}
+	
+	@Override
+	public SAMRecord[] getSAMRecordsBuffer() {
+		return forward.getSAMRecordsBuffer();
+	}
+	
+	@Override
+	public int processIterator(SAMRecordIterator iterator) {
+		return forward.processIterator(iterator);
+	}
+	
+	@Override
+	public void incrementFilteredSAMRecords() {
+		forward.incrementFilteredSAMRecords();
+	}
+	
+	@Override
+	public void incrementSAMRecords() {
+		forward.incrementSAMRecords();
+	}
+	
+	@Override
+	public boolean isValid(SAMRecord record) {
+		return forward.isValid(record);
+	}
+	
+	@Override
+	public int getSAMRecords() {
+		return forward.getSAMRecords() + reverse.getSAMRecords();
+	}
+	
+	@Override
 	public int getFilteredSAMRecords() {
 		return forward.getFilteredSAMRecords() + reverse.getFilteredSAMRecords();
 	}
@@ -139,5 +180,5 @@ implements DataBuilder<T> {
 	protected AbstractDataBuilder<T> getReverse() {
 		return reverse;
 	}
-	
+
 }

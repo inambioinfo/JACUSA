@@ -49,5 +49,5 @@ extends AbstractStrandedPileupBuilder<T> {
 
 		dataBuilder.processRecord(record);
 	}
-
+	
 }

@@ -40,7 +40,7 @@ implements hasLibraryType {
 	 * @return
 	 */
 	final public boolean isStranded() {
-		return libraryType == LibraryType.UNSTRANDED;
+		return libraryType != LibraryType.UNSTRANDED;
 	}
 
 	@Override

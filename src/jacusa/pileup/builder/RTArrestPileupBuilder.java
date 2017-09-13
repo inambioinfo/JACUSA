@@ -8,6 +8,7 @@ import jacusa.pileup.builder.hasLibraryType.LibraryType;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMRecordIterator;
 
 /**
  * @author Michael Piechotta
@@ -31,9 +32,12 @@ implements DataBuilder<T> {
 	@Override
 	public T getData(final int windowPosition, final STRAND strand) {
 		T dataContainer = dataBuilder.getData(windowPosition, strand);
-
+		
 		dataContainer.getReadInfoCount().setStart(readStartCount[windowPosition]);
 		dataContainer.getReadInfoCount().setEnd(readEndCount[windowPosition]);
+		dataContainer.getReadInfoCount().setInner(getCoverage(windowPosition, strand) - 
+				readStartCount[windowPosition] - 
+				readEndCount[windowPosition]);
 
 		int arrest = 0;
 		int through = 0;
@@ -93,17 +97,17 @@ implements DataBuilder<T> {
 
 	@Override
 	public int getCoverage(final int windowPosition, final STRAND strand) {
-		return getCoverage(windowPosition, strand);
+		return dataBuilder.getCoverage(windowPosition, strand);
 	}
 
 	@Override
 	public WindowCache getWindowCache(final STRAND strand) {
-		return getWindowCache(strand);
+		return dataBuilder.getWindowCache(strand);
 	}
 
 	@Override
 	public FilterContainer<T> getFilterContainer(final int windowPosition, final STRAND strand) {
-		return getFilterContainer(windowPosition, strand);
+		return dataBuilder.getFilterContainer(windowPosition, strand);
 	}
 
 	@Override
@@ -112,10 +116,92 @@ implements DataBuilder<T> {
 	}
 
 	@Override
-	public boolean adjustWindowStart(final int genomicWindowStart) {
-		return dataBuilder.adjustWindowStart(genomicWindowStart);
+	public SAMRecordIterator getIterator(int genomicWindowStart) {
+		return dataBuilder.getIterator(genomicWindowStart);
 	}
+	
+	@Override
+	public int getSAMRecords() {
+		return dataBuilder.getSAMRecords();
+	}
+	
+	@Override
+	public SAMRecord[] getSAMRecordsBuffer() {
+		return dataBuilder.getSAMRecordsBuffer();
+	}
+	
+	@Override
+	public int processIterator(SAMRecordIterator iterator) {
+		int SAMReocordsInBuffer = 0;
+		while (iterator.hasNext()) {
+			SAMRecord record = iterator.next();
 
+			if(dataBuilder.isValid(record)) {
+				getSAMRecordsBuffer()[SAMReocordsInBuffer++] = record;
+				dataBuilder.incrementSAMRecords();
+			} else {
+				dataBuilder.incrementFilteredSAMRecords();
+			}
+
+			// process buffer
+			if (SAMReocordsInBuffer >= dataBuilder.getSAMRecordsBuffer().length) {
+				SAMReocordsInBuffer = processBuffer(SAMReocordsInBuffer, dataBuilder.getSAMRecordsBuffer());
+			}
+		}
+		iterator.close();
+		
+		return SAMReocordsInBuffer;
+	}
+	
+	@Override
+	public void incrementFilteredSAMRecords() {
+		dataBuilder.incrementFilteredSAMRecords();
+	}
+	
+	@Override
+	public void incrementSAMRecords() {
+		dataBuilder.incrementSAMRecords();
+	}
+	
+	@Override
+	public boolean isValid(SAMRecord record) {
+		return dataBuilder.isValid(record);
+	}
+	
+	@Override
+	public int processBuffer(int SAMReocordsInBuffer, SAMRecord[] SAMRecordsBuffer) {
+		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
+			try {
+				processRecord(SAMRecordsBuffer[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+		
+		return 0;
+	}
+	
+	// bad code duplication
+	public boolean adjustWindowStart(int genomicWindowStart) {
+		clearCache();
+
+		// get iterator to fill the window
+		SAMRecordIterator iterator = getIterator(genomicWindowStart);
+		final int SAMReocordsInBuffer = processIterator(iterator);
+
+		if (SAMReocordsInBuffer > 0) {
+			// process any left SAMrecords in the buffer
+			processBuffer(SAMReocordsInBuffer, getSAMRecordsBuffer());
+		}
+		
+		if (getSAMRecords() == 0) {
+			// no reads found
+			return false;
+		}
+		
+		return true;
+	}
+	
 	@Override
 	public int getFilteredSAMRecords() {
 		return dataBuilder.getFilteredSAMRecords();
@@ -130,5 +216,5 @@ implements DataBuilder<T> {
 	public LibraryType getLibraryType() {
 		return dataBuilder.getLibraryType();
 	}
-
+	
 }

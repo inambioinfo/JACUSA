@@ -48,11 +48,11 @@ implements hasCoordinate {
 	 * @param parallelPileupData
 	 */
 	public ParallelPileupData(final ParallelPileupData<T> parallelPileupData) {
-		this.methodFactory = parallelPileupData.methodFactory;
-		this.coordinate = new Coordinate(parallelPileupData.getCoordinate());
+		methodFactory = parallelPileupData.methodFactory;
+		coordinate = new Coordinate(parallelPileupData.getCoordinate());
 
 		// copy data
-		this.data = this.methodFactory.copyContainer(parallelPileupData.data);
+		data = methodFactory.copyContainer(parallelPileupData.data);
 		cachedTotalReplicates = parallelPileupData.cachedTotalReplicates;
 	}
 	
@@ -67,7 +67,6 @@ implements hasCoordinate {
 	// make this faster remove data and add new
 	public void setData(int conditionIndex, T[] data) {
 		this.data[conditionIndex] = data;
-		// TODO check System.arraycopy(data, 0, this.data[conditionIndex], 0, data.length);
 
 		if (cachedCombinedData != null) {
 			cachedCombinedData[conditionIndex] = null;

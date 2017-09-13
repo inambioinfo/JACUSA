@@ -203,11 +203,12 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 	public BaseQualReadInfoData[][] copyContainer(final BaseQualReadInfoData[][] dataContainer) {
 		BaseQualReadInfoData[][] ret = createContainer(dataContainer.length);
 		for (int i = 0; i < dataContainer.length; ++i) {
+			ret[i] = new BaseQualReadInfoData[dataContainer[i].length];
 			for (int j = 0; j < dataContainer[i].length; ++j) {
 				ret[i][j] = new BaseQualReadInfoData(dataContainer[i][j]);
 			}	
 		}
-		
+
 		return ret;
 	}
 	
