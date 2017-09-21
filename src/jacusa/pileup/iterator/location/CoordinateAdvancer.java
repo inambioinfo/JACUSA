@@ -1,13 +1,14 @@
 package jacusa.pileup.iterator.location;
 
 import jacusa.util.Coordinate;
+import jacusa.util.Coordinate.STRAND;
 
 public interface CoordinateAdvancer {
 
 	void advance();
-	void advance(final int conditionIndex);
-
-	Coordinate get(final int conditionIndex);
-	void set(final int conditionIndex, final Coordinate newCoordinate);
+	int getNextPosition();
 	
+	Coordinate getCoordinate();
+	void adjustPosition(final int position, final STRAND strand);
+
 }

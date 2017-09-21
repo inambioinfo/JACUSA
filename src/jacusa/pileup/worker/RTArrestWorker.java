@@ -9,7 +9,7 @@ import jacusa.filter.AbstractFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -38,13 +38,13 @@ extends AbstractWorker<T> {
 	}
 
 	@Override
-	protected WindowIterator<T> buildIterator(final Coordinate coordinate) {
-		return new WindowIterator<T>(coordinate, variant, getReaders(), parameters);
+	protected WindowedIterator<T> buildIterator(final Coordinate coordinate) {
+		return new WindowedIterator<T>(coordinate, variant, getReaders(), parameters);
 	}
 	
 	@Override
 	protected Result<T> processParallelData(final ParallelPileupData<T> parallelData, 
-			final WindowIterator<T> parallelDataIterator) {
+			final WindowedIterator<T> parallelDataIterator) {
 		// result object
 		Result<T> result = new Result<T>();
 		result.setParallelData(parallelData);

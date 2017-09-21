@@ -25,7 +25,7 @@ extends AbstractWorkerDispatcher<T> {
 
 	@Override
 	public PileupParameters<T> getParameters() {
-		return (PileupParameters<T>) getParameters();
+		return (PileupParameters<T>) super.getParameters();
 	}
 	
 }

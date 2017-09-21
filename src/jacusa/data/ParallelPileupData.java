@@ -64,6 +64,11 @@ implements hasCoordinate {
 		this.coordinate = coordinate;
 	}
 	
+	public void setData(T[][] data) {
+		this.data = data;
+		resetCache();
+	}
+
 	// make this faster remove data and add new
 	public void setData(int conditionIndex, T[] data) {
 		this.data[conditionIndex] = data;

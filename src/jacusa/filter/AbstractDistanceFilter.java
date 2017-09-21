@@ -9,7 +9,7 @@ import jacusa.data.Result;
 import jacusa.filter.counts.AbstractCountFilter;
 import jacusa.filter.counts.CombinedCountFilter;
 import jacusa.filter.storage.AbstractWindowStorage;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 import jacusa.util.Coordinate;
 
 public abstract class AbstractDistanceFilter<T extends BaseQualData> 
@@ -29,7 +29,7 @@ extends AbstractFilter<T> {
 	}
 
 	@Override
-	protected boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
+	protected boolean filter(final Result<T> result, final WindowedIterator<T> windowIterator) {
 		final ParallelPileupData<T> parallelData = result.getParellelData();
 
 		final int[] variantBaseIndexs = countFilter.getVariantBaseIndexs(parallelData);
@@ -39,7 +39,7 @@ extends AbstractFilter<T> {
 
 		// get position from result
 		final Coordinate coordinate = parallelData.getCoordinate();
-		final int genomicPosition = coordinate.getPosition();
+		final int genomicPosition = coordinate.getStart();
 		final char referenceBase = result.getParellelData().getCombinedPooledData().getReferenceBase();
 		
 		// create container [condition][replicates]
@@ -47,7 +47,10 @@ extends AbstractFilter<T> {
 		
 		for (int conditionIndex = 0; conditionIndex < parallelData.getConditions(); ++conditionIndex) {
 			// filter container per condition
-			List<FilterContainer<T>> filterContainers = windowIterator.getFilterContainers(conditionIndex, coordinate);
+			List<FilterContainer<T>> filterContainers = windowIterator
+					.getConditionContainer()
+					.getReplicatContainer(conditionIndex)
+					.getFilterContainers(coordinate);
 
 			// replicates for condition
 			int replicates = filterContainers.size();

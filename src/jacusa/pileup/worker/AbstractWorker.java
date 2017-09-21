@@ -7,7 +7,7 @@ import jacusa.data.AbstractData;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 import jacusa.util.Coordinate;
 
 import java.io.File;
@@ -29,7 +29,7 @@ extends Thread {
 	public static enum STATUS {INIT, READY, FINISHED, BUSY};
 
 	private Coordinate coordinate;
-	private WindowIterator<T> parallelDataIterator;
+	private WindowedIterator<T> parallelDataIterator;
 
 	private AbstractWorkerDispatcher<T> workerDispatcher;
 
@@ -165,27 +165,24 @@ extends Thread {
 	}
 
 	protected abstract Result<T> processParallelData(final ParallelPileupData<T> parallelData, 
-			final WindowIterator<T> parallelPileupIterator);
+			final WindowedIterator<T> parallelPileupIterator);
 	
 	/**
 	 * 
 	 * @param parallelDataIterator
 	 */
-	protected synchronized void processParallelDataIterator(final WindowIterator<T> parallelDataIterator) {
+	protected synchronized void processParallelDataIterator(final WindowedIterator<T> parallelDataIterator) {
 		// print informative log
 		JACUSA.printLog("Started screening contig " + 
-				parallelDataIterator.getCoordinate().getSequenceName() + 
+				parallelDataIterator.getWindow().getContig() + 
 				":" + 
-				parallelDataIterator.getCoordinate().getStart() + 
+				parallelDataIterator.getWindow().getStart() + 
 				"-" + 
-				parallelDataIterator.getCoordinate().getEnd());
+				parallelDataIterator.getWindow().getEnd());
 
 		// iterate over parallel pileups
 		while (parallelDataIterator.hasNext()) {
-			final Coordinate coordinate = parallelDataIterator.next();
-			
-			final ParallelPileupData<T> parallelPileup = parallelDataIterator.getParallelData().copy();
-			parallelPileup.setCoordinate(coordinate);
+			final ParallelPileupData<T> parallelPileup = parallelDataIterator.next();
 			final Result<T> result = processParallelData(parallelPileup, parallelDataIterator);
 
 			// considered comparisons
@@ -225,7 +222,7 @@ extends Thread {
 	 * @param parameters
 	 * @return
 	 */
-	protected abstract WindowIterator<T> buildIterator(Coordinate coordinate);
+	protected abstract WindowedIterator<T> buildIterator(Coordinate coordinate);
 	
 	public final int getComparisons() {
 		return comparisons;

@@ -8,7 +8,7 @@ import jacusa.filter.AbstractFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.dispatcher.call.CallWorkerDispatcher;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 import jacusa.pileup.iterator.variant.OneConditionVariantParallelPileup;
 import jacusa.pileup.iterator.variant.VariantParallelPileup;
 import jacusa.util.Coordinate;
@@ -35,7 +35,7 @@ extends AbstractWorker<T> {
 
 	@Override
 	protected Result<T> processParallelData(final ParallelPileupData<T> parallelData, 
-			final WindowIterator<T> parallelDataIterator) {
+			final WindowedIterator<T> parallelDataIterator) {
 		// result object
 		Result<T> result = new Result<T>();
 		result.setParallelData(parallelData);
@@ -59,12 +59,12 @@ extends AbstractWorker<T> {
 	// return new OneConditionCallIterator<T>(coordinate, variant, getReaders(), getParameters());
 	
 	@Override
-	protected WindowIterator<T> buildIterator(final Coordinate coordinate) {
+	protected WindowedIterator<T> buildIterator(final Coordinate coordinate) {
 		if (getParameters().getConditions() == 1) {
-			return new WindowIterator<T>(coordinate, new OneConditionVariantParallelPileup<T>(), getReaders(), parameters);
+			return new WindowedIterator<T>(coordinate, new OneConditionVariantParallelPileup<T>(), getReaders(), parameters);
 		}
 		
-		return new WindowIterator<T>(coordinate, new VariantParallelPileup<T>(), getReaders(), parameters);
+		return new WindowedIterator<T>(coordinate, new VariantParallelPileup<T>(), getReaders(), parameters);
 	}
 
 }

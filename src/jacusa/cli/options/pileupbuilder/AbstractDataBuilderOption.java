@@ -6,7 +6,7 @@ import jacusa.cli.options.condition.AbstractConditionACOption;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
 public abstract class AbstractDataBuilderOption<T extends AbstractData>
 extends AbstractConditionACOption<T> {
@@ -23,22 +23,22 @@ extends AbstractConditionACOption<T> {
 	}
 	
 	protected abstract AbstractDataBuilderFactory<T> buildPileupBuilderFactory(
-			final LibraryType libraryType);
+			final LIBRARY_TYPE libraryType);
 
-	public LibraryType parse(String s) {
+	public LIBRARY_TYPE parse(String s) {
 		s = s.toUpperCase();
 		s = s.replace("-", "_");
 		
-		switch(LibraryType.valueOf(s)) {
+		switch(LIBRARY_TYPE.valueOf(s)) {
 
 		case UNSTRANDED:
-			return LibraryType.UNSTRANDED;
+			return LIBRARY_TYPE.UNSTRANDED;
 			
 		case FR_FIRSTSTRAND:
-			return LibraryType.FR_FIRSTSTRAND;
+			return LIBRARY_TYPE.FR_FIRSTSTRAND;
 		
 		case FR_SECONDSTRAND:
-			return LibraryType.FR_SECONDSTRAND;
+			return LIBRARY_TYPE.FR_SECONDSTRAND;
 		}
 
 		return null;
@@ -47,7 +47,7 @@ extends AbstractConditionACOption<T> {
 	public String getPossibleValues() {
 		final StringBuilder sb = new StringBuilder();
 		
-		for (final LibraryType l : LibraryType.values()) {
+		for (final LIBRARY_TYPE l : LIBRARY_TYPE.values()) {
 			String option = l.toString();
 			option = option.replace("_", "-");
 			String desc = "";

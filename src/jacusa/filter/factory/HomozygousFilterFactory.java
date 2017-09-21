@@ -6,7 +6,7 @@ import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.AbstractFilter;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 
 /**
  * 
@@ -96,9 +96,9 @@ extends AbstractFilterFactory<T> {
 		}
 
 		@Override
-		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
+		public boolean filter(final Result<T> result, final WindowedIterator<T> windowIterator) {
 			int alleles = 0;
-			alleles = windowIterator.getAlleleCount(homozygousConditionIndex, result.getParellelData().getCoordinate());
+			alleles = windowIterator.getConditionContainer().getAlleleCount(homozygousConditionIndex, result.getParellelData().getCoordinate());
 	
 			if (alleles > 1) {
 				return true;
@@ -119,7 +119,7 @@ extends AbstractFilterFactory<T> {
 		}
 
 		@Override
-		public boolean filter(final Result<T> result, final WindowIterator<T> windowIterator) {
+		public boolean filter(final Result<T> result, final WindowedIterator<T> windowIterator) {
 			final ParallelPileupData<T> parallelData = result.getParellelData();
 			final int alleles = parallelData.getPooledData(homozygousConditionIndex)
 					.getBaseQualCount().getAlleles().length;

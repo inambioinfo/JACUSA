@@ -11,7 +11,7 @@ implements hasBaseQualCount, hasLibraryType {
 	private BaseQualCount baseQualCount;
 	private char referenceBase;
 
-	private LibraryType libraryType;
+	private LIBRARY_TYPE libraryType;
 	
 	private STRAND effectiveStrand;
 	
@@ -21,7 +21,7 @@ implements hasBaseQualCount, hasLibraryType {
 		baseQualCount 	= new BaseQualCount();
 		referenceBase	= 'N';
 		
-		libraryType		= LibraryType.UNSTRANDED;
+		libraryType		= LIBRARY_TYPE.UNSTRANDED;
 		effectiveStrand	= STRAND.UNKNOWN;
 	}
 
@@ -35,7 +35,7 @@ implements hasBaseQualCount, hasLibraryType {
 	}
 	
 	public BaseQualData(final Coordinate coordinate, final char referenceBase,
-			final LibraryType libraryType) {
+			final LIBRARY_TYPE libraryType) {
 		super(coordinate);
 		
 		baseQualCount		= new BaseQualCount();
@@ -72,7 +72,7 @@ implements hasBaseQualCount, hasLibraryType {
 	}
 	
 	@Override
-	public LibraryType getLibraryType() {
+	public LIBRARY_TYPE getLibraryType() {
 		return libraryType;
 	}
 

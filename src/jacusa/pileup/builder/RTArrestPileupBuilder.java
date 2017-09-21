@@ -2,9 +2,11 @@ package jacusa.pileup.builder;
 
 import java.util.Arrays;
 
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualReadInfoData;
 import jacusa.filter.FilterContainer;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
+import jacusa.util.Coordinate;
 import jacusa.util.Coordinate.STRAND;
 import jacusa.util.WindowCoordinates;
 import net.sf.samtools.SAMRecord;
@@ -16,12 +18,16 @@ import net.sf.samtools.SAMRecordIterator;
  */
 public class RTArrestPileupBuilder<T extends BaseQualReadInfoData>
 implements DataBuilder<T> {
+
+	private ConditionParameters<T> condition;
+	private final DataBuilder<T> dataBuilder;
 	
 	private final int[] readStartCount;
 	private final int[] readEndCount;
-	private final DataBuilder<T> dataBuilder;
 	
-	public RTArrestPileupBuilder(final DataBuilder<T> dataBuilder) {
+	public RTArrestPileupBuilder(final ConditionParameters<T> condition,
+			final DataBuilder<T> dataBuilder) {
+		this.condition = condition;
 		this.dataBuilder = dataBuilder;
 		
 		final int windowSize = dataBuilder.getWindowCoordinates().getWindowSize();
@@ -91,11 +97,6 @@ implements DataBuilder<T> {
 	}
 
 	@Override
-	public boolean isCovered(int windowPosition, STRAND strand) {
-		return dataBuilder.isCovered(windowPosition, strand);
-	}
-
-	@Override
 	public int getCoverage(final int windowPosition, final STRAND strand) {
 		return dataBuilder.getCoverage(windowPosition, strand);
 	}
@@ -136,7 +137,7 @@ implements DataBuilder<T> {
 		while (iterator.hasNext()) {
 			SAMRecord record = iterator.next();
 
-			if(dataBuilder.isValid(record)) {
+			if(condition.isValid(record)) {
 				getSAMRecordsBuffer()[SAMReocordsInBuffer++] = record;
 				dataBuilder.incrementSAMRecords();
 			} else {
@@ -161,11 +162,6 @@ implements DataBuilder<T> {
 	@Override
 	public void incrementSAMRecords() {
 		dataBuilder.incrementSAMRecords();
-	}
-	
-	@Override
-	public boolean isValid(SAMRecord record) {
-		return dataBuilder.isValid(record);
 	}
 	
 	@Override
@@ -213,8 +209,32 @@ implements DataBuilder<T> {
 	}
 
 	@Override
-	public LibraryType getLibraryType() {
+	public LIBRARY_TYPE getLibraryType() {
 		return dataBuilder.getLibraryType();
 	}
-	
+
+	@Override
+	public void advance() {
+		dataBuilder.advance();
+	}
+
+	@Override
+	public Coordinate getCoordinate() {
+		return dataBuilder.getCoordinate();
+	}
+
+	@Override
+	public void adjustPosition(int position, STRAND strand) {
+		dataBuilder.adjustPosition(position, strand);
+	}
+
+	@Override
+	public int getNextPosition() {
+		return dataBuilder.getNextPosition();
+	}
+
+	@Override
+	public DataBuilder.CACHE_STATUS getCacheStatus() {
+		return dataBuilder.getCacheStatus();
+	}
 }

@@ -1,42 +1,39 @@
 package jacusa.util;
 
-public class WindowCoordinates {
-
-	private String contig;
-	private int genomicWindowStart;
+public class WindowCoordinates extends Coordinate {
 
 	private int windowSize;
 	private int maxGenomicPosition;
 
-	public WindowCoordinates(final String contig, final int genomicWindowStart, final int windowSize, final int maxGenomicPosition) {
-		this.contig = contig;
-		this.genomicWindowStart = genomicWindowStart;
+	public WindowCoordinates(final String contig, 
+			final int genomicWindowStart, 
+			final int windowSize, 
+			final int maxGenomicPosition) {
+		setContig(contig);
+		setStart(genomicWindowStart);
 		this.windowSize = windowSize;
-		this.maxGenomicPosition = maxGenomicPosition;
+		setMaxGenomicPosition(maxGenomicPosition);
 	}
 
-	public String getContig() {
-		return contig;
+	public void setStart(final int start) {
+		super.setStart(start);
+		_setEnd();
 	}
-
-	public void setContig(String contig) {
-		this.contig = contig;
+	
+	public int getEnd() {
+		return Math.min(getStart() + windowSize - 1, maxGenomicPosition);
 	}
-
-	public int getGenomicWindowStart() {
-		return genomicWindowStart;
+	
+	/**
+	 * End of window (inclusive)
+	 * @return
+	 */
+	private void _setEnd() {
+		setEnd(Math.min(getStart() + windowSize - 1, maxGenomicPosition));
 	}
-
-	public void setGenomicWindowStart(int genomicWindowStart) {
-		this.genomicWindowStart = genomicWindowStart;
-	}
-
+	
 	public int getWindowSize() {
 		return windowSize;
-	}
-
-	public void setWindowSize(int windowSize) {
-		this.windowSize = windowSize;
 	}
 
 	public int getMaxGenomicPosition() {
@@ -45,14 +42,7 @@ public class WindowCoordinates {
 
 	public void setMaxGenomicPosition(int maxGenomicPosition) {
 		this.maxGenomicPosition = maxGenomicPosition;
-	}
-	
-	/**
-	 * End of window (inclusive)
-	 * @return
-	 */
-	public int getGenomicWindowEnd() {
-		return Math.min(genomicWindowStart + windowSize -1, maxGenomicPosition);
+		_setEnd();
 	}
 
 	/**
@@ -61,7 +51,7 @@ public class WindowCoordinates {
 	 * @return
 	 */
 	public boolean isContainedInWindow(int genomicPosition) {
-		return genomicPosition >= genomicWindowStart && genomicPosition <= getGenomicWindowEnd();
+		return genomicPosition >= getStart() && genomicPosition <= getEnd();
 	}
 
 	/**
@@ -80,23 +70,11 @@ public class WindowCoordinates {
 		}
 		*/
 		
-		if(genomicPosition > getGenomicWindowEnd()){
-			return Integer.MAX_VALUE;
-		}
-
-		return genomicPosition - genomicWindowStart;
-	}
-
-	public int getOrientation(final int genomicPosition) {
-		if(genomicPosition < genomicWindowStart) {
+		if(genomicPosition > getEnd()){
 			return -1;
 		}
-		
-		if(genomicPosition > getGenomicWindowEnd()){
-			return 1;
-		}
-		
-		return 0;
+
+		return genomicPosition - getStart();
 	}
 
 	/**
@@ -105,7 +83,19 @@ public class WindowCoordinates {
 	 * @return
 	 */
 	public int getGenomicPosition(int windowPosition) {
-		return genomicWindowStart + windowPosition;
+		return getStart() + windowPosition;
+	}
+	
+	public int getOrientation(final int genomicPosition) {
+		if(genomicPosition < getStart()) {
+			return -1;
+		}
+		
+		if(genomicPosition > getEnd()){
+			return 1;
+		}
+		
+		return 0;
 	}
 
 }

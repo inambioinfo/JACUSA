@@ -21,6 +21,7 @@ import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.options.pileupbuilder.OneConditionBaseQualDataBuilderOption;
 import jacusa.cli.parameters.CLI;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.cli.parameters.PileupParameters;
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
@@ -35,6 +36,7 @@ import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6call;
 import jacusa.io.format.PileupFormat;
 import jacusa.method.AbstractMethodFactory;
+import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
@@ -52,11 +54,13 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 	public nConditionPileupFactory(int conditions) {
 		super("pileup", "SAMtools like mpileup", 
 				new PileupParameters<BaseQualData>(conditions));
-	}
-
-	public nConditionPileupFactory() {
-		super("pileup", "SAMtools like mpileup", 
-				new PileupParameters<BaseQualData>(0));
+		
+		// set
+		for (int i = 0; i < conditions; i++) {
+			ConditionParameters<BaseQualData> condition = new ConditionParameters<BaseQualData>();
+			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
+			getParameters().getConditionParameters().add(condition);
+		}
 	}
 
 	public void initACOptions() {
@@ -128,13 +132,8 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 				new PileupFormat(getParameters().getBaseConfig(), getParameters().showReferenceBase());
 		outputFormats.put(outputFormat.getC(), outputFormat);
 		
-		outputFormat = new BED6call(getParameters().getBaseConfig(), getParameters().getFilterConfig(), getParameters().showReferenceBase());
+		outputFormat = new BED6call(getParameters());
 		outputFormats.put(outputFormat.getC(), outputFormat);
-		
-		/*
-		outputFormat = new ConsensusOutputFormat(parameters.getBaseConfig(), parameters.getFilterConfig());
-		outputFormats.put(outputFormat.getC(), outputFormat);
-		*/
 		
 		return outputFormats;
 	}
@@ -178,16 +177,26 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 
 	@Override
 	public boolean parseArgs(String[] args) throws Exception {
-		if (args == null || args.length != 2) {
+		if (args == null || args.length < 1) {
 			throw new ParseException("BAM File is not provided!");
+		}
+
+		// set condition parameters bases on: file11,file12 file21
+		// -> 2 conditions
+		final int conditions = args.length;
+
+		getParameters().getConditionParameters().clear();
+		
+		// set unstranded as default TODO
+		for (int i = 0; i < conditions; i++) {
+			ConditionParameters<BaseQualData> condition = new ConditionParameters<BaseQualData>();
+			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
+			getParameters().getConditionParameters().add(condition);
 		}
 
 		return super.parseArgs(args); 
 	}
 
-	/* (non-Javadoc)
-	 * @see jacusa.method.AbstractMethodFactory#getDataContainer()
-	 */
 	@Override
 	public BaseQualData createData() {
 		return new BaseQualData();

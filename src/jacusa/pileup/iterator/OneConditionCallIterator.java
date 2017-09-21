@@ -11,7 +11,7 @@ import jacusa.util.Coordinate;
 import net.sf.samtools.SAMFileReader;
 
 public class OneConditionCallIterator<T extends BaseQualData> 
-extends WindowIterator<T> {
+extends WindowedIterator<T> {
 
 	public OneConditionCallIterator(
 			final Coordinate coordinate,
@@ -22,8 +22,8 @@ extends WindowIterator<T> {
 	}
 
 	@Override
-	public ParallelPileupData<T> getParallelData() {
-		ParallelPileupData<T> parallelData = super.getParallelData();
+	public ParallelPileupData<T> next() {
+		ParallelPileupData<T> parallelData = super.next();
 		
 		T data = parallelData.getCombinedPooledData();
 		int[] allelesIndexs = data.getBaseQualCount().getAlleles();
@@ -58,7 +58,7 @@ extends WindowIterator<T> {
 		int[] variantBasesIndexs = Arrays.copyOf(tmpVariantBasesIndexs, i);
 		
 		// create fake condition by replacing non-reference base calls with reference BCs 
-		T[] fakeCondition = getParameters().getMethodFactory().createReplicateData(getParallelData().getReplicates(0));
+		T[] fakeCondition = getParameters().getMethodFactory().createReplicateData(parallelData.getReplicates(0));
 		for (int replicateIndex = 0; replicateIndex < fakeCondition.length; ++replicateIndex) {
 			fakeCondition[replicateIndex] = getParameters().getMethodFactory().createData();
 			fakeCondition[replicateIndex].setCoordinate(new Coordinate(data.getCoordinate()));
@@ -72,11 +72,10 @@ extends WindowIterator<T> {
 			}
 		}
 		
-		ParallelPileupData<T> newParallelPileupData = new ParallelPileupData<T>(super.getParallelData());
+		ParallelPileupData<T> newParallelPileupData = new ParallelPileupData<T>(parallelData);
 		newParallelPileupData.setData(1, fakeCondition);
-		setParallelData(newParallelPileupData);
 
-		return super.getParallelData();
+		return newParallelPileupData;
 	}
 
 

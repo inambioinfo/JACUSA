@@ -67,9 +67,9 @@ public class JACUSA {
 		// calling variants
 		factories.add(new OneConditionCallFactory());
 		factories.add(new TwoConditionCallFactory());
-		factories.add(new CallFactory(-1)); // FIXMe
+		factories.add(new CallFactory(2)); // TODO make it general
 		// pileup information
-		factories.add(new nConditionPileupFactory());
+		factories.add(new nConditionPileupFactory(0)); // FIXME
 		// Read info
 		factories.add(new RTArrestFactory());
 

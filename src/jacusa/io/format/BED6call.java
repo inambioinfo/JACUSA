@@ -1,10 +1,10 @@
 package jacusa.io.format;
 
+import jacusa.cli.parameters.AbstractParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.BaseConfig;
 import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
-import jacusa.filter.FilterConfig;
 
 public class BED6call extends AbstractOutputFormat<BaseQualData> {
 
@@ -14,30 +14,20 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 	public static final char EMPTY 	= '*';
 	public static final char SEP 	= '\t';
 	public static final char SEP2 	= ',';
-	
-	protected FilterConfig<BaseQualData> filterConfig;
-	protected BaseConfig baseConfig;
-	private boolean showReferenceBase;
 
+	private AbstractParameters<BaseQualData> parameters;
+	
 	public BED6call(
 			final char c,
 			final String desc,
-			final BaseConfig baseConfig, 
-			final FilterConfig<BaseQualData> filterConfig,
-			final boolean showReferenceBase) {
+			final AbstractParameters<BaseQualData> parameters) {
 		super(c, desc);
 		
-		this.baseConfig = baseConfig;
-		this.filterConfig = filterConfig;
-
-		this.showReferenceBase = showReferenceBase;
+		this.parameters = parameters;
 	}
 
-	public BED6call(
-			final BaseConfig baseConfig, 
-			final FilterConfig<BaseQualData> filterConfig,
-			final boolean showReferenceBase) {
-		this(CHAR, "Default", baseConfig, filterConfig, showReferenceBase);
+	public BED6call(final AbstractParameters<BaseQualData> parameters) {
+		this(CHAR, "Default", parameters);
 	}
 
 	@Override
@@ -72,12 +62,12 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		sb.append("info");
 		
 		// add filtering info
-		if (filterConfig.hasFiters()) {
+		if (parameters.getFilterConfig().hasFiters()) {
 			sb.append(getSEP());
 			sb.append("filter_info");
 		}
 
-		if (showReferenceBase) {
+		if (parameters.showReferenceBase()) {
 			sb.append(getSEP());
 			sb.append("refBase");
 		}
@@ -87,7 +77,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 	
 	protected void addConditionHeader(StringBuilder sb, int condition, int replicates) {
 		sb.append("bases");
-		sb.append(condition);
+		sb.append(condition + 1);
 		sb.append(1);
 		if (replicates == 1) {
 			return;
@@ -96,7 +86,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		for (int i = 2; i <= replicates; ++i) {
 			sb.append(SEP);
 			sb.append("bases");
-			sb.append(condition);
+			sb.append(condition + 1);
 			sb.append(i);
 		}
 	}
@@ -107,7 +97,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		final StringBuilder sb = new StringBuilder();
 
 		// coordinates
-		sb.append(parallelData.getCoordinate().getSequenceName());
+		sb.append(parallelData.getCoordinate().getContig());
 		sb.append(SEP);
 		sb.append(parallelData.getCoordinate().getStart() - 1);
 		sb.append(SEP);
@@ -134,12 +124,12 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		sb.append(result.getResultInfo().combine());
 		
 		// add filtering info
-		if (filterConfig.hasFiters()) {
+		if (parameters.getFilterConfig().hasFiters()) {
 			sb.append(getSEP());
 			sb.append(result.getFilterInfo().combine());
 		}
 		
-		if (showReferenceBase) {
+		if (parameters.showReferenceBase()) {
 			sb.append(getSEP());
 			sb.append(parallelData.getCombinedPooledData().getReferenceBase());
 		}
@@ -157,7 +147,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 
 			int i = 0;
 			char b = BaseConfig.BASES[i];
-			int baseI = baseConfig.getBaseIndex((byte)b);
+			int baseI = parameters.getBaseConfig().getBaseIndex((byte)b);
 			int count = 0;
 			if (baseI >= 0) {
 				count = d.getBaseQualCount().getBaseCount(baseI);
@@ -166,7 +156,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 			++i;
 			for (; i < BaseConfig.BASES.length; ++i) {
 				b = BaseConfig.BASES[i];
-				baseI = baseConfig.getBaseIndex((byte)b);
+				baseI = parameters.getBaseConfig().getBaseIndex((byte)b);
 				count = 0;
 				if (baseI >= 0) {
 					count = d.getBaseQualCount().getBaseCount(baseI);

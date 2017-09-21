@@ -1,36 +1,34 @@
 package jacusa.pileup.iterator.location;
 
 import jacusa.util.Coordinate;
+import jacusa.util.Coordinate.STRAND;
 
 public class UnstrandedCoordinateAdvancer implements CoordinateAdvancer {
 
-	private Coordinate[] coordinates;
+	private Coordinate coordinate;
 
-	public UnstrandedCoordinateAdvancer(final Coordinate[] coordinates) {
-		this.coordinates = coordinates;
+	public UnstrandedCoordinateAdvancer(final Coordinate coordinate) {
+		this.coordinate = coordinate;
 	}
 
 	@Override
 	public void advance() {
-		for (int conditionIndex = 0; conditionIndex < coordinates.length; conditionIndex++) {
-			advance(conditionIndex); 
-		}
+		coordinate.setPosition(getNextPosition());
+	}
+	
+	@Override
+	public int getNextPosition() {
+		return coordinate.getStart() + 1;
+	}
+	
+	@Override
+	public Coordinate getCoordinate() {
+		return coordinate;
 	}
 
 	@Override
-	public void advance(final int conditionIndex) {
-		coordinates[conditionIndex].setPosition(
-				coordinates[conditionIndex].getPosition() + 1);
-	}
-
-	@Override
-	public Coordinate get(final int conditionIndex) {
-		return coordinates[conditionIndex];
-	}
-
-	@Override
-	public void set(final int conditionIndex, final Coordinate newCoordinate) {
-		coordinates[conditionIndex] = newCoordinate;
+	public void adjustPosition(final int position, STRAND strand) {
+		coordinate.setPosition(position);
 	}
 	
 }

@@ -8,7 +8,7 @@ import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -38,7 +38,7 @@ extends AbstractDataBuilderOption<T> {
 			.withDescription("Choose the library types and how parallel pileups are build for " +
 					"condition1(cond1) and condition2(cond2).\nFormat: cond1,cond2. \n" +
 					"Possible values for cond1 and cond2:\n" + getPossibleValues() + "\n" +
-					"default: " + LibraryType.UNSTRANDED + SEP + LibraryType.UNSTRANDED)
+					"default: " + LIBRARY_TYPE.UNSTRANDED + SEP + LIBRARY_TYPE.UNSTRANDED)
 			.create(getOpt());
 	}
 
@@ -57,8 +57,8 @@ extends AbstractDataBuilderOption<T> {
 	    		throw new IllegalArgumentException(sb.toString());
 	    	}
 
-	    	LibraryType l1 = parse(ss[0]);
-	    	LibraryType l2 = parse(ss[1]);
+	    	LIBRARY_TYPE l1 = parse(ss[0]);
+	    	LIBRARY_TYPE l2 = parse(ss[1]);
 
 	    	if (l1 == null || l2 == null) {
 	    		throw new IllegalArgumentException(sb.toString());
@@ -71,7 +71,7 @@ extends AbstractDataBuilderOption<T> {
 
 	@Override
 	protected AbstractDataBuilderFactory<T> buildPileupBuilderFactory(
-			final LibraryType libraryType) {
+			final LIBRARY_TYPE libraryType) {
 		switch(libraryType) {
 		
 		case UNSTRANDED:

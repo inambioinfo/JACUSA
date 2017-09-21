@@ -8,7 +8,7 @@ import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd1PileupBuilderFactory;
 import jacusa.pileup.builder.FRPairedEnd2PileupBuilderFactory;
 import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
@@ -32,7 +32,7 @@ extends AbstractDataBuilderOption<T> {
 			.withArgName(getLongOpt().toUpperCase())
 			.hasArg(true)
 	        .withDescription("Choose the library type and how parallel pileups are build:\n" + getPossibleValues() + 
-	        		"\n default: " + LibraryType.UNSTRANDED)
+	        		"\n default: " + LIBRARY_TYPE.UNSTRANDED)
 	        .create(getOpt());
 	}
 
@@ -40,7 +40,7 @@ extends AbstractDataBuilderOption<T> {
 	public void process(CommandLine line) throws Exception {
 		if (line.hasOption(getOpt())) {
 	    	String s = line.getOptionValue(getOpt());
-	    	LibraryType l = parse(s);
+	    	LIBRARY_TYPE l = parse(s);
 	    	if (l == null) {
 	    		throw new IllegalArgumentException("Possible values for " + getLongOpt().toUpperCase() + ":\n" + getPossibleValues());
 	    	}
@@ -51,7 +51,7 @@ extends AbstractDataBuilderOption<T> {
 	    }
 	}
 
-	protected AbstractDataBuilderFactory<T> buildPileupBuilderFactory(final LibraryType libraryType) {
+	protected AbstractDataBuilderFactory<T> buildPileupBuilderFactory(final LIBRARY_TYPE libraryType) {
 		
 		switch(libraryType) {
 		

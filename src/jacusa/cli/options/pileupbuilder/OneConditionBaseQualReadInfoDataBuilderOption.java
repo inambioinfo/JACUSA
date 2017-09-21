@@ -7,7 +7,7 @@ import jacusa.data.BaseQualReadInfoData;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.builder.AbstractDataBuilderFactory;
 import jacusa.pileup.builder.RTArrestPileupBuilderFactory;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
 public class OneConditionBaseQualReadInfoDataBuilderOption<T extends BaseQualReadInfoData>
 extends OneConditionBaseQualDataBuilderOption<T> {
@@ -22,7 +22,7 @@ extends OneConditionBaseQualDataBuilderOption<T> {
 	
 	protected AbstractDataBuilderFactory<T> buildPileupBuilderFactory(
 			final AbstractMethodFactory<T> abstractMethodFactory,
-			final LibraryType libraryType) {
+			final LIBRARY_TYPE libraryType) {
 		return new RTArrestPileupBuilderFactory<T>(super.buildPileupBuilderFactory(libraryType));
 	}
 	

@@ -91,7 +91,7 @@ public class ThreadedCoordinateProvider implements CoordinateProvider {
 
 		int start = tmp.getStart();
 		for (SAMFileReader reader : readers) {
-			SAMRecordIterator iterator = reader.query(coordinate.getSequenceName(), start, coordinate.getEnd(), false);
+			SAMRecordIterator iterator = reader.query(coordinate.getContig(), start, coordinate.getEnd(), false);
 
 			boolean found = false;
 			while (iterator.hasNext()) {

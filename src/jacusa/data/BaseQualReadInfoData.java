@@ -20,7 +20,7 @@ implements hasReadInfoCount {
 		this.readInfoCount = pileupData.readInfoCount.copy();
 	}
 	
-	public BaseQualReadInfoData(final Coordinate coordinate, final char referenceBase, final LibraryType libraryType) {
+	public BaseQualReadInfoData(final Coordinate coordinate, final char referenceBase, final LIBRARY_TYPE libraryType) {
 		super(coordinate, referenceBase, libraryType);
 		
 		readInfoCount = new ReadInfoCount();

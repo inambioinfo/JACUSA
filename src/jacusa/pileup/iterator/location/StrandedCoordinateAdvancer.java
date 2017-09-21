@@ -1,61 +1,48 @@
 package jacusa.pileup.iterator.location;
 
-import jacusa.pileup.iterator.WindowIterator;
 import jacusa.util.Coordinate;
 import jacusa.util.Coordinate.STRAND;
 
 public class StrandedCoordinateAdvancer implements CoordinateAdvancer {
 
-	protected boolean[] isStranded; 
-	protected Coordinate[] coordinates;
+	protected Coordinate coordinate;
 	
-	public StrandedCoordinateAdvancer(final boolean[] isStranded, final Coordinate[] coordinates) {
-		this.isStranded = isStranded;
-		this.coordinates = coordinates;
+	public StrandedCoordinateAdvancer(final Coordinate coordinate) {
+		this.coordinate = coordinate;
 	}
-	
-	public Coordinate get(final int conditionIndex) {
-		return coordinates[conditionIndex];
-	}
-	
+
+	@Override
 	public void advance() {
-		for (int conditionIndex = 0; conditionIndex < coordinates.length; conditionIndex++) {
-			advance(conditionIndex);
-		}
-	}
-	
-	public void advance(final int conditionIndex) {
-		if (isStranded[conditionIndex]) {
-			if (coordinates[conditionIndex].getStrand() == STRAND.FORWARD) {
-				coordinates[conditionIndex].setStrand(STRAND.REVERSE);
-			} else {
-				coordinates[conditionIndex].setStrand(STRAND.FORWARD);
-				final int currentPosition = coordinates[conditionIndex].getPosition() + 1;
-				coordinates[conditionIndex].setPosition(currentPosition);
-			}
+		if (coordinate.getStrand() == STRAND.FORWARD) {
+			coordinate.setStrand(STRAND.REVERSE);
 		} else {
-			final int currentPosition = coordinates[conditionIndex].getPosition() + 1;
-			coordinates[conditionIndex].setPosition(currentPosition);
-		}
-	}
-	
-	public void set(final int conditionIndex, final Coordinate newCoorindate) {
-		coordinates[conditionIndex].setPosition(newCoorindate.getPosition());
-		if (isStranded[conditionIndex]) {
-			coordinates[conditionIndex].setStrand(newCoorindate.getStrand());
+			coordinate.setStrand(STRAND.FORWARD);
+			final int currentPosition = coordinate.getStart() + 1;
+			coordinate.setPosition(currentPosition);
 		}
 	}
 
-	public Coordinate get() {
-		return coordinates[WindowIterator.CONDITON_INDEX];
+	@Override
+	public void adjustPosition(final int position, final STRAND strand) {
+		this.coordinate.setPosition(position);
+		this.coordinate.setStrand(strand);
 	}
 
-	public boolean[] getIsStranded() {
-		return isStranded;
+	@Override
+	public int getNextPosition() {
+		if (coordinate.getStrand() == STRAND.FORWARD) {
+			return coordinate.getStart();
+		} else {
+			return coordinate.getStart() + 1;
+		}
 	}
 	
-	public Coordinate[] getCoordinates() {
-		return coordinates;
+	public void set(final Coordinate newCoorindate) {
+		coordinate = newCoorindate;
+	}
+
+	public Coordinate getCoordinate() {
+		return coordinate;
 	}
 	
 }

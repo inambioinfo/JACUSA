@@ -5,7 +5,7 @@ import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.pileup.builder.AbstractDataBuilder;
 import jacusa.pileup.builder.AbstractStrandedPileupBuilder;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 import jacusa.util.WindowCoordinates;
 
 import net.sf.samtools.SAMFileReader;
@@ -23,7 +23,7 @@ extends AbstractStrandedPileupBuilder<T> {
 			final SAMFileReader reader, 
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters) {
-		super(windowCoordinates, reader, condition, parameters, LibraryType.FR_SECONDSTRAND);
+		super(windowCoordinates, reader, condition, parameters, LIBRARY_TYPE.FR_SECONDSTRAND);
 	}
 
 	// invert

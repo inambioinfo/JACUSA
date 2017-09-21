@@ -55,12 +55,12 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractData> {
 			
 		}
 		
-		workerContainer 		= new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
-		runningWorkers			= new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
-		comparisons 			= 0;
-		threadIds				= new ArrayList<Integer>(10000);
+		workerContainer = new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
+		runningWorkers	= new ArrayList<AbstractWorker<T>>(parameters.getMaxThreads());
+		comparisons 	= 0;
+		threadIds		= new ArrayList<Integer>(10000);
 		
-		this.parameters 		= parameters;
+		this.parameters = parameters;
 	}
 
 	protected abstract AbstractWorker<T> buildNextWorker();

@@ -18,7 +18,7 @@ public class UnstrandedPileupBuilderFactory<T extends BaseQualData>
 extends AbstractDataBuilderFactory<T> {
 
 	public UnstrandedPileupBuilderFactory() {
-		super(LibraryType.UNSTRANDED);
+		super(LIBRARY_TYPE.UNSTRANDED);
 	}
 
 	@Override

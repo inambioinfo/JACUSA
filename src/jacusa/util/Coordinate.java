@@ -11,55 +11,64 @@ public class Coordinate {
 	public static final char STRAND_REVERSE_CHAR = '-';
 	public static final char STRAND_UNKNOWN_CHAR = '.';
 	
-	private String sequenceName;
+	private String contig;
 	private int start;
 	private int end;
 	private STRAND strand;
 
 	public Coordinate() {
-		sequenceName 	= new String();
-		start 			= -1;
-		end 			= -1;
-		strand 			= STRAND.UNKNOWN;
+		contig 	= new String();
+		start 	= -1;
+		end 	= -1;
+		strand 	= STRAND.UNKNOWN;
 	}
 
 	public Coordinate(final Coordinate coordinate) {
-		sequenceName 	= new String(coordinate.sequenceName);
-		start 			= coordinate.start;
-		end 			= coordinate.end;
-		strand			= coordinate.strand;
+		contig 	= new String(coordinate.contig);
+		start 	= coordinate.start;
+		end 	= coordinate.end;
+		strand	= coordinate.strand;
 	}
 	
-	public Coordinate(final String sequenceName, 
+	public Coordinate(final String contig, 
 			final int start, final int end) {
-		this(sequenceName, start, end, STRAND.UNKNOWN);
+		this(contig, start, end, STRAND.UNKNOWN);
 	}
 	
-	public Coordinate(final String sequenceName, 
+	public Coordinate(final String contig, 
 			final int start, final STRAND strand) {
-		this(sequenceName, start, start + 1, strand);
+		this(contig, start, start, strand);
 	}
 	
-	public Coordinate(final String sequenceName, 
+	public Coordinate(final String contig, 
 			final int start, final int end, STRAND strand) {
-		this.sequenceName 	= sequenceName;
-		this.start 			= start;
-		this.end 			= end;
-		this.strand			= strand;
+		this.contig = contig;
+		this.start 	= start;
+		this.end 	= end;
+		this.strand	= strand;
 	}
 	
-	public String getSequenceName() {
-		return sequenceName;
+	public String getContig() {
+		return contig;
 	}
 
-	public void setSequenceName(final String sequenceName) {
-		this.sequenceName = sequenceName;
+	public void setContig(final String contig) {
+		this.contig = contig;
 	}
 
 	public int getStart() {
 		return start;
 	}
 
+	public void setPosition(final int position) {
+		start = position;
+		end = position;
+	}
+
+	public int getPosition() {
+		return start;
+	}
+	
 	public void setStart(final int start) {
 		this.start = start;
 	}
@@ -71,18 +80,9 @@ public class Coordinate {
 	public void setEnd(final int end) {
 		this.end = end;
 	}
-
-	public void setPosition(final int position) {
-		start = position;
-		end = position + 1;
-	}
-	
-	public int getPosition() {
-		return start;
-	}
 	
 	public String toString() {
-		return sequenceName + "_" + start + "-" + end;
+		return contig + "_" + start + "-" + end + "_" + getStrand().toString();
 	}
 	
 	public STRAND getStrand() {

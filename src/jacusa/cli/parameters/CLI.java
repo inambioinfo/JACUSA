@@ -5,7 +5,7 @@ import jacusa.cli.options.AbstractACOption;
 import jacusa.data.AbstractData;
 import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
-import jacusa.pileup.builder.hasLibraryType.LibraryType;
+import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -83,10 +83,11 @@ public class CLI {
 		CommandLineParser parser = new PosixParser();
 		try {
 			CommandLine line = parser.parse(options, processedArgs);
+			methodFactory.parseArgs(line.getArgs());
+
 			for (AbstractACOption acption : acOptions) {
 				acption.process(line);
 			}
-			methodFactory.parseArgs(line.getArgs());
 		} catch (Exception e) {
 			e.printStackTrace();
 			methodFactory.printUsage();
@@ -97,7 +98,7 @@ public class CLI {
 		if (methodFactory.getParameters().getFormat().getC() == VCFcall.CHAR) {
 			boolean error = false;
 			for (final ConditionParameters<?> cp : methodFactory.getParameters().getConditionParameters()) {
-				if (cp.getLibraryType() != LibraryType.UNSTRANDED) {
+				if (cp.getLibraryType() != LIBRARY_TYPE.UNSTRANDED) {
 					error = true;
 				}
 			}

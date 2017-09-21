@@ -2,7 +2,7 @@ package jacusa.filter;
 
 import jacusa.data.AbstractData;
 import jacusa.data.Result;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 
 /**
  * 
@@ -32,7 +32,7 @@ public abstract class AbstractFilter<T extends AbstractData> {
 	 * @param windowIterator
 	 * @return
 	 */
-	protected abstract boolean filter(final Result<T> result, final WindowIterator<T> windowIterator);
+	protected abstract boolean filter(final Result<T> result, final WindowedIterator<T> windowIterator);
 	
 	/**
 	 * 
@@ -41,7 +41,7 @@ public abstract class AbstractFilter<T extends AbstractData> {
 	 * @param windowIterator
 	 * @return
 	 */
-	public boolean applyFilter(final Result<T> result, final WindowIterator<T> windowIterator) {
+	public boolean applyFilter(final Result<T> result, final WindowedIterator<T> windowIterator) {
 		if (filter(result, windowIterator)) {
 			addFilterInfo(result);
 			return true;

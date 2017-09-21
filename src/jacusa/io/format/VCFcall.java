@@ -113,9 +113,9 @@ public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 
 		String[] cols = {
 				// contig
-				parallelData.getCombinedPooledData().getCoordinate().getSequenceName(),
+				parallelData.getCombinedPooledData().getCoordinate().getContig(),
 				// position
-				Integer.toString(parallelData.getCombinedPooledData().getCoordinate().getPosition()),
+				Integer.toString(parallelData.getCombinedPooledData().getCoordinate().getEnd()),
 				// ID
 				Character.toString(getEMPTY()),
 				// REF

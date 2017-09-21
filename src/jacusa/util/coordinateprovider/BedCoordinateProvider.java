@@ -60,7 +60,7 @@ public class BedCoordinateProvider implements CoordinateProvider {
 			Coordinate coordinate = new Coordinate();
 			String[] cols = line.split("\t");
 
-			coordinate.setSequenceName(cols[0]);
+			coordinate.setContig(cols[0]);
 			coordinate.setStart(Integer.parseInt(cols[1]) + 1);
 			coordinate.setEnd(Integer.parseInt(cols[2]));
 

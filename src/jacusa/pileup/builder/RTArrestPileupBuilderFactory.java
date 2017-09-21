@@ -27,7 +27,7 @@ extends AbstractDataBuilderFactory<T> {
 			final SAMFileReader reader, 
 			final ConditionParameters<T> condition, 
 			final AbstractParameters<T> parameters) {
-		return new RTArrestPileupBuilder<T>(pbf.newInstance(windowCoordinates, reader, condition, parameters));
+		return new RTArrestPileupBuilder<T>(condition, pbf.newInstance(windowCoordinates, reader, condition, parameters));
 	}
 
 }

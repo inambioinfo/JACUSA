@@ -10,6 +10,9 @@ import jacusa.pileup.builder.hasLibraryType;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.samtools.SAMRecord;
+import net.sf.samtools.SAMValidationError;
+
 public class ConditionParameters<T extends AbstractData>
 implements hasLibraryType {
 
@@ -198,12 +201,50 @@ implements hasLibraryType {
 		return invertStrand;
 	}
 
-	public LibraryType getLibraryType() {
+	public LIBRARY_TYPE getLibraryType() {
 		return getDataBuilderFactory().getLibraryType();
 	}
 
 	public int getReplicates() {
 		return pathnames.length;
+	}
+	
+	/**
+	 * Checks if a record fulfills user defined criteria
+	 * @param samRecord
+	 * @return
+	 */
+	public boolean isValid(SAMRecord samRecord) {
+		int mapq = samRecord.getMappingQuality();
+		List<SAMValidationError> errors = samRecord.isValid();
+
+		if (! samRecord.getReadUnmappedFlag()
+				&& ! samRecord.getNotPrimaryAlignmentFlag() // ignore non-primary alignments CHECK
+				&& (mapq < 0 || mapq >= getMinMAPQ()) // filter by mapping quality
+				&& (getFilterFlags() == 0 || (getFilterFlags() > 0 && ((samRecord.getFlags() & getFilterFlags()) == 0)))
+				&& (getRetainFlags() == 0 || (getRetainFlags() > 0 && ((samRecord.getFlags() & getRetainFlags()) > 0)))
+				&& errors == null // isValid is expensive
+				) { // only store valid records that contain mapped reads
+			// custom filter 
+			for (SamTagFilter samTagFilter : getSamTagFilters()) {
+				if (samTagFilter.filter(samRecord)) {
+					return false;
+				}
+			}
+
+			// no errors found
+			return true;
+		}
+
+		// print error messages
+		if (errors != null) {
+			for (SAMValidationError error : errors) {
+				 System.err.println(error.toString());
+			}
+		}
+
+		// something went wrong
+		return false;
 	}
 	
 }

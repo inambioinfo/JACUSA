@@ -31,9 +31,6 @@ public class SAMCoordinateProvider implements CoordinateProvider {
 		return it.hasNext();
 	}
 
-	/* (non-Javadoc)
-	 * @see java.util.Iterator#next()
-	 */
 	@Override
 	public Coordinate next() {
 		if(hasNext()) {

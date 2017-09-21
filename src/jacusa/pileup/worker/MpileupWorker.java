@@ -7,7 +7,7 @@ import jacusa.data.Result;
 import jacusa.filter.AbstractFilter;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
-import jacusa.pileup.iterator.WindowIterator;
+import jacusa.pileup.iterator.WindowedIterator;
 import jacusa.pileup.iterator.variant.AllParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -29,7 +29,7 @@ extends AbstractWorker<T> {
 	@Override
 	protected Result<T> processParallelData(
 			final ParallelPileupData<T> parallelPileup, 
-			final WindowIterator<T> parallelDataIterator) {
+			final WindowedIterator<T> parallelDataIterator) {
 		Result<T> result = new Result<T>();
 		result.setParallelData(parallelPileup);
 
@@ -45,8 +45,8 @@ extends AbstractWorker<T> {
 	}
 
 	@Override
-	protected WindowIterator<T> buildIterator(Coordinate coordinate) {
-		return new WindowIterator<T>(coordinate, variant, getReaders(), getParameters());
+	protected WindowedIterator<T> buildIterator(Coordinate coordinate) {
+		return new WindowedIterator<T>(coordinate, variant, getReaders(), getParameters());
 	}
 
 	public PileupParameters<T> getParameters() {

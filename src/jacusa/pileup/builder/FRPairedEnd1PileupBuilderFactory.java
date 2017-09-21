@@ -11,7 +11,7 @@ public class FRPairedEnd1PileupBuilderFactory<T extends BaseQualData>
 extends AbstractDataBuilderFactory<T> {
 
 	public FRPairedEnd1PileupBuilderFactory() {
-		super(LibraryType.FR_FIRSTSTRAND);
+		super(LIBRARY_TYPE.FR_FIRSTSTRAND);
 	}
 
 	@Override

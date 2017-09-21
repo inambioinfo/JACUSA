@@ -1,11 +1,8 @@
 package jacusa.pileup.builder;
 
-import jacusa.cli.options.condition.filter.samtag.SamTagFilter;
-
 import jacusa.cli.parameters.AbstractParameters;
 import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
-import jacusa.data.BaseConfig;
 import jacusa.filter.FilterContainer;
 import jacusa.filter.storage.ProcessDeletionOperator;
 import jacusa.filter.storage.ProcessInsertionOperator;
@@ -13,17 +10,18 @@ import jacusa.filter.storage.ProcessRecord;
 import jacusa.filter.storage.ProcessSkippedOperator;
 import jacusa.filter.storage.ProcessAlignmentOperator;
 import jacusa.filter.storage.ProcessAlignmentBlock;
+import jacusa.pileup.iterator.location.CoordinateAdvancer;
+import jacusa.pileup.iterator.location.UnstrandedCoordinateAdvancer;
+import jacusa.util.Coordinate;
 import jacusa.util.WindowCoordinates;
 import jacusa.util.Coordinate.STRAND;
 
 import java.util.Arrays;
-import java.util.List;
 
 import net.sf.samtools.CigarElement;
 import net.sf.samtools.SAMFileReader;
 import net.sf.samtools.SAMRecord;
 import net.sf.samtools.SAMRecordIterator;
-import net.sf.samtools.SAMValidationError;
 
 /**
  * 
@@ -34,17 +32,16 @@ public abstract class AbstractDataBuilder<T extends AbstractData>
 implements DataBuilder<T>, hasLibraryType {
 
 	// in genomic coordinates
+	protected CoordinateAdvancer advancer;
 	protected WindowCoordinates windowCoordinates;
 
 	// true if a valid read is found within genomicWindowStart and genomicWindowStart + windowSize
-	protected boolean windowHit;
 	protected SAMRecord[] SAMRecordsBuffer;
 	protected SAMFileReader reader;
 
 	protected int filteredSAMRecords;
 	protected int SAMRecords;
 
-	protected BaseConfig baseConfig;
 	protected ConditionParameters<T> condition;
 	protected AbstractParameters<T> parameters;
 
@@ -52,11 +49,12 @@ implements DataBuilder<T>, hasLibraryType {
 	
 	protected FilterContainer<T> filterContainer;
 	protected int[] byte2int;
-	protected STRAND strand;
 
 	protected int distance;
 	
-	protected LibraryType libraryType;
+	protected LIBRARY_TYPE libraryType;
+
+	protected CACHE_STATUS cacheStatus;
 	
 	public AbstractDataBuilder (
 			final WindowCoordinates windowCoordinates,
@@ -64,17 +62,16 @@ implements DataBuilder<T>, hasLibraryType {
 			final ConditionParameters<T> condition,
 			final AbstractParameters<T> parameters,
 			final STRAND strand,
-			final LibraryType libraryType) {
+			final LIBRARY_TYPE libraryType) {
+		advancer 				= new UnstrandedCoordinateAdvancer(new Coordinate(windowCoordinates.getContig(), -1, strand));
 		this.windowCoordinates	= windowCoordinates;
 		
-		windowHit				= false;
 		SAMRecordsBuffer		= new SAMRecord[20000];
 		reader					= SAMFileReader;
 
 		filteredSAMRecords		= 0;
 		SAMRecords				= 0;
 
-		baseConfig				= parameters.getBaseConfig();
 		this.condition			= condition;
 		this.parameters			= parameters;
 
@@ -85,7 +82,9 @@ implements DataBuilder<T>, hasLibraryType {
 		this.libraryType		= libraryType;
 		
 		// get max overhang
-		distance = filterContainer.getOverhang();
+		distance 				= filterContainer.getOverhang();
+
+		fillWindow(getNextValidRecord(windowCoordinates.getPosition()).getAlignmentStart());
 	}
 
 	/**
@@ -100,28 +99,29 @@ implements DataBuilder<T>, hasLibraryType {
 				targetPosition, 
 				windowCoordinates.getMaxGenomicPosition(), 
 				false);
-		
+
 		while (iterator.hasNext() ) {
 			SAMRecord record = iterator.next();
 
-			if (isValid(record)) {
+			if (condition.isValid(record)) {
 				iterator.close();
 				iterator = null;
 				return record;
 			}
 		}
 		iterator.close();
+		iterator = null;
 
 		// if no more reads are found 
 		return null;
 	}
-	
+
 	public int processIterator(final SAMRecordIterator iterator) {
 		int SAMReocordsInBuffer = 0;
 		while (iterator.hasNext()) {
 			SAMRecord record = iterator.next();
 
-			if(isValid(record)) {
+			if(condition.isValid(record)) {
 				SAMRecordsBuffer[SAMReocordsInBuffer++] = record;
 				incrementSAMRecords();
 			} else {
@@ -138,16 +138,6 @@ implements DataBuilder<T>, hasLibraryType {
 		return SAMReocordsInBuffer;
 	}
 	
-	@Override
-	final public void incrementFilteredSAMRecords() {
-		filteredSAMRecords++;
-	}
-	
-	@Override
-	final public void incrementSAMRecords() {
-		SAMRecords++;
-	}
-	
 	public int processBuffer(final int SAMReocordsInBuffer, final SAMRecord[] SAMRecordsBuffer) {
 		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
 			try {
@@ -159,15 +149,15 @@ implements DataBuilder<T>, hasLibraryType {
 		
 		return 0;
 	}
-	
-	public SAMRecordIterator getIterator(final int genomicWindowStart) {
-		windowCoordinates.setGenomicWindowStart(genomicWindowStart);
+
+	public SAMRecordIterator getIterator(final int genomicPosition) {
+		windowCoordinates.setStart(genomicPosition);
 
 		// get iterator to fill the window
 		return reader.query(
 				windowCoordinates.getContig(), 
-				windowCoordinates.getGenomicWindowStart(), 
-				windowCoordinates.getGenomicWindowEnd(), 
+				windowCoordinates.getStart(), 
+				windowCoordinates.getEnd(), 
 				false);
 	}
 	
@@ -179,91 +169,63 @@ implements DataBuilder<T>, hasLibraryType {
 	 * @return
 	 */
 	@Override
-	public boolean adjustWindowStart(int genomicWindowStart) {
+	public void adjustPosition(int genomicPosition, STRAND strand) {
+		if (! windowCoordinates.isContainedInWindow(genomicPosition)) {
+			fillWindow(genomicPosition);
+		}
+
+		// ignore STRAND
+		advancer.adjustPosition(genomicPosition, strand);
+		// TODO jump to first read?
+	}
+
+	protected boolean fillWindow(final int genomicPosition) {
 		clearCache();
 
 		// get iterator to fill the window
-		SAMRecordIterator iterator = getIterator(genomicWindowStart);
+		SAMRecordIterator iterator = getIterator(genomicPosition);
 		final int SAMReocordsInBuffer = processIterator(iterator);
 
 		if (SAMReocordsInBuffer > 0) {
 			// process any left SAMrecords in the buffer
 			processBuffer(SAMReocordsInBuffer, getSAMRecordsBuffer());
 		}
-		
-		if (getSAMRecords() == 0) {
-			// no reads found
+
+		if (getSAMRecords() > 0) {
+			cacheStatus = CACHE_STATUS.CACHED;
+			return true;
+		} else {
+			cacheStatus = CACHE_STATUS.NOT_FOUND;
 			return false;
 		}
-		
-		return true;
-	}
-
-	/**
-	 * Checks if a record fulfills user defined criteria
-	 * @param samRecord
-	 * @return
-	 */
-	public boolean isValid(SAMRecord samRecord) {
-		int mapq = samRecord.getMappingQuality();
-		List<SAMValidationError> errors = samRecord.isValid();
-
-		if (! samRecord.getReadUnmappedFlag()
-				&& ! samRecord.getNotPrimaryAlignmentFlag() // ignore non-primary alignments CHECK
-				&& (mapq < 0 || mapq >= condition.getMinMAPQ()) // filter by mapping quality
-				&& (condition.getFilterFlags() == 0 || (condition.getFilterFlags() > 0 && ((samRecord.getFlags() & condition.getFilterFlags()) == 0)))
-				&& (condition.getRetainFlags() == 0 || (condition.getRetainFlags() > 0 && ((samRecord.getFlags() & condition.getRetainFlags()) > 0)))
-				&& errors == null // isValid is expensive
-				) { // only store valid records that contain mapped reads
-			// custom filter 
-			for (SamTagFilter samTagFilter : condition.getSamTagFilters()) {
-				if (samTagFilter.filter(samRecord)) {
-					return false;
-				}
-			}
-
-			// no errors found
-			return true;
-		}
-
-		// print error messages
-		if (errors != null) {
-			for (SAMValidationError error : errors) {
-				 System.err.println(error.toString());
-			}
-		}
-
-		// something went wrong
-		return false;
-	}
-
-	/**
-	 * 
-	 * @return
-	 */
-	@Override
-	public int getFilteredSAMRecords() {
-		return filteredSAMRecords;
 	}
 
 	@Override
-	public WindowCoordinates getWindowCoordinates() {
-		return windowCoordinates;
+	public int getNextPosition() {
+		return advancer.getNextPosition();
 	}
 
-	// abstract methods
-
+	@Override
+	public void advance() {
+		final int position = advancer.getNextPosition();
+		if (! windowCoordinates.isContainedInWindow(position)) {
+			fillWindow(position);
+		} 
+		advancer.advance();
+	}
+	
 	// Reset all caches in windows
 	@Override
 	public void clearCache() {
 		windowCache.clear();
 		filterContainer.clear();
+		cacheStatus	= CACHE_STATUS.NOT_CACHED;
 	}
-	
-	protected abstract void addHighQualityBaseCall(final int windowPosition, 
-			final int baseIndex, final int qualIndex, final STRAND strand);
-	protected abstract void addLowQualityBaseCall(final int windowPosition, 
-			final int baseIndex, final int qualIndex, final STRAND strand);
+
+	protected abstract void addHighQualityBaseCall(
+			final int windowPosition, final int baseIndex, final int qualIndex);
+	protected abstract void addLowQualityBaseCall(
+			final int windowPosition, final int baseIndex, final int qualIndex);
 
 	/*
 	 * process CIGAR string methods
@@ -383,7 +345,7 @@ implements DataBuilder<T>, hasLibraryType {
 
 		// process record specific filters
 		for (ProcessRecord storage : filterContainer.getProcessRecord()) {
-			storage.processRecord(windowCoordinates.getGenomicWindowStart(), record);
+			storage.processRecord(windowCoordinates.getStart(), record);
 		}
 		
 		// process CIGAR -> SNP, INDELs
@@ -416,7 +378,7 @@ implements DataBuilder<T>, hasLibraryType {
 				readPosition += cigarElement.getLength();
 				genomicPosition += cigarElement.getLength();
 				MDPosition += cigarElement.getLength();
-				windowPosition  = windowCoordinates.convert2WindowPosition(genomicPosition);
+				windowPosition = windowCoordinates.convert2WindowPosition(genomicPosition);
 				alignmentBlockI++;
 				break;
 
@@ -520,7 +482,7 @@ implements DataBuilder<T>, hasLibraryType {
 			
 			switch (orientation) {
 			case 1:
-				if ((genomicPosition + offset) - windowCoordinates.getGenomicWindowEnd() <= distance) {
+				if ((genomicPosition + offset) - windowCoordinates.getEnd() <= distance) {
 					if (qualIndex >= condition.getMinBASQ()) {
 						for (final ProcessAlignmentOperator filterAligmnentOperator : 
 							filterContainer.getProcessAlignment()) {
@@ -535,8 +497,8 @@ implements DataBuilder<T>, hasLibraryType {
 				}
 				break;
 			case -1: // speedup jump to covered position
-				if (windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) > distance) {
-					offset += windowCoordinates.getGenomicWindowStart() - (genomicPosition + offset) - distance - 1;
+				if (windowCoordinates.getStart() - (genomicPosition + offset) > distance) {
+					offset += windowCoordinates.getStart() - (genomicPosition + offset) - distance - 1;
 				} else {
 					if (qualIndex >= condition.getMinBASQ()) {
 						for (final ProcessAlignmentOperator filterAligmnentOperator : 
@@ -552,7 +514,7 @@ implements DataBuilder<T>, hasLibraryType {
 			case 0:
 				if (windowPosition >= 0) {
 					if (qualIndex >= condition.getMinBASQ()) {
-						addHighQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
+						addHighQualityBaseCall(windowPosition, baseIndex, qualIndex);
 
 						// process any alignmentMatch specific filters
 						for (final ProcessAlignmentOperator filterAligmnentOperator : 
@@ -563,7 +525,7 @@ implements DataBuilder<T>, hasLibraryType {
 									baseIndex, qualIndex);
 						}
 					} else if (parameters.collectLowQualityBaseCalls()) { 
-						addLowQualityBaseCall(windowPosition, baseIndex, qualIndex, strand);
+						addLowQualityBaseCall(windowPosition, baseIndex, qualIndex);
 					}
 					// process MD on demand
 					if (record.getAttribute("MD") != null && windowCache.getReferenceBase(windowPosition) == (byte)'N') {
@@ -613,8 +575,22 @@ implements DataBuilder<T>, hasLibraryType {
 		}
 	}
 
+	/**
+	 * 
+	 * @return
+	 */
 	@Override
-	public LibraryType getLibraryType() {
+	public int getFilteredSAMRecords() {
+		return filteredSAMRecords;
+	}
+
+	@Override
+	public WindowCoordinates getWindowCoordinates() {
+		return windowCoordinates;
+	}
+	
+	@Override
+	public LIBRARY_TYPE getLibraryType() {
 		return libraryType;
 	}
 	
@@ -626,6 +602,26 @@ implements DataBuilder<T>, hasLibraryType {
 	@Override
 	public SAMRecord[] getSAMRecordsBuffer() {
 		return SAMRecordsBuffer;
+	}
+
+	
+	@Override
+	final public void incrementFilteredSAMRecords() {
+		filteredSAMRecords++;
+	}
+	
+	@Override
+	final public void incrementSAMRecords() {
+		SAMRecords++;
+	}
+	
+	public Coordinate getCoordinate() {
+		return advancer.getCoordinate();
+	}
+
+	@Override
+	public DataBuilder.CACHE_STATUS getCacheStatus() {
+		return cacheStatus;
 	}
 	
 }

@@ -127,7 +127,7 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 		final StringBuilder sb = new StringBuilder();
 
 		// coordinates
-		sb.append(parallelData.getCoordinate().getSequenceName());
+		sb.append(parallelData.getCoordinate().getContig());
 		sb.append(SEP);
 		sb.append(parallelData.getCoordinate().getStart() - 1);
 		sb.append(SEP);

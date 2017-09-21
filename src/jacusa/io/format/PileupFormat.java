@@ -32,9 +32,9 @@ public class PileupFormat extends AbstractOutputFormat<BaseQualData> {
 		final ParallelPileupData<BaseQualData> parallelPileupData = result.getParellelData();
 
 		// coordinates
-		sb.append(parallelPileupData.getCoordinate().getSequenceName());
+		sb.append(parallelPileupData.getCoordinate().getContig());
 		sb.append(SEP);
-		sb.append(parallelPileupData.getCoordinate().getStart());
+		sb.append(parallelPileupData.getCoordinate().getEnd());
 
 		for (int conditionIndex = 0; conditionIndex < parallelPileupData.getConditions(); conditionIndex++) {
 			addPileupData(sb, parallelPileupData.getPooledData(conditionIndex).getCoordinate().getStrand(), parallelPileupData.getData(conditionIndex));

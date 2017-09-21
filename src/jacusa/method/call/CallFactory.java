@@ -192,8 +192,7 @@ extends AbstractMethodFactory<BaseQualData> {
 		AbstractOutputFormat<BaseQualData> resultFormat = null;
 
 		// BED like output
-		resultFormat = new BED6call(getParameters().getBaseConfig(), 
-				getParameters().getFilterConfig(), getParameters().showReferenceBase());
+		resultFormat = new BED6call(getParameters());
 		resultFormats.put(resultFormat.getC(), resultFormat);
 
 		// VCF output

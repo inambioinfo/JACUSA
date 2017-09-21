@@ -15,9 +15,9 @@ import net.sf.samtools.SAMFileReader;
 public abstract class AbstractDataBuilderFactory<T extends AbstractData>
 implements hasLibraryType {
 
-	final private LibraryType libraryType;
+	final private LIBRARY_TYPE libraryType;
 	
-	public AbstractDataBuilderFactory(final LibraryType libraryType) {
+	public AbstractDataBuilderFactory(final LIBRARY_TYPE libraryType) {
 		this.libraryType = libraryType;
 	}
 	
@@ -40,11 +40,11 @@ implements hasLibraryType {
 	 * @return
 	 */
 	final public boolean isStranded() {
-		return libraryType != LibraryType.UNSTRANDED;
+		return libraryType != LIBRARY_TYPE.UNSTRANDED;
 	}
 
 	@Override
-	final public LibraryType getLibraryType() {
+	final public LIBRARY_TYPE getLibraryType() {
 		return libraryType;
 	}
 	

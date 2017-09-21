@@ -25,7 +25,7 @@ extends AbstractDataBuilder<T> {
 				condition, 
 				parameters, 
 				strand,
-				LibraryType.UNSTRANDED);
+				LIBRARY_TYPE.UNSTRANDED);
 	}
 
 	@Override
@@ -37,7 +37,7 @@ extends AbstractDataBuilder<T> {
 	public T getData(int windowPosition, STRAND strand) {
 		T dataContainer = parameters.getMethodFactory().createData();
 
-		dataContainer.getCoordinate().setSequenceName(windowCoordinates.getContig()); 
+		dataContainer.getCoordinate().setContig(windowCoordinates.getContig()); 
 		dataContainer.getCoordinate().setPosition(windowCoordinates.getGenomicPosition(windowPosition));
 		dataContainer.getCoordinate().setStrand(strand);
 
@@ -48,24 +48,19 @@ extends AbstractDataBuilder<T> {
 		if (referenceBaseByte != (byte)'N') {
 			dataContainer.setReferenceBase((char)referenceBaseByte);
 		}
-		
-		// and complement if needed
-		if (strand == STRAND.REVERSE) {
-			dataContainer.getBaseQualCount().invert();
-		}
 
 		return dataContainer;
 	}
 
 	@Override
-	protected void addHighQualityBaseCall(int windowPosition, int baseIndex, 
-			int qualIndex, STRAND strand) {
+	protected void addHighQualityBaseCall(
+			int windowPosition, int baseIndex, int qualIndex) {
 		windowCache.addHighQualityBaseCall(windowPosition, baseIndex, qualIndex);
 	}
 	
 	@Override
-	protected void addLowQualityBaseCall(int windowPosition, int baseIndex, 
-			int qualIndex, STRAND strand) {
+	protected void addLowQualityBaseCall(
+			int windowPosition, int baseIndex, int qualIndex) {
 		windowCache.addLowQualityBaseCall(windowPosition, baseIndex, qualIndex);
 	}
 
@@ -74,21 +69,10 @@ extends AbstractDataBuilder<T> {
 		return windowCache;
 	}
 
-	/**
-	 * 
-	 * @param windowPosition
-	 * @return
-	 */
-	@Override
-	public boolean isCovered(int windowPosition, STRAND strand) {
-		// for unstrandedPileup we ignore strand
-		return getCoverage(windowPosition, STRAND.UNKNOWN) >= condition.getMinCoverage();
-	}
-
 	@Override
 	public int getCoverage(int windowPosition, STRAND strand) {
 		// for unstrandedPileup we ignore strand
 		return windowCache.getCoverage(windowPosition);
 	}
-
+	
 }
