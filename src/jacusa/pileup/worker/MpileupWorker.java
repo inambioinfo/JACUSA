@@ -45,7 +45,7 @@ extends AbstractWorker<T> {
 	}
 
 	@Override
-	protected WindowedIterator<T> buildIterator(Coordinate coordinate) {
+	protected WindowedIterator<T> buildIterator(final Coordinate coordinate) {
 		return new WindowedIterator<T>(coordinate, variant, getReaders(), getParameters());
 	}
 

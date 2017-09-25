@@ -19,7 +19,6 @@ import jacusa.pileup.iterator.location.CoordinateAdvancer;
 import jacusa.pileup.iterator.location.CoordinateContainer;
 import jacusa.util.Coordinate;
 import jacusa.util.WindowCoordinates;
-import jacusa.util.Coordinate.STRAND;
 
 public class ReplicateContainer<T extends AbstractData> {
 
@@ -75,30 +74,30 @@ public class ReplicateContainer<T extends AbstractData> {
 		return filterContainers;
 	}
 	
-	private List<DataBuilder<T>> createBuilders(final Coordinate target, 
+	private List<DataBuilder<T>> createBuilders(final Coordinate window, 
 			final int conditionIndex, final SAMFileReader[] readers,
 			final AbstractParameters<T> parameters) {
 		final ConditionParameters<T> condition = parameters.getConditionParameters(conditionIndex);
 		final List<DataBuilder<T>> builders = new ArrayList<DataBuilder<T>>(readers.length);
 
-		final String contig = target.getContig();
+		final String contig = window.getContig();
 		for (int replicateIndex = 0; replicateIndex < readers.length; ++replicateIndex) {
 			final int sequenceLength = readers[replicateIndex]
 					.getFileHeader()
 					.getSequence(contig)
 					.getSequenceLength();
 	
-			if (target.getEnd() > sequenceLength) {
-				Coordinate samHeader = new Coordinate(target.getContig(), 1, sequenceLength);
-				JACUSA.printWarning("Coordinates in BED file (" + target.toString() + 
+			if (window.getEnd() > sequenceLength) {
+				Coordinate samHeader = new Coordinate(window.getContig(), 1, sequenceLength);
+				JACUSA.printWarning("Coordinates in BED file (" + window.toString() + 
 						") exceed SAM sequence header (" + samHeader.toString()+ ").");
 			}
 	
 			final WindowCoordinates windowCoordinates = new WindowCoordinates(
-					target.getContig(), 
-					target.getStart(), 
-					parameters.getWindowSize(), 
-					target.getEnd());
+					window.getContig(), 
+					window.getStart(), 
+					parameters.getWindowSize(),
+					window.getEnd());
 
 			DataBuilder<T> builder = condition.getDataBuilderFactory()
 					.newInstance(windowCoordinates, readers[replicateIndex], condition, parameters);
@@ -118,43 +117,6 @@ public class ReplicateContainer<T extends AbstractData> {
 		return false;
 	}
 	
-	/*
-	 * 	protected boolean adjustWindowStart(final int conditionIndex, final List<DataBuilder<T>> dataBuilders) {
-		final DataBuilder<T> refDataBuilder = dataBuilders.get(REPLICATE_INDEX);
-		final Coordinate coordinate = coordinateContainer.getCoordinate(conditionIndex);
-		
-		if (! refDataBuilder.adjustWindowStart(coordinate.getStart())) {
-			// TODO should't this be maxGenomic or higher than start + windowSize
-			// final int genomicWindowEnd = refDataBuilder.getWindowCoordinates().getGenomicWindowEnd();
-			SAMRecord record = getNextValidRecord(window.getEnd(), dataBuilders);
-			if (record == null) {
-				return false;
-			}
-			
-			coordinateContainer.adjustPosition(conditionIndex, record.getAlignmentStart());
-
-			return adjustWindowStart(conditionIndex, dataBuilders);
-		}
-
-		// TODO threads and this does not work
-		for (int replicateIndex = 1; replicateIndex < dataBuilders.size(); ++replicateIndex) {
-			dataBuilders.get(replicateIndex).adjustWindowStart(coordinate.getStart());
-		}
-		
-		return true;
-	}
-
-	protected boolean adjustCurrentGenomicPosition(final int conditionIndex, final int targetPosition) {
-		coordinateContainer.adjustPosition(conditionIndex, targetPosition);
-		final WindowCoordinates windowCoordinates = conditionDataBuilders.get(conditionIndex).get(REPLICATE_INDEX).getWindowCoordinates();
-		if (! windowCoordinates.isContainedInWindow(coordinateContainer.getCoordinate(conditionIndex).getStart())) {
-			return adjustWindowStart(conditionIndex, conditionDataBuilders.get(conditionIndex));
-		}
-
-		return true;
-	}
-	 */
-	
 	public Set<Integer> getAlleles(final Coordinate coordinate) {
 		final Set<Integer> alleles = new HashSet<Integer>(4);
 
@@ -167,29 +129,25 @@ public class ReplicateContainer<T extends AbstractData> {
 
 		return alleles;
 	}
-	
-	public void adjustBuilder(final Coordinate target) {
-		int position = Integer.MIN_VALUE; 
+
+	/**
+	 * Get next valid record position within thread window
+	 * @param target
+	 * @return
+	 */
+	public int getNextPosition(final Coordinate target) {
+		int position = Integer.MAX_VALUE; 
 		for (final DataBuilder<T> builder : builders) {
 			final SAMRecord record = builder.getNextValidRecord(target.getPosition());
-
 			if (record == null) {
-				return; // TODO
+				continue;
 			}
 
-			// find genomicPosition within coordinate.getStart() coordinate.getEnd();
 			int genomicPosition = Math.max(target.getPosition(), record.getAlignmentStart());
-			if (position < 0) {
-				position = genomicPosition;
-			} else {
-				position = Math.min(position, genomicPosition);
-			}
-			builder.adjustPosition(genomicPosition, STRAND.FORWARD);
+			position = Math.min(position, genomicPosition);
 		}
 
-		if (position != Integer.MIN_VALUE) {
-			target.setPosition(position);
-		}
+		return position;
 	}
 
 	// Change here for more quantitative evaluation

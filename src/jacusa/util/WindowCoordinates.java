@@ -20,10 +20,6 @@ public class WindowCoordinates extends Coordinate {
 		_setEnd();
 	}
 	
-	public int getEnd() {
-		return Math.min(getStart() + windowSize - 1, maxGenomicPosition);
-	}
-	
 	/**
 	 * End of window (inclusive)
 	 * @return

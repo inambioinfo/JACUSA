@@ -6,9 +6,10 @@ import jacusa.util.Coordinate.STRAND;
 public interface CoordinateAdvancer {
 
 	void advance();
-	int getNextPosition();
 	
-	Coordinate getCoordinate();
-	void adjustPosition(final int position, final STRAND strand);
+	Coordinate getCurrentCoordinate();
+	Coordinate nextCoordinate();
+
+	void adjustPosition(final int newPosition, final STRAND newStrand);
 
 }

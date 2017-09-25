@@ -1,6 +1,5 @@
 package jacusa.pileup.builder;
 
-
 import jacusa.data.AbstractData;
 import jacusa.filter.FilterContainer;
 import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
@@ -14,13 +13,11 @@ public interface DataBuilder<T extends AbstractData> extends CoordinateAdvancer 
 
 	SAMRecord getNextValidRecord(final int targetPosition);
 
-	SAMRecordIterator getIterator(final int targetPosition);
-	int processIterator(final SAMRecordIterator iterator);
 	WindowCoordinates getWindowCoordinates();
-	
+
+	SAMRecordIterator getIterator(final int targetPosition);
 	SAMRecord[] getSAMRecordsBuffer();
-	int processBuffer(final int SAMReocordsInBuffer, final SAMRecord[] SAMRecordsBuffer);
-	void processRecord(final SAMRecord record);
+ 	void processRecord(final SAMRecord record);
 	
 	int getFilteredSAMRecords();
 	int getSAMRecords();

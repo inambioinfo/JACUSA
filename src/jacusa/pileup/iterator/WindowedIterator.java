@@ -19,7 +19,7 @@ implements Iterator<ParallelPileupData<T>> {
 	
 	private ConditionContainer<T> conditionContainer;
 	private ParallelPileupData<T> parallelDataContainer;
-	
+
 	public WindowedIterator(final Coordinate window, final Variant<T> filter, 
 			final SAMFileReader[][] readers, final AbstractParameters<T> parameters) {
 		this.window = window;
@@ -33,7 +33,7 @@ implements Iterator<ParallelPileupData<T>> {
 	@Override
 	public boolean hasNext() {
 		if (conditionContainer.hasNext()) {
-			final Coordinate reference = new Coordinate(conditionContainer.getReferenceAdvancer().getCoordinate());
+			final Coordinate reference = new Coordinate(conditionContainer.getReferenceAdvancer().getCurrentCoordinate());
 
 			parallelDataContainer.setCoordinate(reference);
 			parallelDataContainer.setData(conditionContainer.getData(reference));
@@ -41,8 +41,8 @@ implements Iterator<ParallelPileupData<T>> {
 			if (filter.isValid(parallelDataContainer)) {
 				return true;
 			} else {
-				conditionContainer.advance();
 				parallelDataContainer.reset();
+				conditionContainer.advance();
 			}				
 		}
 

@@ -24,6 +24,8 @@ implements DataBuilder<T> {
 	
 	private final int[] readStartCount;
 	private final int[] readEndCount;
+
+	private CACHE_STATUS cacheStatus;
 	
 	public RTArrestPileupBuilder(final ConditionParameters<T> condition,
 			final DataBuilder<T> dataBuilder) {
@@ -33,6 +35,8 @@ implements DataBuilder<T> {
 		final int windowSize = dataBuilder.getWindowCoordinates().getWindowSize();
 		readStartCount	= new int[windowSize];
 		readEndCount	= new int[windowSize];
+		
+		cacheStatus 	= CACHE_STATUS.NOT_CACHED;
 	}
 	
 	@Override
@@ -132,29 +136,6 @@ implements DataBuilder<T> {
 	}
 	
 	@Override
-	public int processIterator(SAMRecordIterator iterator) {
-		int SAMReocordsInBuffer = 0;
-		while (iterator.hasNext()) {
-			SAMRecord record = iterator.next();
-
-			if(condition.isValid(record)) {
-				getSAMRecordsBuffer()[SAMReocordsInBuffer++] = record;
-				dataBuilder.incrementSAMRecords();
-			} else {
-				dataBuilder.incrementFilteredSAMRecords();
-			}
-
-			// process buffer
-			if (SAMReocordsInBuffer >= dataBuilder.getSAMRecordsBuffer().length) {
-				SAMReocordsInBuffer = processBuffer(SAMReocordsInBuffer, dataBuilder.getSAMRecordsBuffer());
-			}
-		}
-		iterator.close();
-		
-		return SAMReocordsInBuffer;
-	}
-	
-	@Override
 	public void incrementFilteredSAMRecords() {
 		dataBuilder.incrementFilteredSAMRecords();
 	}
@@ -163,39 +144,10 @@ implements DataBuilder<T> {
 	public void incrementSAMRecords() {
 		dataBuilder.incrementSAMRecords();
 	}
-	
+
 	@Override
-	public int processBuffer(int SAMReocordsInBuffer, SAMRecord[] SAMRecordsBuffer) {
-		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
-			try {
-				processRecord(SAMRecordsBuffer[i]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return 0;
-	}
-	
-	// bad code duplication
-	public boolean adjustWindowStart(int genomicWindowStart) {
-		clearCache();
-
-		// get iterator to fill the window
-		SAMRecordIterator iterator = getIterator(genomicWindowStart);
-		final int SAMReocordsInBuffer = processIterator(iterator);
-
-		if (SAMReocordsInBuffer > 0) {
-			// process any left SAMrecords in the buffer
-			processBuffer(SAMReocordsInBuffer, getSAMRecordsBuffer());
-		}
-		
-		if (getSAMRecords() == 0) {
-			// no reads found
-			return false;
-		}
-		
-		return true;
+	public Coordinate nextCoordinate() {
+		return dataBuilder.nextCoordinate();
 	}
 	
 	@Override
@@ -219,22 +171,25 @@ implements DataBuilder<T> {
 	}
 
 	@Override
-	public Coordinate getCoordinate() {
-		return dataBuilder.getCoordinate();
+	public Coordinate getCurrentCoordinate() {
+		return dataBuilder.getCurrentCoordinate();
 	}
 
 	@Override
-	public void adjustPosition(int position, STRAND strand) {
-		dataBuilder.adjustPosition(position, strand);
-	}
-
-	@Override
-	public int getNextPosition() {
-		return dataBuilder.getNextPosition();
+	public void adjustPosition(final int newPosition, final STRAND newStrand) {
+		if (cacheStatus == CACHE_STATUS.NOT_CACHED || ! getWindowCoordinates().isContainedInWindow(newPosition)) {
+			if (AbstractDataBuilder.fillWindow(this, condition, dataBuilder.getSAMRecordsBuffer(), newPosition)) {
+				cacheStatus = CACHE_STATUS.CACHED;
+			} else {
+				cacheStatus = CACHE_STATUS.NOT_FOUND;
+			}
+		}
+		dataBuilder.adjustPosition(newPosition, newStrand);
 	}
 
 	@Override
 	public DataBuilder.CACHE_STATUS getCacheStatus() {
-		return dataBuilder.getCacheStatus();
+		return cacheStatus;
 	}
+
 }

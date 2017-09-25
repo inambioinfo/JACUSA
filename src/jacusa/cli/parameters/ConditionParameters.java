@@ -15,7 +15,7 @@ import net.sf.samtools.SAMValidationError;
 
 public class ConditionParameters<T extends AbstractData>
 implements hasLibraryType {
-
+	
 	// cache related
 	private int maxDepth;
 

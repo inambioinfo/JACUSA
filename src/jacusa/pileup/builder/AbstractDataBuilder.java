@@ -63,7 +63,7 @@ implements DataBuilder<T>, hasLibraryType {
 			final AbstractParameters<T> parameters,
 			final STRAND strand,
 			final LIBRARY_TYPE libraryType) {
-		advancer 				= new UnstrandedCoordinateAdvancer(new Coordinate(windowCoordinates.getContig(), -1, strand));
+		advancer 				= new UnstrandedCoordinateAdvancer(new Coordinate(windowCoordinates.getContig(), Integer.MIN_VALUE, strand));
 		this.windowCoordinates	= windowCoordinates;
 		
 		SAMRecordsBuffer		= new SAMRecord[20000];
@@ -83,10 +83,22 @@ implements DataBuilder<T>, hasLibraryType {
 		
 		// get max overhang
 		distance 				= filterContainer.getOverhang();
-
-		fillWindow(getNextValidRecord(windowCoordinates.getPosition()).getAlignmentStart());
+		cacheStatus				= CACHE_STATUS.NOT_CACHED;
 	}
 
+
+	
+	@Override
+	public Coordinate nextCoordinate() {
+		return advancer.nextCoordinate();
+	}
+	
+	@Override
+	public void advance() {
+		final Coordinate nextCoordinate = nextCoordinate();
+		adjustPosition(nextCoordinate.getPosition(), nextCoordinate.getStrand());
+	}
+	
 	/**
 	 * 
 	 * @param targetPosition
@@ -116,40 +128,7 @@ implements DataBuilder<T>, hasLibraryType {
 		return null;
 	}
 
-	public int processIterator(final SAMRecordIterator iterator) {
-		int SAMReocordsInBuffer = 0;
-		while (iterator.hasNext()) {
-			SAMRecord record = iterator.next();
-
-			if(condition.isValid(record)) {
-				SAMRecordsBuffer[SAMReocordsInBuffer++] = record;
-				incrementSAMRecords();
-			} else {
-				incrementFilteredSAMRecords();
-			}
-
-			// process buffer
-			if (SAMReocordsInBuffer >= SAMRecordsBuffer.length) {
-				SAMReocordsInBuffer = processBuffer(SAMReocordsInBuffer, SAMRecordsBuffer);
-			}
-		}
-		iterator.close();
-		
-		return SAMReocordsInBuffer;
-	}
-	
-	public int processBuffer(final int SAMReocordsInBuffer, final SAMRecord[] SAMRecordsBuffer) {
-		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
-			try {
-				processRecord(SAMRecordsBuffer[i]);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return 0;
-	}
-
+	@Override
 	public SAMRecordIterator getIterator(final int genomicPosition) {
 		windowCoordinates.setStart(genomicPosition);
 
@@ -161,102 +140,53 @@ implements DataBuilder<T>, hasLibraryType {
 				false);
 	}
 	
-	/**
-	 * Tries to adjust to target position
-	 * Return true if at least one valid SAMRecord could be found.
-	 * WARNING: currentGenomicPosition != targetPosition is possible after method call 
-	 * @param genomicWindowStart
-	 * @return
-	 */
 	@Override
-	public void adjustPosition(int genomicPosition, STRAND strand) {
-		if (! windowCoordinates.isContainedInWindow(genomicPosition)) {
-			fillWindow(genomicPosition);
+	public void adjustPosition(final int newPosition, final STRAND newStrand) {
+		if (cacheStatus == CACHE_STATUS.NOT_CACHED || ! windowCoordinates.isContainedInWindow(newPosition)) {
+			if (fillWindow(this, condition, SAMRecordsBuffer, newPosition)) {
+				cacheStatus = CACHE_STATUS.CACHED;
+			} else {
+				cacheStatus = CACHE_STATUS.NOT_FOUND;
+			}
 		}
-
-		// ignore STRAND
-		advancer.adjustPosition(genomicPosition, strand);
-		// TODO jump to first read?
+		advancer.adjustPosition(newPosition, newStrand);
 	}
 
-	protected boolean fillWindow(final int genomicPosition) {
-		clearCache();
-
-		// get iterator to fill the window
-		SAMRecordIterator iterator = getIterator(genomicPosition);
-		final int SAMReocordsInBuffer = processIterator(iterator);
-
-		if (SAMReocordsInBuffer > 0) {
-			// process any left SAMrecords in the buffer
-			processBuffer(SAMReocordsInBuffer, getSAMRecordsBuffer());
-		}
-
-		if (getSAMRecords() > 0) {
-			cacheStatus = CACHE_STATUS.CACHED;
-			return true;
-		} else {
-			cacheStatus = CACHE_STATUS.NOT_FOUND;
-			return false;
-		}
-	}
-
-	@Override
-	public int getNextPosition() {
-		return advancer.getNextPosition();
-	}
-
-	@Override
-	public void advance() {
-		final int position = advancer.getNextPosition();
-		if (! windowCoordinates.isContainedInWindow(position)) {
-			fillWindow(position);
-		} 
-		advancer.advance();
-	}
-	
 	// Reset all caches in windows
 	@Override
 	public void clearCache() {
 		windowCache.clear();
 		filterContainer.clear();
+		Arrays.fill(SAMRecordsBuffer, null);
 		cacheStatus	= CACHE_STATUS.NOT_CACHED;
 	}
 
-	protected abstract void addHighQualityBaseCall(
-			final int windowPosition, final int baseIndex, final int qualIndex);
-	protected abstract void addLowQualityBaseCall(
-			final int windowPosition, final int baseIndex, final int qualIndex);
+	protected abstract void addHighQualityBaseCall(final int windowPosition, 
+			final int baseIndex, final int qualIndex);
+
+	protected abstract void addLowQualityBaseCall(final int windowPosition, 
+			final int baseIndex, final int qualIndex);
 
 	/*
 	 * process CIGAR string methods
 	 */
 	
 	protected void processHardClipping(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition, 
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
+			int windowPosition, int readPosition, int genomicPosition, 
+			final CigarElement cigarElement, final SAMRecord record) {
 		// System.err.println("Hard Clipping not handled yet!");
 	}
 	
 	protected void processSoftClipping(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition, 
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
+			int windowPosition, int readPosition, int genomicPosition, 
+			final CigarElement cigarElement, final SAMRecord record) {
 		// override if needed
 	}
 
 	protected void processPadding(
-			int windowPosition, 
-			int readPosition, 
-			int genomicPosition,
-			int upstreamMatch,
-			int downstreamMatch,
-			final CigarElement cigarElement, 
-			final SAMRecord record) {
+			int windowPosition, int readPosition, int genomicPosition,
+			int upstreamMatch, int downstreamMatch,
+			final CigarElement cigarElement, final SAMRecord record) {
 		System.err.println("Padding not handled yet!");
 	}
 
@@ -324,7 +254,7 @@ implements DataBuilder<T>, hasLibraryType {
 		return referenceBases;
 	}
 	
-	public void processRecord(SAMRecord record) {
+	public void processRecord(final SAMRecord record) {
 		// init	
 		int readPosition 	= 0;
 		int genomicPosition = record.getAlignmentStart();
@@ -357,14 +287,10 @@ implements DataBuilder<T>, hasLibraryType {
 			 * handle insertion
 			 */
 			case I:
-				processInsertion(
-						windowPosition, 
-						readPosition, 
-						genomicPosition, 
+				processInsertion(windowPosition, readPosition, genomicPosition, 
 						alignmentBlockLength[alignmentBlockI], 
 						alignmentBlockLength[alignmentBlockI + 1], 
-						cigarElement, 
-						record);
+						cigarElement, record);
 				readPosition += cigarElement.getLength();
 				break;
 
@@ -374,11 +300,13 @@ implements DataBuilder<T>, hasLibraryType {
 			case M:
 			case EQ:
 			case X:
-				processAlignmentMatch(windowPosition, readPosition, genomicPosition, cigarElement, record, MDPosition, referenceBases);
-				readPosition += cigarElement.getLength();
+				processAlignmentMatch(windowPosition, readPosition, genomicPosition, 
+						cigarElement, record, MDPosition, referenceBases);
+
+				readPosition 	+= cigarElement.getLength();
 				genomicPosition += cigarElement.getLength();
-				MDPosition += cigarElement.getLength();
-				windowPosition = windowCoordinates.convert2WindowPosition(genomicPosition);
+				MDPosition 		+= cigarElement.getLength();
+				windowPosition 	= windowCoordinates.convert2WindowPosition(genomicPosition);
 				alignmentBlockI++;
 				break;
 
@@ -386,17 +314,15 @@ implements DataBuilder<T>, hasLibraryType {
 			 * handle hard clipping 
 			 */
 			case H:
-				processHardClipping(windowPosition, readPosition, genomicPosition, cigarElement, record);
+				processHardClipping(windowPosition, readPosition, genomicPosition, 
+						cigarElement, record);
 				break;
 
 			/*
 			 * handle deletion from the reference and introns
 			 */
 			case D:
-				processDeletion(
-						windowPosition, 
-						readPosition, 
-						genomicPosition, 
+				processDeletion(windowPosition, readPosition, genomicPosition, 
 						alignmentBlockLength[alignmentBlockI], 
 						alignmentBlockLength[alignmentBlockI + 1],
 						cigarElement, record);
@@ -405,10 +331,7 @@ implements DataBuilder<T>, hasLibraryType {
 				break;
 
 			case N:
-				processSkipped(
-						windowPosition, 
-						readPosition, 
-						genomicPosition, 
+				processSkipped(windowPosition, readPosition, genomicPosition, 
 						alignmentBlockLength[alignmentBlockI], 
 						alignmentBlockLength[alignmentBlockI + 1],
 						cigarElement, record);
@@ -420,7 +343,8 @@ implements DataBuilder<T>, hasLibraryType {
 			 * soft clipping
 			 */
 			case S:
-				processSoftClipping(windowPosition, readPosition, genomicPosition, cigarElement, record);
+				processSoftClipping(windowPosition, readPosition, genomicPosition, 
+						cigarElement, record);
 				readPosition += cigarElement.getLength();
 				break;
 
@@ -428,14 +352,10 @@ implements DataBuilder<T>, hasLibraryType {
 			 * silent deletion from padded sequence
 			 */
 			case P:
-				processPadding(
-						windowPosition, 
-						readPosition, 
-						genomicPosition,
+				processPadding(windowPosition, readPosition, genomicPosition,
 						alignmentBlockLength[alignmentBlockI], 
 						alignmentBlockLength[alignmentBlockI + 1],
-						cigarElement, 
-						record);
+						cigarElement, record);
 				break;
 
 			default:
@@ -542,8 +462,7 @@ implements DataBuilder<T>, hasLibraryType {
 		}
 	}
 
-	protected void processInsertion(
-			int windowPosition, int readPosition, int genomicPosition,
+	protected void processInsertion(int windowPosition, int readPosition, int genomicPosition,
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
 		for (final ProcessInsertionOperator storage : filterContainer.getProcessInsertion()) {
@@ -553,8 +472,7 @@ implements DataBuilder<T>, hasLibraryType {
 		}
 	}
 
-	protected void processDeletion(
-			int windowPosition, int readPosition, int genomicPosition, 
+	protected void processDeletion(int windowPosition, int readPosition, int genomicPosition, 
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
 		for (final ProcessDeletionOperator storage : filterContainer.getProcessDeletion()) {
@@ -564,8 +482,7 @@ implements DataBuilder<T>, hasLibraryType {
 		}
 	}
 
-	protected void processSkipped(
-			int windowPosition, int readPosition, int genomicPosition,
+	protected void processSkipped(int windowPosition, int readPosition, int genomicPosition,
 			int upstreamMatch, int downstreamMatch,
 			final CigarElement cigarElement, final SAMRecord record) {
 		for (final ProcessSkippedOperator storage : filterContainer.getProcessSkipped()) {
@@ -615,13 +532,81 @@ implements DataBuilder<T>, hasLibraryType {
 		SAMRecords++;
 	}
 	
-	public Coordinate getCoordinate() {
-		return advancer.getCoordinate();
+	public Coordinate getCurrentCoordinate() {
+		return advancer.getCurrentCoordinate();
 	}
 
 	@Override
 	public DataBuilder.CACHE_STATUS getCacheStatus() {
 		return cacheStatus;
 	}
+
+	// Helper prevent code duplication
+	public static <S extends AbstractData> int processIterator(
+			final DataBuilder<S> builder, 
+			final ConditionParameters<S> condition,
+			final SAMRecord[] SAMRecordsBuffer,
+			final SAMRecordIterator iterator) {
+		int SAMReocordsInBuffer = 0;
+		while (iterator.hasNext()) {
+			SAMRecord record = iterator.next();
+
+			if(condition.isValid(record)) {
+				SAMRecordsBuffer[SAMReocordsInBuffer++] = record;
+				builder.incrementSAMRecords();
+			} else {
+				builder.incrementFilteredSAMRecords();
+			}
+
+			// process buffer
+			if (SAMReocordsInBuffer >= SAMRecordsBuffer.length) {
+				SAMReocordsInBuffer = processBuffer(builder, SAMReocordsInBuffer, SAMRecordsBuffer);
+			}
+		}
+		iterator.close();
+		
+		return SAMReocordsInBuffer;
+	}
+	
+	public static <S extends AbstractData> boolean fillWindow(
+			final DataBuilder<S> builder, 
+			final ConditionParameters<S> condition,
+			final SAMRecord[] SAMRecordBuffer,
+			final int genomicPosition) {
+		builder.clearCache();
+
+		// get iterator to fill the window
+		SAMRecordIterator iterator = builder.getIterator(genomicPosition);
+		final int SAMReocordsInBuffer = processIterator(builder,
+				condition, 
+				SAMRecordBuffer,
+				iterator);
+
+		if (SAMReocordsInBuffer > 0) {
+			// process any left SAMrecords in the buffer
+			processBuffer(builder, SAMReocordsInBuffer, builder.getSAMRecordsBuffer());
+		}
+
+		if (builder.getSAMRecords() > 0) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	public static <S extends AbstractData> int processBuffer(
+			final DataBuilder<S> builder, 
+			final int SAMReocordsInBuffer, 
+			final SAMRecord[] SAMRecordsBuffer) {
+		for (int i = 0; i < SAMReocordsInBuffer; ++i) {
+			try {
+				builder.processRecord(SAMRecordsBuffer[i]);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}
+
+		return 0;
+	}	
 	
 }

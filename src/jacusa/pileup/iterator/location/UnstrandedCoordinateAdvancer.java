@@ -10,20 +10,23 @@ public class UnstrandedCoordinateAdvancer implements CoordinateAdvancer {
 	public UnstrandedCoordinateAdvancer(final Coordinate coordinate) {
 		this.coordinate = coordinate;
 	}
+	
+	@Override
+	public Coordinate getCurrentCoordinate() {
+		return coordinate;
+	}
 
 	@Override
 	public void advance() {
-		coordinate.setPosition(getNextPosition());
+		final int currentPosition = coordinate.getStart() + 1;
+		coordinate.setPosition(currentPosition);
 	}
 	
 	@Override
-	public int getNextPosition() {
-		return coordinate.getStart() + 1;
-	}
-	
-	@Override
-	public Coordinate getCoordinate() {
-		return coordinate;
+	public Coordinate nextCoordinate() {
+		UnstrandedCoordinateAdvancer tmp = new UnstrandedCoordinateAdvancer(coordinate);
+		tmp.advance();
+		return tmp.getCurrentCoordinate();
 	}
 
 	@Override

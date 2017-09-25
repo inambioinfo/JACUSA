@@ -24,25 +24,19 @@ public class StrandedCoordinateAdvancer implements CoordinateAdvancer {
 
 	@Override
 	public void adjustPosition(final int position, final STRAND strand) {
-		this.coordinate.setPosition(position);
-		this.coordinate.setStrand(strand);
+		coordinate.setPosition(position);
+		coordinate.setStrand(strand);
+	}
+
+	public Coordinate getCurrentCoordinate() {
+		return coordinate;
 	}
 
 	@Override
-	public int getNextPosition() {
-		if (coordinate.getStrand() == STRAND.FORWARD) {
-			return coordinate.getStart();
-		} else {
-			return coordinate.getStart() + 1;
-		}
-	}
-	
-	public void set(final Coordinate newCoorindate) {
-		coordinate = newCoorindate;
+	public Coordinate nextCoordinate() {
+		StrandedCoordinateAdvancer tmp = new StrandedCoordinateAdvancer(coordinate);
+		tmp.advance();
+		return tmp.getCurrentCoordinate();
 	}
 
-	public Coordinate getCoordinate() {
-		return coordinate;
-	}
-	
 }

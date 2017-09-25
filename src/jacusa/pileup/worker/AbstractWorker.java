@@ -179,7 +179,7 @@ extends Thread {
 				parallelDataIterator.getWindow().getStart() + 
 				"-" + 
 				parallelDataIterator.getWindow().getEnd());
-
+		
 		// iterate over parallel pileups
 		while (parallelDataIterator.hasNext()) {
 			final ParallelPileupData<T> parallelPileup = parallelDataIterator.next();

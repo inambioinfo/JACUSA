@@ -14,6 +14,7 @@ import jacusa.pileup.iterator.location.CoordinateContainer;
 import jacusa.pileup.iterator.location.StrandedCoordinateAdvancer;
 import jacusa.pileup.iterator.location.UnstrandedCoordinateAdvancer;
 import jacusa.util.Coordinate;
+import jacusa.util.Coordinate.STRAND;
 
 public class ConditionContainer<T extends AbstractData> {
 
@@ -21,13 +22,19 @@ public class ConditionContainer<T extends AbstractData> {
 	private CoordinateAdvancer referenceAdvancer;
 	private Map<Integer, ReplicateContainer<T>> container;
 	private AbstractParameters<T> parameters;
-	
+
 	public ConditionContainer(final Coordinate window, SAMFileReader[][] readers, final AbstractParameters<T> parameters) {
-		this.window = window;
+		this.window 	= window;
 		this.parameters = parameters;
-		container = init(window, readers, parameters);
-		referenceAdvancer = createReferenceAdvancer(window, parameters.getConditions());
-		init(referenceAdvancer.getCoordinate());
+
+		container 			= initContainer(window, readers, parameters);
+		referenceAdvancer 	= createReferenceAdvancer(window, parameters.getConditions());
+		adjustTarget(referenceAdvancer.getCurrentCoordinate(), window.getEnd());
+		for (ReplicateContainer<T> replicateContainer : container.values()) {
+			replicateContainer
+			.getCoordinateContainer()
+			.adjustCoordinate(referenceAdvancer.getCurrentCoordinate());
+		}
 	}
 
 	public ReplicateContainer<T> getReplicatContainer(final int conditionIndex) {
@@ -55,29 +62,38 @@ public class ConditionContainer<T extends AbstractData> {
 
 		return alleles.size();
 	}
-	
+
 	public int getAlleleCount(final int conditionIndex, final Coordinate coordinate) {
 		return getReplicatContainer(conditionIndex).getAlleles(coordinate).size();
 	}
 
-	public void advance() {
+	public boolean advance() {
 		referenceAdvancer.advance();
+
 		if (checkReferenceWithinWindow()) {
 			for (int conditionIndex = 0; conditionIndex < container.size(); conditionIndex++) {
-				getCoordinateContainer(conditionIndex).advance(referenceAdvancer.getCoordinate());
+				getCoordinateContainer(conditionIndex).adjustCoordinate(referenceAdvancer.getCurrentCoordinate());
 			}
+
+			return true;
 		}
+
+		return false;
 	}
-	
+
 	public boolean hasNext() {
 		while (checkReferenceWithinWindow()) {
-			if (! isCovered(referenceAdvancer.getCoordinate())) {
-				advance();
+			if (! isCovered(referenceAdvancer.getCurrentCoordinate())) {
+				// TODO make it faster
+				
+				if (! advance()) {
+					return false;
+				}
 			} else {
 				return true;
 			}
 		}
-		
+
 		return false;
 	}
 
@@ -86,16 +102,25 @@ public class ConditionContainer<T extends AbstractData> {
 	}
 
 	public boolean checkReferenceWithinWindow() {
-		return referenceAdvancer.getCoordinate().getPosition() >= window.getStart() &&
-				referenceAdvancer.getCoordinate().getPosition() <= window.getEnd(); 		
+		final int position = referenceAdvancer.getCurrentCoordinate().getPosition();
+		return position >= window.getStart() && position <= window.getEnd(); 		
 	}
 	
-	private void init(final Coordinate target) {
+	/**
+	 * Set target to next position <= maxPosition
+	 * @param target
+	 * @param maxPosition
+	 */
+	private void adjustTarget(final Coordinate target, final int maxPosition) {
+		int position = maxPosition;
 		for (final ReplicateContainer<T> replicateContainer : container.values()) {
-			replicateContainer.adjustBuilder(target);
+			final int newPosition = replicateContainer.getNextPosition(target);
+			position = Math.min(position, newPosition);
 		}
+
+		target.setPosition(position);
 	}
-	
+
 	private boolean isCovered(final Coordinate coordinate) {
 		for (final ReplicateContainer<T> replicateContainer : container.values()) {
 			if (! replicateContainer.isCovered(coordinate)) {
@@ -105,35 +130,36 @@ public class ConditionContainer<T extends AbstractData> {
 
 		return true;
 	}
-	
-	private Map<Integer, ReplicateContainer<T>> init(final Coordinate window, 
+
+	private Map<Integer, ReplicateContainer<T>> initContainer(final Coordinate window, 
 			final SAMFileReader[][] readers, 
 			final AbstractParameters<T> parameters) {
-		final Map<Integer, ReplicateContainer<T>> res = new HashMap<Integer, ReplicateContainer<T>>(parameters.getConditions());
+		final Map<Integer, ReplicateContainer<T>> container = new HashMap<Integer, ReplicateContainer<T>>(parameters.getConditions());
 
 		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
 			final ReplicateContainer<T> replicateContainer = new ReplicateContainer<T>(window, conditionIndex, readers[conditionIndex], parameters);
-			res.put(conditionIndex, replicateContainer);
+			container.put(conditionIndex, replicateContainer);
 		}
 
-		return res;
+		return container;
 	}
 
 	private CoordinateAdvancer createReferenceAdvancer(final Coordinate window, final int conditions) {
-		final Coordinate coordinate = new Coordinate(window.getContig(), window.getPosition(), window.getStrand());
+		final Coordinate coordinate = new Coordinate(window.getContig(), window.getStart(), window.getStrand());
 		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
 			if (getReplicatContainer(conditionIndex).isStranded()) {
+				coordinate.setStrand(STRAND.FORWARD);
 				return new StrandedCoordinateAdvancer(coordinate);
 			}
 		}
-		
+
 		return new UnstrandedCoordinateAdvancer(coordinate);
 	}
-	
+
 	private CoordinateContainer getCoordinateContainer(final int conditionIndex) {
 		return container.get(conditionIndex).getCoordinateContainer();
 	}
-	
+
 	/*
 	 * 			// check that all conditions have some coverage position
 			for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
