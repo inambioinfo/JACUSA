@@ -73,6 +73,7 @@ NULL
 .BASES <- c("A", "C", "G", "T")
 # convenience: description of RT arrest fields
 .READ <- c("start", "through", "end")
+.RT <- c("arrest", "through")
 
 # convenience: A -> G
 .BC_CHANGE_SEP <- "->"
