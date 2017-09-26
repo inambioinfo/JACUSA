@@ -49,11 +49,11 @@ public class ReplicateContainer<T extends AbstractData> {
 		// create new container array
 		T[] data = parameters.getMethodFactory().createReplicateData(builders.size());
 		for (int replicateIndex = 0; replicateIndex < replicates; ++replicateIndex) {
-			final int windowPosition = builders.get(replicateIndex)
-					.getWindowCoordinates()
+			final DataBuilder<T> builder = builders.get(replicateIndex);
+			final int windowPosition = builder.getWindowCoordinates()
 					.convert2WindowPosition(coordinate.getStart());
-			data[replicateIndex] = builders.get(replicateIndex)
-					.getData(windowPosition, coordinate.getStrand());
+
+			data[replicateIndex] = builder.getData(windowPosition, coordinate.getStrand());
 		}
 
 		return data;

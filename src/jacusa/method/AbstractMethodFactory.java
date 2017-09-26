@@ -34,7 +34,7 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 	private final String name;
 	private final String desc;
 
-	private final AbstractParameters<T> parameters;
+	private AbstractParameters<T> parameters;
 
 	private final Set<AbstractACOption> ACOptions;
 
@@ -45,16 +45,19 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 		this.name = name;
 		this.desc = desc;
 
-		this.parameters = parameters;
-		parameters.setMethodFactory(this);
-		
+		setParameters(parameters);
 		ACOptions 		= new HashSet<AbstractACOption>(10);
 	}
 	
-	/**
-	 * 
-	 * @return
-	 */
+	// needed for Methods where the number of conditions is unknown... 
+	public void initParameters(final int conditions) { }
+	
+	protected void setParameters(final AbstractParameters<T> parameters) {
+		parameters.setMethodFactory(this);
+		this.parameters = parameters;
+		
+	}
+	
 	public AbstractParameters<T> getParameters() {
 		return parameters;
 	}

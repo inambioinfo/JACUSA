@@ -7,6 +7,7 @@ import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
 import jacusa.pileup.builder.hasLibraryType.LIBRARY_TYPE;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -61,28 +62,38 @@ public class CLI {
 			System.exit(0);
 		}
 		methodFactory = methodFactories.get(args[0].toLowerCase());
-		
+
+		if (args.length == 1) {
+			// init method factory (populate: parameters)
+			methodFactory.initACOptions();
+			
+			Set<AbstractACOption> acOptions = methodFactory.getACOptions();
+			Options options = new Options();
+			for (AbstractACOption acoption : acOptions) {
+				options.addOption(acoption.getOption());
+			}
+			
+			methodFactory.printUsage();
+			System.exit(0);
+		}
+		methodFactory.initParameters(getFilenames(args).length);
 		// init method factory (populate: parameters)
 		methodFactory.initACOptions();
-
+		
 		Set<AbstractACOption> acOptions = methodFactory.getACOptions();
 		Options options = new Options();
 		for (AbstractACOption acoption : acOptions) {
 			options.addOption(acoption.getOption());
 		}
-
-		if (args.length == 1) {
-			methodFactory.printUsage();
-			System.exit(0);
-		}
+		
 		// copy arguments while ignoring the first array element
 		String[] processedArgs = new String[args.length - 1];
 		System.arraycopy(args, 1, processedArgs, 0, args.length - 1);
 
 		// parse arguments
-		CommandLineParser parser = new PosixParser();
+		final CommandLineParser parser = new PosixParser();
 		try {
-			CommandLine line = parser.parse(options, processedArgs);
+			final CommandLine line = parser.parse(options, processedArgs);
 			methodFactory.parseArgs(line.getArgs());
 
 			for (AbstractACOption acption : acOptions) {
@@ -111,6 +122,16 @@ public class CLI {
 		}
 		
 		return true;
+	}
+
+	private String[] getFilenames(final String[] args) {
+		for (int i = args.length - 1; i >= 0; --i) {
+			if (args[i].startsWith("-")) {
+				return Arrays.copyOfRange(args, i + 2, args.length);
+			}
+		}
+		
+		return args;
 	}
 
 	/**

@@ -88,7 +88,7 @@ implements DataBuilder<T> {
 	@Override
 	public T getData(final int windowPosition, final STRAND strand) {
 		T dataContainer = parameters.getMethodFactory().createData();
-
+		
 		dataContainer.getCoordinate().setContig(windowCoordinates.getContig()); 
 		dataContainer.getCoordinate().setPosition(windowCoordinates.getGenomicPosition(windowPosition));
 		dataContainer.getCoordinate().setStrand(strand);
@@ -98,16 +98,15 @@ implements DataBuilder<T> {
 		// copy base and qual info from cache
 		dataContainer.setBaseQualCount(windowCache.getBaseCount(windowPosition));
 
-		byte refBaseByte = windowCache.getReferenceBase(windowPosition);
-		if (refBaseByte != (byte)'N') {
-			dataContainer.setReferenceBase((char)refBaseByte);
+		byte referenceBaseByte = windowCache.getReferenceBase(windowPosition);
+		if (referenceBaseByte != (byte)'N') {
+			dataContainer.setReferenceBase((char)referenceBaseByte);
 		}
 
-		// and complement if needed
 		if (strand == STRAND.REVERSE) {
 			dataContainer.getBaseQualCount().invert();
 		}
-		
+
 		// for "Stranded"PileupBuilder the basesCounts in the pileup are already inverted (when on the reverse strand) 
 		return dataContainer;
 	}
@@ -203,5 +202,5 @@ implements DataBuilder<T> {
 	public DataBuilder.CACHE_STATUS getCacheStatus() {
 		return cacheStatus;
 	}
-	
+
 }

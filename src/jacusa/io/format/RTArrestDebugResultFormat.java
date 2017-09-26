@@ -7,10 +7,10 @@ import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.filter.FilterConfig;
 
-public class RTArrestResultFormat 
+public class RTArrestDebugResultFormat 
 extends AbstractOutputFormat<BaseQualReadInfoData> {
 
-	public static final char CHAR = 'B';
+	public static final char CHAR = 'D';
 	
 	public static final char COMMENT= '#';
 	public static final char EMPTY 	= '*';
@@ -24,7 +24,7 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 	protected BaseConfig baseConfig;
 	private boolean showReferenceBase;
 
-	public RTArrestResultFormat(
+	public RTArrestDebugResultFormat(
 			final char c,
 			final String desc,
 			final BaseConfig baseConfig, 
@@ -38,11 +38,11 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 		this.showReferenceBase = showReferenceBase;
 	}
 
-	public RTArrestResultFormat(
+	public RTArrestDebugResultFormat(
 			final BaseConfig baseConfig, 
 			final FilterConfig<BaseQualReadInfoData> filterConfig,
 			final boolean showReferenceBase) {
-		this(CHAR, "Default", baseConfig, filterConfig, showReferenceBase);
+		this(CHAR, "Debug", baseConfig, filterConfig, showReferenceBase);
 	}
 
 	@Override
@@ -195,9 +195,11 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 				sb.append(count);
 			}
 			sb.append(SEP);
-			sb.append(d.getReadInfoCount().getArrest());
+			sb.append(d.getReadInfoCount().getStart());
 			sb.append(SEP2);
-			sb.append(d.getReadInfoCount().getThrough());
+			sb.append(d.getReadInfoCount().getInner());
+			sb.append(SEP2);
+			sb.append(d.getReadInfoCount().getEnd());
 		}
 	}
 

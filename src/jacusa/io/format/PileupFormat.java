@@ -6,7 +6,6 @@ import jacusa.data.ParallelPileupData;
 import jacusa.data.Result;
 import jacusa.phred2prob.Phred2Prob;
 
-import jacusa.util.Coordinate.STRAND;
 import net.sf.samtools.SAMUtils;
 
 public class PileupFormat extends AbstractOutputFormat<BaseQualData> {
@@ -36,24 +35,25 @@ public class PileupFormat extends AbstractOutputFormat<BaseQualData> {
 		sb.append(SEP);
 		sb.append(parallelPileupData.getCoordinate().getEnd());
 
-		for (int conditionIndex = 0; conditionIndex < parallelPileupData.getConditions(); conditionIndex++) {
-			addPileupData(sb, parallelPileupData.getPooledData(conditionIndex).getCoordinate().getStrand(), parallelPileupData.getData(conditionIndex));
+		sb.append(getSEP());
+		if (showReferenceBase) {
+			sb.append(parallelPileupData.getCombinedPooledData().getReferenceBase());
+		} else {
+			sb.append("N");
 		}
 
-		if (showReferenceBase) {
-			sb.append(getSEP());
-			sb.append(parallelPileupData.getCombinedPooledData().getReferenceBase());
+		sb.append(SEP);
+		sb.append(parallelPileupData.getCoordinate().getStrand());
+		
+		for (int conditionIndex = 0; conditionIndex < parallelPileupData.getConditions(); conditionIndex++) {
+			addPileupData(sb, parallelPileupData.getData(conditionIndex));
 		}
 
 		return sb.toString();		
 	}
 	
-	protected void addPileupData(StringBuilder sb, STRAND strand, BaseQualData[] datas) {
-		sb.append(SEP);
-		sb.append(strand.character());
-		
-		for(final BaseQualData data : datas) {
-
+	protected void addPileupData(final StringBuilder sb, final BaseQualData[] datas) {
+		for (final BaseQualData data : datas) {
 			sb.append(SEP);
 			sb.append(data.getBaseQualCount().getCoverage());
 			sb.append(SEP);

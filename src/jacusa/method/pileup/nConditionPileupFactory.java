@@ -54,14 +54,22 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 	public nConditionPileupFactory(int conditions) {
 		super("pileup", "SAMtools like mpileup", 
 				new PileupParameters<BaseQualData>(conditions));
-		
+
 		// set
-		for (int i = 0; i < conditions; i++) {
-			ConditionParameters<BaseQualData> condition = new ConditionParameters<BaseQualData>();
+		for (ConditionParameters<BaseQualData> condition : getParameters().getConditionParameters()) {
 			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
-			getParameters().getConditionParameters().add(condition);
 		}
 	}
+	
+	public void initParameters(final int conditions) {
+		setParameters(new PileupParameters<BaseQualData>(conditions));
+
+		// set
+		for (ConditionParameters<BaseQualData> condition : getParameters().getConditionParameters()) {
+			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
+		}
+	}
+	
 
 	public void initACOptions() {
 		initGlobalACOptions();
@@ -181,6 +189,7 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 			throw new ParseException("BAM File is not provided!");
 		}
 
+		/*
 		// set condition parameters bases on: file11,file12 file21
 		// -> 2 conditions
 		final int conditions = args.length;
@@ -193,6 +202,7 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
 			getParameters().getConditionParameters().add(condition);
 		}
+		*/
 
 		return super.parseArgs(args); 
 	}

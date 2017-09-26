@@ -34,7 +34,7 @@ extends AbstractDataBuilder<T> {
 	}
 	
 	@Override
-	public T getData(int windowPosition, STRAND strand) {
+	public T getData(final int windowPosition, final STRAND strand) {
 		T dataContainer = parameters.getMethodFactory().createData();
 
 		dataContainer.getCoordinate().setContig(windowCoordinates.getContig()); 
@@ -47,6 +47,10 @@ extends AbstractDataBuilder<T> {
 		byte referenceBaseByte = windowCache.getReferenceBase(windowPosition);
 		if (referenceBaseByte != (byte)'N') {
 			dataContainer.setReferenceBase((char)referenceBaseByte);
+		}
+
+		if (strand == STRAND.REVERSE) {
+			dataContainer.getBaseQualCount().invert();
 		}
 
 		return dataContainer;
