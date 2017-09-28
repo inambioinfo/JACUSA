@@ -1,5 +1,6 @@
 package jacusa.method.rtarrest;
 
+import jacusa.JACUSA;
 import jacusa.cli.options.BaseConfigOption;
 import jacusa.cli.options.BedCoordinatesOption;
 import jacusa.cli.options.FilterModusOption;
@@ -18,6 +19,7 @@ import jacusa.cli.options.condition.MinMAPQConditionOption;
 import jacusa.cli.options.condition.filter.FilterFlagConditionOption;
 import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
+import jacusa.cli.options.pileupbuilder.OneConditionBaseQualDataBuilderOption;
 
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.RTArrestParameters;
@@ -27,6 +29,7 @@ import jacusa.filter.factory.AbstractFilterFactory;
 
 import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6call;
+import jacusa.io.format.RTArrestDebugResultFormat;
 import jacusa.io.format.RTArrestResultFormat;
 
 import jacusa.method.AbstractMethodFactory;
@@ -54,10 +57,16 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 	private static RTArrestWorkerDispatcher<BaseQualReadInfoData> instance;
 
 	public RTArrestFactory() {
-		super(NAME, "Reverse Transcription Arrest - two conditions", 
+		super(NAME, "Reverse Transcription Arrest - 2 conditions", 
 				new RTArrestParameters<BaseQualReadInfoData>(2));
 	}
-		
+
+	/*
+	public void initParameters(final int conditions) {
+		setParameters(new RTArrestParameters<BaseQualReadInfoData>(conditions));
+	}
+	*/
+
 	public void initACOptions() {
 		initGlobalACOptions();
 		initConditionACOptions();
@@ -68,7 +77,7 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 			getParameters().setFormat(getResultFormats().get(a[0]));
 		} else {
 			getParameters().setFormat(getResultFormats().get(BED6call.CHAR));
-			addACOption(new FormatOption<BaseQualReadInfoData, AbstractOutputFormat<BaseQualReadInfoData>>(
+			addACOption(new FormatOption<BaseQualReadInfoData>(
 					getParameters(), getResultFormats()));
 		}
 	}
@@ -111,6 +120,8 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 			
 			addACOption(new FilterNHsamTagOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 			addACOption(new FilterNMsamTagOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			
+			addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualReadInfoData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 		}
 	}
 	
@@ -143,7 +154,7 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 		resultFormat = new RTArrestResultFormat(getParameters().getBaseConfig(), 
 				getParameters().getFilterConfig(), getParameters().showReferenceBase());
 		resultFormats.put(resultFormat.getC(), resultFormat);
-
+		
 		return resultFormats;
 	}
 
@@ -210,6 +221,14 @@ extends AbstractMethodFactory<BaseQualReadInfoData> {
 		}
 
 		return ret;
+	}
+
+	@Override
+	public void debug() {
+		// set custom
+		JACUSA.printDebug("Overwrite file format -> RTArrestDebugResultFormat");
+		getParameters().setFormat(new RTArrestDebugResultFormat(getParameters().getBaseConfig(), 
+				getParameters().getFilterConfig(), getParameters().showReferenceBase()));
 	}
 	
 }

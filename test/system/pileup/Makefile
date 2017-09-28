@@ -1,60 +1,21 @@
-# TODO create BAM files
-# respect library type and multithreaded mode
-# replicates
+# library type: single end or paired end
+# UNSTRANDED, FR-FIRSTSTRAND, and FR-SECONDSTRAND
 
-# test to be run for pileup
-# SE: single end reads
-# PE: paired end reads
-# with and without reads
-PILEUP_SE_TESTS = UNSTRANDED-SE FR-FIRSTSTRAND-SE FR-SECONDSTRAND-SE \
-									UNSTRANDED-SE-THREADED FR-FIRSTSTRAND-SE-THREADED FR-SECONDSTRAND-SE-THREADED
-PILEUP_PE_TESTS = UNSTRANDED-PE FR-FIRSTSTRAND-PE FR-SECONDSTRAND-PE \
-									UNSTRANDED-PE-THREADED FR-FIRSTSTRAND-PE-THREADED FR-SECONDSTRAND-PE-THREADED
-PILEUP_TESTS 		= $(PILEUP_SE_TESTS) $(PILEUP_PE_TESTS)
-# test files
-PILEUP_SE_TEST_FILES 	:= $(addsuffix .apileup,$(PILEUP_SE_TESTS))
-PILEUP_PE_TEST_FILES 	:= $(addsuffix .apileup,$(PILEUP_PE_TESTS))
-PILEUP_TEST_FILES			:= $(PILEUP_SE_TEST_FILES) $(PILEUP_PE_TEST_FILES)
-
-# files
-BAM_DIR := bams/
-BED_DIR := bed/
-# single end reads
-SE_BAM1 := $(BAM_DIR)se_mutated.bam
-SE_BAM2 := $(BAM_DIR)se_unmutated.bam
-# paired end reads
-PE_BAM1 := $(BAM_DIR)pe_mutated.bam
-PE_BAM2 := $(BAM_DIR)pe_unmutated.bam
-
-# io for JACUSA
-JACUSA_INPUT = $(word 1,$^) $(word 2,$^)
-JACUSA_OUTPUT = $@
-
-# optional parameters and JACUSA run statement
-JACUSA_PILEUP_OPT =
-JACUSA_PILEUP = $(JACUSA_BIN) pileup -r $(JACUSA_OUTPUT) $(JACUSA_PILEUP_OPT) $(JACUSA_INPUT)
-
-.PHONY : test clean
+#  TEST_STATISTIC  UNSTRANDED_SE_MD UNSTRANDED_SE_ST
+TESTS := UNSTRANDED_SE UNSTRANDED_SE_MD UNSTRANDED_SE_ST UNSTRANDED_PE FR_FIRSTSTRAND_SE FR_FIRSTSTRAND_PE FR_SECONDSTRAND_SE FR_SECONDSTRAND_PE MIXED_PE_MD_CALL
+CLEAN_TESTS := $(addprefix clean,$(TESTS))
+#
+.PHONY : test $(TESTS) clean $(CLEAN_TESTS)
 .SECONDARY :
 
-test : $(PILEUP_TEST_FILES)
+#
+test : $(TESTS)
 
-# test JACUSA against gold standard
-# single end reads
-$(PILEUP_SE_TEST_FILES) : $(SE_BAM1) $(SE_BAM2)
-	@echo "TESTING: $@"
-	@echo "java -jar $(JACUSA_PILEUP) &>1 | tee | $@"
-	@echo "TODO test with gold standard"
-# paired end reads
-$(PILEUP_PE_TEST_FILES) : $(PE_BAM1) $(PE_BAM2)
-	@echo "TESTING: $@"
-	@echo "java -jar $(JACUSA_PILEUP) &>1 | tee | $@"
-	@echo "TODO test with gold standard"
-
-## test specific options
-
-
+$(TESTS) :
+	@$(MAKE) -f $@.inc test TMP_OUTPUT=$(TMP_OUTPUT) JACUSA_METHOD=$(JACUSA_METHOD) TEST_DIR=$@
 
 # cleanup
-clean :
-	@rm $(PILEUP_TEST_FILES)
+clean : $(CLEAN_TESTS)
+
+$(CLEAN_TESTS) :
+	@$(MAKE) -f $(@:clean%=%).inc clean TEST_DIR=$(@:clean%=%)

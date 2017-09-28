@@ -1,6 +1,7 @@
 package jacusa.cli.parameters;
 
 import jacusa.data.BaseQualData;
+import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 
 /**
  * 
@@ -12,6 +13,11 @@ extends AbstractParameters<T> {
 
 	public PileupParameters(int conditions) {
 		super(conditions);
+		
+		// set
+		for (ConditionParameters<T> condition : getConditionParameters()) {
+			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<T>());
+		}
 	}
 
 }

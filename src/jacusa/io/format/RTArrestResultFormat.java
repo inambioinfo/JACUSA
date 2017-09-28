@@ -1,5 +1,8 @@
 package jacusa.io.format;
 
+import java.util.List;
+
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseConfig;
 
 import jacusa.data.BaseQualReadInfoData;
@@ -46,7 +49,7 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 	}
 
 	@Override
-	public String getHeader(String[][] pathnames) {
+	public String getHeader(final List<ConditionParameters<BaseQualReadInfoData>> conditions) {
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(COMMENT);
@@ -69,8 +72,8 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 		sb.append("strand");
 		sb.append(getSEP());
 
-		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
-			addConditionHeader(sb, conditionIndex, pathnames[conditionIndex].length);
+		for (int conditionIndex = 0; conditionIndex < conditions.size(); conditionIndex++) {
+			addConditionHeader(sb, conditionIndex, conditions.get(conditionIndex).getPathnames().length);
 			sb.append(getSEP());
 		}
 		
@@ -91,7 +94,9 @@ extends AbstractOutputFormat<BaseQualReadInfoData> {
 		return sb.toString();
 	}
 	
-	protected void addConditionHeader(StringBuilder sb, int condition, int replicates) {
+	protected void addConditionHeader(final StringBuilder sb, int condition, final int replicates) {
+		condition += 1;
+
 		sb.append("bases");
 		sb.append(condition);
 		sb.append(1);

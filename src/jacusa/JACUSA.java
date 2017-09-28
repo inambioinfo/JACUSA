@@ -47,7 +47,7 @@ public class JACUSA {
 	private static SimpleTimer timer;
 	public static final String NAME = "jacusa";	
 	public static final String JAR = NAME + ".jar";
-	public static final String VERSION = "2.0.0-BETA4";
+	public static final String VERSION = "2.0.0-BETA6";
 
 	// command line interface
 	private CLI cli;
@@ -69,7 +69,7 @@ public class JACUSA {
 		factories.add(new TwoConditionCallFactory());
 		factories.add(new CallFactory(2)); // TODO make it general
 		// pileup information
-		factories.add(new nConditionPileupFactory(0)); // FIXME
+		factories.add(new nConditionPileupFactory(0));
 		// Read info
 		factories.add(new RTArrestFactory());
 
@@ -123,17 +123,20 @@ public class JACUSA {
 		System.err.println(lineSep);
 	}
 
-	/**
-	 * 
-	 * @param line
-	 */
 	public static void printLog(String line) {
-		String time = "[ INFO ] " + getSimpleTimer().getTotalTimestring() + "\t:\t";
-		System.err.println(time + " " + line);
+		printLine("INFO", line);
 	}
 
 	public static void printWarning(String line) {
-		String time = "[ WARNING ] " + getSimpleTimer().getTotalTimestring() + "\t:\t";
+		printLine("WARNING", line);
+	}
+	
+	public static void printDebug(String line) {
+		printLine("DEBUG", line);
+	}
+
+	public static void printLine(final String id, final String line) {
+		String time = id + "\t" + getSimpleTimer().getTotalTimestring() + " ";
 		System.err.println(time + " " + line);
 	}
 	
@@ -161,12 +164,16 @@ public class JACUSA {
 	 * @throws Exception 
 	 */
 	private void run(final String[] args) throws Exception {
+		// prolog
+		printProlog(args);
+		
 		CLI cmd = getCLI();
+
 		// parse CLI
 		if (! cmd.processArgs(args)) {
 			System.exit(1);
 		}
-	
+		
 		// instantiate chosen method
 		AbstractMethodFactory<?> methodFactory = cmd.getMethodFactory();
 		AbstractParameters<?> parameters = methodFactory.getParameters();
@@ -180,8 +187,6 @@ public class JACUSA {
 			coordinateProvider = new BedCoordinateProvider(parameters.getBedPathname());
 		}
 	
-		// prolog
-		printProlog(args);
 		String[][] pathnames = new String[parameters.getConditionParameters().size()][]; 
 		for (int conditionIndex = 0; conditionIndex < parameters.getConditions(); conditionIndex++) {
 			pathnames[conditionIndex] = parameters.getConditionParameters(conditionIndex).getPathnames();
@@ -195,7 +200,7 @@ public class JACUSA {
 		// main
 		AbstractWorkerDispatcher<?> workerDispatcher = methodFactory.getInstance(coordinateProvider);
 		int comparisons = workerDispatcher.run();
-	
+		
 		// epilog
 		printEpilog(comparisons);
 	

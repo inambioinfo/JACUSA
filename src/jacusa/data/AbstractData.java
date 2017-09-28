@@ -36,4 +36,6 @@ implements hasCoordinate, hasReferenceBase {
 
 	public abstract void add(final AbstractData abstractData);
 	public abstract AbstractData copy();
+	public abstract String toString();
+	
 }

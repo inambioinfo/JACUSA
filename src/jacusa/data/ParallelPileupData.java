@@ -151,12 +151,11 @@ implements hasCoordinate {
 		return cachedPooledData[conditionIndex];
 	}
 
-	@SuppressWarnings("unchecked")
 	public T getCombinedPooledData() {
 		if (cachedCombinedPooledData == null && getPooledData(0) != null) {
 
-			cachedCombinedPooledData = (T) getPooledData(0).copy();
-			for (int conditionIndex = 1; conditionIndex < getConditions(); conditionIndex++) {
+			cachedCombinedPooledData = methodFactory.createData();
+			for (int conditionIndex = 0; conditionIndex < getConditions(); conditionIndex++) {
 				cachedCombinedPooledData.add(getPooledData(conditionIndex));
 			}
 		}
@@ -267,6 +266,22 @@ implements hasCoordinate {
 			
 		}
 		return ret;
+	}
+
+	public static <S extends AbstractData> void prettyPrint(final ParallelPileupData<S> parallelPileupData) {
+		final StringBuilder sb = new StringBuilder();
+
+		// coordinate
+		sb.append("Container Coordinate: ");
+		sb.append(parallelPileupData.getCoordinate().toString());
+		sb.append('\n');
+
+		// pooled
+		sb.append("Container combined pooled: \n");
+		sb.append(parallelPileupData.getCombinedPooledData().toString());
+		sb.append('\n');
+
+		System.out.print(sb.toString());
 	}
 	
 }

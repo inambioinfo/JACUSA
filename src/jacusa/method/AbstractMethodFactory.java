@@ -1,7 +1,13 @@
 package jacusa.method;
 
-import jacusa.JACUSA;
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
+import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
 import jacusa.cli.options.SAMPathnameArg;
 import jacusa.cli.parameters.AbstractParameters;
@@ -10,13 +16,6 @@ import jacusa.pileup.dispatcher.AbstractWorkerDispatcher;
 import jacusa.util.Coordinate;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 import jacusa.util.coordinateprovider.SAMCoordinateProvider;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 
 import org.apache.commons.cli.HelpFormatter;
 import org.apache.commons.cli.Options;
@@ -276,6 +275,8 @@ public abstract class AbstractMethodFactory<T extends AbstractData> {
 		return true;
 	}
 
+	public void debug() {};
+	
 	public abstract T createData();
 	public abstract T[] createReplicateData(final int n);
 	public abstract T[][] createContainer(final int n);

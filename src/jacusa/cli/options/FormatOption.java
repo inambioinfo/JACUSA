@@ -10,13 +10,13 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FormatOption<T extends AbstractData, F extends AbstractOutputFormat<T>> 
+public class FormatOption<T extends AbstractData> 
 extends AbstractACOption {
 
 	private AbstractParameters<T> parameters;
-	private Map<Character, F> formats;
+	private Map<Character, AbstractOutputFormat<T>> formats;
 
-	public FormatOption(final AbstractParameters<T> parameters, final Map<Character, F> formats) {
+	public FormatOption(final AbstractParameters<T> parameters, final Map<Character, AbstractOutputFormat<T>> formats) {
 		super("f", "output-format");
 		this.parameters = parameters;
 		this.formats = formats;
@@ -28,7 +28,7 @@ extends AbstractACOption {
 		StringBuffer sb = new StringBuffer();
 
 		for (char c : formats.keySet()) {
-			F format = formats.get(c);
+			AbstractOutputFormat<T> format = formats.get(c);
 			if (format.getC() == parameters.getFormat().getC()) {
 				sb.append("<*>");
 			} else {

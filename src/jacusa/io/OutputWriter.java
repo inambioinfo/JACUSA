@@ -13,7 +13,6 @@ public class OutputWriter implements Output {
 	public OutputWriter(String filename) throws IOException {
 		this.filename = filename;
 		bw = new BufferedWriter(new FileWriter(new File(filename)));
-System.err.println("OutputWriter: " + filename);		
 	}
 
 	public OutputWriter(File file) throws IOException {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import java.util.List;
 
+import jacusa.JACUSA;
 import jacusa.data.AbstractData;
 import jacusa.data.BaseConfig;
 import jacusa.filter.FilterConfig;
@@ -224,6 +225,7 @@ implements hasConditions<T> {
 	 * @param debug the debug to set
 	 */
 	public void setDebug(boolean debug) {
+		JACUSA.printDebug("DEBUG Modus!");
 		this.debug = debug;
 	}
 

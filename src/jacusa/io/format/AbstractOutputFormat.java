@@ -1,5 +1,8 @@
 package jacusa.io.format;
 
+import java.util.List;
+
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.AbstractData;
 import jacusa.data.Result;
 
@@ -28,7 +31,7 @@ public abstract class AbstractOutputFormat<T extends AbstractData> {
 
 	// Header is empty by default
 	// override to change
-	public String getHeader(final String[][] pathnames) {
+	public String getHeader(final List<ConditionParameters<T>> conditions) {
 		return null;
 	}
 

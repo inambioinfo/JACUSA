@@ -1,5 +1,6 @@
 package jacusa.pileup.worker;
 
+import jacusa.JACUSA;
 import jacusa.cli.parameters.RTArrestParameters;
 import jacusa.data.BaseQualReadInfoData;
 import jacusa.data.ParallelPileupData;
@@ -10,6 +11,7 @@ import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.method.call.statistic.StatisticCalculator;
 import jacusa.pileup.dispatcher.rtarrest.RTArrestWorkerDispatcher;
 import jacusa.pileup.iterator.WindowedIterator;
+import jacusa.pileup.iterator.variant.RTArrestDebugVariantParallelPileup;
 import jacusa.pileup.iterator.variant.RTArrestVariantParallelPileup;
 import jacusa.pileup.iterator.variant.Variant;
 import jacusa.util.Coordinate;
@@ -29,12 +31,16 @@ extends AbstractWorker<T> {
 		super(workerDispatcher, 
 				threadId,
 				parameters);
-
 		this.parameters = parameters;
 		statisticCalculator = parameters.getStatisticParameters()
 				.getStatisticCalculator().newInstance();
-		
-		variant = new RTArrestVariantParallelPileup<T>();
+
+		if (parameters.isDebug()) {
+			JACUSA.printDebug("Overwrite file format -> RTArrestDebugVariantParallelPileup");
+			variant = new RTArrestDebugVariantParallelPileup<T>();
+		} else {
+			variant = new RTArrestVariantParallelPileup<T>();
+		}
 	}
 
 	@Override

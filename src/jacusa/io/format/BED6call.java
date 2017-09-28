@@ -1,6 +1,9 @@
 package jacusa.io.format;
 
+import java.util.List;
+
 import jacusa.cli.parameters.AbstractParameters;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.BaseConfig;
 import jacusa.data.ParallelPileupData;
@@ -31,7 +34,7 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 	}
 
 	@Override
-	public String getHeader(String[][] pathnames) {
+	public String getHeader(final List<ConditionParameters<BaseQualData>> conditions) {
 		final StringBuilder sb = new StringBuilder();
 
 		sb.append(COMMENT);
@@ -54,8 +57,8 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 		sb.append("strand");
 		sb.append(getSEP());
 		
-		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
-			addConditionHeader(sb, conditionIndex, pathnames[conditionIndex].length);
+		for (int conditionIndex = 0; conditionIndex < conditions.size(); conditionIndex++) {
+			addConditionHeader(sb, conditionIndex, conditions.get(conditionIndex).getPathnames().length);
 			sb.append(getSEP());
 		}
 		
@@ -71,11 +74,99 @@ public class BED6call extends AbstractOutputFormat<BaseQualData> {
 			sb.append(getSEP());
 			sb.append("refBase");
 		}
+
+		sb.append("\n");
+		addConditionLibraryTypeHeader(sb, conditions);
+
+		sb.append("\n");
+		addConditionPathnamesHeader(sb, conditions);
 		
 		return sb.toString();
 	}
+
+	protected void addConditionLibraryTypeHeader(final StringBuilder sb, final List<ConditionParameters<BaseQualData>> conditions) {
+		sb.append(COMMENT);
+
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		sb.append(EMPTY);
+		sb.append(getSEP());
+
+		sb.append(EMPTY);
+		sb.append(getSEP());
+
+		// stat	
+		sb.append("TODO");
+		sb.append(getSEP());
+		
+		sb.append("TODO");
+		sb.append(getSEP());
+		
+		for (final ConditionParameters<BaseQualData> condition : conditions) {
+			sb.append(condition.getLibraryType());
+			sb.append(getSEP());
+		}
+		
+		sb.append(EMPTY);
+		
+		// add filtering info
+		if (parameters.getFilterConfig().hasFiters()) {
+			sb.append(getSEP());
+			sb.append(EMPTY);
+		}
+
+		if (parameters.showReferenceBase()) {
+			sb.append(getSEP());
+			sb.append(EMPTY);
+		}
+	}
 	
-	protected void addConditionHeader(StringBuilder sb, int condition, int replicates) {
+	protected void addConditionPathnamesHeader(final StringBuilder sb, final List<ConditionParameters<BaseQualData>> conditions) {
+		sb.append(COMMENT);
+
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		sb.append(EMPTY);
+		sb.append(getSEP());
+
+		sb.append(EMPTY);
+		sb.append(getSEP());
+
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		
+		sb.append(EMPTY);
+		sb.append(getSEP());
+		
+		for (final ConditionParameters<BaseQualData> condition : conditions) {
+			final String[] pathnames = condition.getPathnames();
+			sb.append(pathnames[0]);
+			for (int replicateIndex = 1; replicateIndex < pathnames.length; replicateIndex++) {
+				sb.append(getSEP2());
+				sb.append(pathnames[replicateIndex]);
+			}
+			sb.append(getSEP());
+		}
+
+		sb.append(EMPTY);
+		
+		// add filtering info
+		if (parameters.getFilterConfig().hasFiters()) {
+			sb.append(getSEP());
+			sb.append(EMPTY);
+		}
+
+		if (parameters.showReferenceBase()) {
+			sb.append(getSEP());
+			sb.append(EMPTY);
+		}
+	}
+	
+	protected void addConditionHeader(final StringBuilder sb, final int condition, final int replicates) {
 		sb.append("bases");
 		sb.append(condition + 1);
 		sb.append(1);

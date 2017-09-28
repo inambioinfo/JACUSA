@@ -76,7 +76,8 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractData> {
 	public int run() {
 		// write Header
 		try {
-			String header = parameters.getFormat().getHeader(pathnames);
+			String header = parameters
+					.getFormat().getHeader(parameters.getConditionParameters());
 			if (header != null) {
 				parameters.getOutput().write(header);
 			}
@@ -150,7 +151,7 @@ public abstract class AbstractWorkerDispatcher<T extends AbstractData> {
 			final File file = new File(filename);
 			try {
 				filteredOutput = new OutputWriter(file);
-				filteredOutput.write(parameters.getFormat().getHeader(pathnames));
+				filteredOutput.write(parameters.getFormat().getHeader(null));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}

@@ -32,7 +32,7 @@ implements Iterator<ParallelPileupData<T>> {
 	
 	@Override
 	public boolean hasNext() {
-		if (conditionContainer.hasNext()) {
+		while (conditionContainer.hasNext()) {
 			final Coordinate reference = new Coordinate(conditionContainer.getReferenceAdvancer().getCurrentCoordinate());
 
 			parallelDataContainer.setCoordinate(reference);
@@ -41,6 +41,7 @@ implements Iterator<ParallelPileupData<T>> {
 			if (filter.isValid(parallelDataContainer)) {
 				return true;
 			} else {
+				ParallelPileupData.prettyPrint(parallelDataContainer);
 				parallelDataContainer.reset();
 				conditionContainer.advance();
 			}				

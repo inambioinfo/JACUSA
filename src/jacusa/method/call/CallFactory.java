@@ -24,7 +24,6 @@ import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.options.pileupbuilder.OneConditionBaseQualDataBuilderOption;
 import jacusa.cli.parameters.CLI;
 import jacusa.cli.parameters.CallParameters;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
 import jacusa.filter.factory.CombinedDistanceFilterFactory;
@@ -136,7 +135,7 @@ extends AbstractMethodFactory<BaseQualData> {
 			getParameters().setFormat(getResultFormats().get(a[0]));
 		} else {
 			getParameters().setFormat(getResultFormats().get(BED6call.CHAR));
-			addACOption(new FormatOption<BaseQualData, AbstractOutputFormat<BaseQualData>>(
+			addACOption(new FormatOption<BaseQualData>(
 					getParameters(), getResultFormats()));
 		}
 	}
@@ -210,15 +209,8 @@ extends AbstractMethodFactory<BaseQualData> {
 
 	@Override
 	public boolean parseArgs(String[] args) throws Exception {
-		if (args == null || args.length == 0) {
+		if (args == null || args.length < 1) {
 			throw new ParseException("BAM File is not provided!");
-		}
-
-		// infer numer of conditions from number of file(s)
-		final int conditions = args.length;
-		getParameters().getConditionParameters().clear();
-		for (int conditionIndex = 0; conditionIndex < conditions; conditionIndex++) {
-			getParameters().getConditionParameters().add(new ConditionParameters<BaseQualData>());
 		}
 
 		return super.parseArgs(args);

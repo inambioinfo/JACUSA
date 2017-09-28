@@ -1,6 +1,7 @@
 package jacusa.io.format;
 
 import jacusa.JACUSA;
+import jacusa.cli.parameters.ConditionParameters;
 import jacusa.data.BaseQualData;
 import jacusa.data.BaseConfig;
 import jacusa.data.ParallelPileupData;
@@ -9,6 +10,7 @@ import jacusa.filter.FilterConfig;
 import jacusa.filter.factory.AbstractFilterFactory;
 
 import java.util.Calendar;
+import java.util.List;
 
 public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 
@@ -24,7 +26,7 @@ public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 	}
 	
 	@Override
-	public String getHeader(String[][] pathnames) {
+	public String getHeader(final List<ConditionParameters<BaseQualData>> conditions) {
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append(getCOMMENT());
@@ -78,8 +80,8 @@ public class VCFcall extends AbstractOutputFormat<BaseQualData> {
 			sb.append(cols[i]);
 		}
 		
-		for (int conditionIndex = 0; conditionIndex < pathnames.length; conditionIndex++) {
-			for (String pathname : pathnames[conditionIndex])  {
+		for (final ConditionParameters<BaseQualData> condition : conditions) {
+			for (String pathname : condition.getPathnames())  {
 				sb.append(getSEP());
 				sb.append(pathname);
 			}

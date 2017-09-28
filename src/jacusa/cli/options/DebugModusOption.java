@@ -6,19 +6,20 @@ import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.OptionBuilder;
 
-public class FilterModusOption extends AbstractACOption {
+public class DebugModusOption extends AbstractACOption {
 
 	final private AbstractParameters<?> parameters;
 	
-	public FilterModusOption(final AbstractParameters<?> parameters) {
-		super("s", "separate");
+	public DebugModusOption(final AbstractParameters<?> parameters) {
+		super("x", "debug");
 		this.parameters = parameters;
 	}
 	
 	@Override
 	public void process(CommandLine line) throws Exception {
 		if(line.hasOption(getOpt())) {
-			parameters.setSeparate(true);
+			parameters.setDebug(true);
+			parameters.getMethodFactory().debug();
 	    }
 	}
 
@@ -26,8 +27,7 @@ public class FilterModusOption extends AbstractACOption {
 	@Override
 	public Option getOption() {
 		return OptionBuilder.withLongOpt(getLongOpt())
-				.hasArg(false)
-		        .withDescription("Put feature-filtered results in to a separate file (= RESULT-FILE.filtered)")
+		        .withDescription("turn on Debug modus")
 		        .create(getOpt());
 	}
 

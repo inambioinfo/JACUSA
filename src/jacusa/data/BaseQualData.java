@@ -116,4 +116,16 @@ implements hasBaseQualCount, hasLibraryType {
 		return new BaseQualData(this);
 	}
 
+	@Override
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		sb.append("Library type: ");
+		sb.append(getLibraryType().toString());
+		sb.append('\n');
+
+		sb.append("Base count: ");
+		sb.append(getBaseQualCount().toString());
+		return sb.toString();
+	}
+	
 }

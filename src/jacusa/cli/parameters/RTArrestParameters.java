@@ -13,21 +13,15 @@ implements hasStatisticCalculator<T> {
 	public RTArrestParameters(int conditions) {
 		super(conditions);
 
-		for (int conditionIndex = 0; conditionIndex < conditions; ++conditionIndex) {
-			getConditionParameters(conditionIndex).setPileupBuilderFactory(
-					new RTArrestPileupBuilderFactory<T>(new UnstrandedPileupBuilderFactory<T>()));
+		// set
+		for (ConditionParameters<T> condition : getConditionParameters()) {
+			condition.setPileupBuilderFactory(new RTArrestPileupBuilderFactory<T>(new UnstrandedPileupBuilderFactory<T>()));
 		}
 		
 		statisticParameters = new StatisticParameters<T>();
 		statisticParameters.setStatisticCalculator(new BetaBinomial<T>());
 	}
 	
-	public RTArrestParameters() {
-		super();
-
-		statisticParameters = new StatisticParameters<T>();
-	}
-
 	@Override
 	public StatisticParameters<T> getStatisticParameters() {
 		return statisticParameters;

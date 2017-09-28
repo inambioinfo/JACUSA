@@ -2,6 +2,7 @@ package jacusa.cli.parameters;
 
 import jacusa.JACUSA;
 import jacusa.cli.options.AbstractACOption;
+import jacusa.cli.options.DebugModusOption;
 import jacusa.data.AbstractData;
 import jacusa.io.format.VCFcall;
 import jacusa.method.AbstractMethodFactory;
@@ -82,9 +83,11 @@ public class CLI {
 		
 		Set<AbstractACOption> acOptions = methodFactory.getACOptions();
 		Options options = new Options();
+		
 		for (AbstractACOption acoption : acOptions) {
 			options.addOption(acoption.getOption());
 		}
+		
 		
 		// copy arguments while ignoring the first array element
 		String[] processedArgs = new String[args.length - 1];
@@ -93,12 +96,18 @@ public class CLI {
 		// parse arguments
 		final CommandLineParser parser = new PosixParser();
 		try {
+			// create hidden debug option
+			AbstractACOption debugACOption = new DebugModusOption(methodFactory.getParameters());
+			options.addOption(debugACOption.getOption());
+
 			final CommandLine line = parser.parse(options, processedArgs);
 			methodFactory.parseArgs(line.getArgs());
 
-			for (AbstractACOption acption : acOptions) {
-				acption.process(line);
+			for (AbstractACOption acOption : acOptions) {
+				acOption.process(line);
 			}
+			// parse hidden debug option
+			debugACOption.process(line);
 		} catch (Exception e) {
 			e.printStackTrace();
 			methodFactory.printUsage();

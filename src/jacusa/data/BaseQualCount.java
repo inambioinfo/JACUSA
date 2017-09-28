@@ -150,5 +150,31 @@ public class BaseQualCount {
 		}
 		return Arrays.copyOf(alleles, n);
 	}
+
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		
+		int i = 0;
+		final int n = BaseConfig.BASES.length;
+		sb.append("(");
+		sb.append(BaseConfig.BASES[i]);
+		++i;
+		for (; i < n; ++i) {
+			sb.append(", ");
+			sb.append(BaseConfig.BASES[i]);
+		}
+		sb.append(") (");
+		
+		i = 0;
+		sb.append(baseCount[i]);
+		++i;
+		for (; i < n; ++i) {
+			sb.append(", ");
+			sb.append(baseCount[i]);
+		}
+		sb.append(")");
+		
+		return sb.toString();
+	}
 	
 }

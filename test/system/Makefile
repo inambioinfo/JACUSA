@@ -1,7 +1,7 @@
-include JACUSA.inc
-
 # what methods to test -> directories with their own Makfile
 TEST_METHODS 	:= rt-arrest
+CLEAN_TEST_METHODS := $(addprefix clean,$(TEST_METHODS)) 
+# rt-arrest
 # call pileup 
 
 # write test results here
@@ -10,7 +10,7 @@ TEST_OUTPUT	:= $(shell pwd)/results/$(DATE).txt
 TMP_OUTPUT	:= $(TEST_OUTPUT)-running
 
 #
-.PHONY : all $(TEST_METHODS) prolog epilog clean cleantmp
+.PHONY : all $(TEST_METHODS) $(CLEAN_TEST_METHODS) prolog epilog clean cleantmp
 .SECONDARY :
 all : prolog $(TEST_METHODS) epilog
 
@@ -33,8 +33,10 @@ epilog :
 	@mv $(TMP_OUTPUT) $(TEST_OUTPUT)
 
 # cleanup
-clean : cleantmp
-	$(foreach TEST_METHOD,$(TEST_METHODS),$(MAKE) -C $(TEST_METHOD) clean;)
+clean : cleantmp $(CLEAN_TEST_METHODS)
+
+$(CLEAN_TEST_METHODS) :
+	@$(MAKE) -C $(@:clean%=%) clean TMP_OUTPUT=$(TMP_OUTPUT) JACUSA_METHOD=$(@:clean%=%)
 
 cleantmp :
 	@rm -f results/*.txt results/*.txt-running	

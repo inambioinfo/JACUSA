@@ -19,8 +19,8 @@ public abstract class AbstractConditionACOption<T extends AbstractData> extends 
 	}
 	
 	public AbstractConditionACOption(final String opt, final String longOpt, final int conditionIndex, final ConditionParameters<T> condition) {
-		super(! opt.isEmpty() ? opt + (conditionIndex + 1): new String(),
-				! longOpt.isEmpty() ? longOpt + (conditionIndex + 1) : new String());
+		super(! opt.isEmpty() ? opt + conditionIndex: new String(),
+				! longOpt.isEmpty() ? longOpt + conditionIndex : new String());
 
 		this.conditionIndex = conditionIndex;
 		conditions = new ArrayList<ConditionParameters<T>>(1);

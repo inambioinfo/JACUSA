@@ -34,7 +34,7 @@ implements hasReadInfoCount {
 	@Override
 	public void add(AbstractData abstractData) {
 		super.add(abstractData);
-		
+
 		BaseQualReadInfoData baseQualReadInfoData = (BaseQualReadInfoData) abstractData;
 		readInfoCount.add(baseQualReadInfoData.readInfoCount);
 	}
@@ -43,4 +43,27 @@ implements hasReadInfoCount {
 	public BaseQualReadInfoData copy() {
 		return new BaseQualReadInfoData(this);
 	}
+	
+	public String toString() {
+		final StringBuilder sb = new StringBuilder();
+		final String sep = ", ";
+		
+		sb.append(super.toString());
+		sb.append('\n');
+
+		sb.append("Read info: (start, inner, end) (");
+		sb.append(getReadInfoCount().getStart());
+		sb.append(sep);
+		sb.append(getReadInfoCount().getInner());
+		sb.append(sep);
+		sb.append(getReadInfoCount().getEnd());
+		sb.append(") (arrest, through) ; (");
+		sb.append(getReadInfoCount().getArrest());
+		sb.append(sep);
+		sb.append(getReadInfoCount().getThrough());
+		sb.append(")");
+
+		return sb.toString();
+	}
+	
 }

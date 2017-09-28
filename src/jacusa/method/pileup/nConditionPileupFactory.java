@@ -21,7 +21,6 @@ import jacusa.cli.options.condition.filter.FilterNHsamTagOption;
 import jacusa.cli.options.condition.filter.FilterNMsamTagOption;
 import jacusa.cli.options.pileupbuilder.OneConditionBaseQualDataBuilderOption;
 import jacusa.cli.parameters.CLI;
-import jacusa.cli.parameters.ConditionParameters;
 import jacusa.cli.parameters.PileupParameters;
 import jacusa.data.BaseQualData;
 import jacusa.filter.factory.AbstractFilterFactory;
@@ -36,7 +35,6 @@ import jacusa.io.format.AbstractOutputFormat;
 import jacusa.io.format.BED6call;
 import jacusa.io.format.PileupFormat;
 import jacusa.method.AbstractMethodFactory;
-import jacusa.pileup.builder.UnstrandedPileupBuilderFactory;
 import jacusa.pileup.dispatcher.pileup.MpileupWorkerDispatcher;
 import jacusa.util.coordinateprovider.CoordinateProvider;
 
@@ -55,21 +53,12 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 		super("pileup", "SAMtools like mpileup", 
 				new PileupParameters<BaseQualData>(conditions));
 
-		// set
-		for (ConditionParameters<BaseQualData> condition : getParameters().getConditionParameters()) {
-			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
-		}
+		
 	}
 	
 	public void initParameters(final int conditions) {
 		setParameters(new PileupParameters<BaseQualData>(conditions));
-
-		// set
-		for (ConditionParameters<BaseQualData> condition : getParameters().getConditionParameters()) {
-			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
-		}
 	}
-	
 
 	public void initACOptions() {
 		initGlobalACOptions();
@@ -81,7 +70,7 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 			getParameters().setFormat(getOuptutFormats().get(a[0]));
 		} else {
 			getParameters().setFormat(getOuptutFormats().get(BED6call.CHAR));
-			addACOption(new FormatOption<BaseQualData, AbstractOutputFormat<BaseQualData>>(
+			addACOption(new FormatOption<BaseQualData>(
 					getParameters(), getOuptutFormats()));
 		}
 	}
@@ -118,20 +107,20 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 		
 		// condition specific
 		for (int conditionIndex = 0; conditionIndex < getParameters().getConditions(); ++conditionIndex) {
-			addACOption(new MinMAPQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinBASQConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MinCoverageConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new MaxDepthConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterFlagConditionOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinMAPQConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinBASQConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MinCoverageConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new MaxDepthConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterFlagConditionOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 			
-			addACOption(new FilterNHsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new FilterNMsamTagOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
-			addACOption(new InvertStrandOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNHsamTagOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new FilterNMsamTagOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new InvertStrandOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 			
-			addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(conditionIndex, getParameters().getConditionParameters().get(conditionIndex)));
+			addACOption(new OneConditionBaseQualDataBuilderOption<BaseQualData>(conditionIndex + 1, getParameters().getConditionParameters().get(conditionIndex)));
 		}
 	}
-	
+
 	public Map<Character, AbstractOutputFormat<BaseQualData>> getOuptutFormats() {
 		final Map<Character, AbstractOutputFormat<BaseQualData>> outputFormats = 
 				new HashMap<Character, AbstractOutputFormat<BaseQualData>>();
@@ -188,21 +177,6 @@ public class nConditionPileupFactory extends AbstractMethodFactory<BaseQualData>
 		if (args == null || args.length < 1) {
 			throw new ParseException("BAM File is not provided!");
 		}
-
-		/*
-		// set condition parameters bases on: file11,file12 file21
-		// -> 2 conditions
-		final int conditions = args.length;
-
-		getParameters().getConditionParameters().clear();
-		
-		// set unstranded as default TODO
-		for (int i = 0; i < conditions; i++) {
-			ConditionParameters<BaseQualData> condition = new ConditionParameters<BaseQualData>();
-			condition.setPileupBuilderFactory(new UnstrandedPileupBuilderFactory<BaseQualData>());
-			getParameters().getConditionParameters().add(condition);
-		}
-		*/
 
 		return super.parseArgs(args); 
 	}
